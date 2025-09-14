@@ -1,0 +1,32 @@
+{
+  "name": "fitwithpari-token-server",
+  "version": "1.0.0",
+  "description": "Backend server for Zoom Video SDK token generation for FitWithPari platform",
+  "main": "tokenServer.js",
+  "scripts": {
+    "start": "node tokenServer.js",
+    "dev": "nodemon tokenServer.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "keywords": [
+    "zoom",
+    "video-sdk",
+    "fitness",
+    "jwt",
+    "token-generation"
+  ],
+  "author": "FitWithPari",
+  "license": "MIT"
+}

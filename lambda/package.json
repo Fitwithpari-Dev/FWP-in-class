@@ -1,0 +1,28 @@
+{
+  "name": "fitwithpari-lambda-functions",
+  "version": "1.0.0",
+  "description": "AWS Lambda functions for FitWithPari fitness platform",
+  "main": "zoom-token-handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "zip -r function.zip . -x '*.git*' '*.zip' 'node_modules/.cache/*'",
+    "deploy": "aws lambda update-function-code --function-name fitwithpari-zoom-token --zip-file fileb://function.zip"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "zoom",
+    "video-sdk",
+    "fitness",
+    "jwt",
+    "serverless"
+  ],
+  "author": "FitWithPari",
+  "license": "MIT"
+}

@@ -1,0 +1,32 @@
+{
+  "development": {
+    "Variables": {
+      "NODE_ENV": "development",
+      "ZOOM_SDK_KEY": "your-development-zoom-sdk-key",
+      "ZOOM_SDK_SECRET": "your-development-zoom-sdk-secret",
+      "CORS_ORIGIN": "http://localhost:3000,https://localhost:3000",
+      "LOG_LEVEL": "debug",
+      "TOKEN_EXPIRY_HOURS": "2"
+    }
+  },
+  "staging": {
+    "Variables": {
+      "NODE_ENV": "staging",
+      "ZOOM_SDK_KEY": "your-staging-zoom-sdk-key",
+      "ZOOM_SDK_SECRET": "your-staging-zoom-sdk-secret",
+      "CORS_ORIGIN": "https://staging.fitwithpari.com",
+      "LOG_LEVEL": "info",
+      "TOKEN_EXPIRY_HOURS": "2"
+    }
+  },
+  "production": {
+    "Variables": {
+      "NODE_ENV": "production",
+      "ZOOM_SDK_KEY": "your-production-zoom-sdk-key",
+      "ZOOM_SDK_SECRET": "your-production-zoom-sdk-secret",
+      "CORS_ORIGIN": "https://app.fitwithpari.com",
+      "LOG_LEVEL": "warn",
+      "TOKEN_EXPIRY_HOURS": "2"
+    }
+  }
+}

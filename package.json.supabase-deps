@@ -1,0 +1,23 @@
+{
+  "name": "fitwithpari-supabase-dependencies",
+  "description": "Required dependencies for Supabase integration",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "@supabase/auth-helpers-react": "^0.4.2",
+    "@supabase/auth-helpers-nextjs": "^0.8.7"
+  },
+  "devDependencies": {
+    "@supabase/cli": "^1.120.0"
+  },
+  "scripts": {
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:reset": "supabase db reset",
+    "supabase:generate-types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts",
+    "supabase:push": "supabase db push",
+    "supabase:pull": "supabase db pull",
+    "supabase:seed": "supabase db seed",
+    "supabase:functions:serve": "supabase functions serve",
+    "supabase:functions:deploy": "supabase functions deploy"
+  }
+}

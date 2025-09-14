@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Production builds
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging
+.env.production
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# AWS deployment files
+function.zip
+dns-change.json
+
+# Temporary files
+tmp/
+temp/
+
+# Lambda deployment artifacts
+lambda/function.zip
+
+# Cache directories
+.cache/
+.parcel-cache/
+
+# Deployment summaries (keep only the latest)
+deployment-summary-*.md
+!DEPLOYMENT_SUMMARY_MUMBAI.md

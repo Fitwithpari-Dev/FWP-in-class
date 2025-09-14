@@ -1,0 +1,149 @@
+{
+  "CustomCachePolicies": {
+    "video-streaming-policy": {
+      "Name": "FitWithPari-Video-Streaming-Policy",
+      "Comment": "Optimized cache policy for video streaming content",
+      "DefaultTTL": 86400,
+      "MaxTTL": 31536000,
+      "MinTTL": 0,
+      "ParametersInCacheKeyAndForwardedToOrigin": {
+        "EnableAcceptEncodingBrotli": false,
+        "EnableAcceptEncodingGzip": false,
+        "QueryStringsConfig": {
+          "QueryStringBehavior": "whitelist",
+          "QueryStrings": {
+            "Quantity": 4,
+            "Items": ["range", "start", "end", "quality"]
+          }
+        },
+        "HeadersConfig": {
+          "HeaderBehavior": "whitelist",
+          "Headers": {
+            "Quantity": 3,
+            "Items": ["Range", "Accept-Ranges", "User-Agent"]
+          }
+        },
+        "CookiesConfig": {
+          "CookieBehavior": "none"
+        }
+      }
+    },
+    "static-assets-policy": {
+      "Name": "FitWithPari-Static-Assets-Policy",
+      "Comment": "Aggressive caching for static assets (CSS, JS, images)",
+      "DefaultTTL": 31536000,
+      "MaxTTL": 31536000,
+      "MinTTL": 31536000,
+      "ParametersInCacheKeyAndForwardedToOrigin": {
+        "EnableAcceptEncodingBrotli": true,
+        "EnableAcceptEncodingGzip": true,
+        "QueryStringsConfig": {
+          "QueryStringBehavior": "none"
+        },
+        "HeadersConfig": {
+          "HeaderBehavior": "none"
+        },
+        "CookiesConfig": {
+          "CookieBehavior": "none"
+        }
+      }
+    },
+    "api-no-cache-policy": {
+      "Name": "FitWithPari-API-No-Cache-Policy",
+      "Comment": "No caching for API endpoints",
+      "DefaultTTL": 0,
+      "MaxTTL": 0,
+      "MinTTL": 0,
+      "ParametersInCacheKeyAndForwardedToOrigin": {
+        "EnableAcceptEncodingBrotli": true,
+        "EnableAcceptEncodingGzip": true,
+        "QueryStringsConfig": {
+          "QueryStringBehavior": "all"
+        },
+        "HeadersConfig": {
+          "HeaderBehavior": "whitelist",
+          "Headers": {
+            "Quantity": 5,
+            "Items": ["Authorization", "Content-Type", "Accept", "User-Agent", "Referer"]
+          }
+        },
+        "CookiesConfig": {
+          "CookieBehavior": "all"
+        }
+      }
+    }
+  },
+  "ResponseHeadersPolicies": {
+    "security-headers-policy": {
+      "Name": "FitWithPari-Security-Headers-Policy",
+      "Comment": "Security headers for FitWithPari application",
+      "SecurityHeadersConfig": {
+        "StrictTransportSecurity": {
+          "AccessControlMaxAgeSec": 31536000,
+          "IncludeSubdomains": true,
+          "Override": true
+        },
+        "ContentTypeOptions": {
+          "Override": true
+        },
+        "FrameOptions": {
+          "FrameOption": "DENY",
+          "Override": true
+        },
+        "ReferrerPolicy": {
+          "ReferrerPolicy": "strict-origin-when-cross-origin",
+          "Override": true
+        }
+      },
+      "CustomHeadersConfig": {
+        "Quantity": 3,
+        "Items": [
+          {
+            "Header": "Permissions-Policy",
+            "Value": "camera=(), microphone=(), geolocation=()",
+            "Override": true
+          },
+          {
+            "Header": "X-Fitness-Platform",
+            "Value": "FitWithPari-v1.0",
+            "Override": true
+          },
+          {
+            "Header": "Cache-Control",
+            "Value": "public, max-age=0, must-revalidate",
+            "Override": false
+          }
+        ]
+      }
+    },
+    "video-streaming-headers-policy": {
+      "Name": "FitWithPari-Video-Streaming-Headers-Policy",
+      "Comment": "Headers optimized for video streaming",
+      "CustomHeadersConfig": {
+        "Quantity": 4,
+        "Items": [
+          {
+            "Header": "Accept-Ranges",
+            "Value": "bytes",
+            "Override": true
+          },
+          {
+            "Header": "Cache-Control",
+            "Value": "public, max-age=86400",
+            "Override": true
+          },
+          {
+            "Header": "Access-Control-Allow-Origin",
+            "Value": "*",
+            "Override": true
+          },
+          {
+            "Header": "Cross-Origin-Resource-Policy",
+            "Value": "cross-origin",
+            "Override": true
+          }
+        ]
+      }
+    }
+  }
+}

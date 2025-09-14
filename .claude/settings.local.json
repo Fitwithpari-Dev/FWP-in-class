@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:developers.zoom.us)",
+      "WebSearch",
+      "Bash(/agents create zoom-sdk-expert \"Zoom Video SDK specialist for React integration. Expert in https://developers.zoom.us/docs/video-sdk/ with focus on fitness platform requirements, 50+ participant optimization, and real-time video streaming.\")",
+      "Bash(npm install)",
+      "Bash(npm audit:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(cat:*)",
+      "Bash(xargs ls:*)",
+      "Bash(npm install:*)",
+      "Bash(test:*)",
+      "Bash(node fix-imports.js)",
+      "WebFetch(domain:supabase.com)",
+      "Bash(node:*)",
+      "Bash(chmod:*)",
+      "Bash(./setup-fitwithpari.sh:*)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(npx:*)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_089e600d8f66ce4e6f4a5e1e88a10e67bbb33a9d npx -y @supabase/mcp-server-supabase --project-ref=vzhpqjvkutveghznjgcf)",
+      "Bash(start http://localhost:3000)",
+      "Bash(start msedge --inprivate http://localhost:3000)",
+      "Bash(aws:*)",
+      "Bash(./scripts/deploy-custom-domain.sh:*)",
+      "Bash(powershell:*)",
+      "Bash(winget install:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
