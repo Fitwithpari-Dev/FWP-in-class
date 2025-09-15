@@ -405,6 +405,19 @@ export function useZoomFitnessPlatform() {
 
         // Clear any previous errors on successful connection
         setError(null);
+
+        // Auto-start video and audio for fitness sessions
+        try {
+          console.log('🎥 Auto-starting video and audio...');
+          await zoomSDK.current.startVideo();
+          await zoomSDK.current.unmuteAudio();
+          setIsLocalVideoOn(true);
+          setIsLocalAudioOn(true);
+          console.log('✅ Video and audio started successfully');
+        } catch (mediaError) {
+          console.warn('Could not auto-start media (permissions may be needed):', mediaError);
+          // This is non-critical - users can manually enable via UI controls
+        }
       } catch (err) {
         console.error('Failed to join session:', err);
 
@@ -439,6 +452,18 @@ export function useZoomFitnessPlatform() {
                   }
                   setClassSession(prev => ({ ...prev, id: topic, title: `Live Fitness Session - ${topic}`, startTime: new Date() }));
                   setError(null);
+
+                  // Auto-start video and audio for retry case
+                  try {
+                    console.log('🎥 Auto-starting video and audio (retry)...');
+                    await zoomSDK.current!.startVideo();
+                    await zoomSDK.current!.unmuteAudio();
+                    setIsLocalVideoOn(true);
+                    setIsLocalAudioOn(true);
+                    console.log('✅ Video and audio started successfully (retry)');
+                  } catch (mediaError) {
+                    console.warn('Could not auto-start media on retry:', mediaError);
+                  }
                 } catch (retryErr) {
                   console.error('Host retry failed:', retryErr);
                   setError('Unable to create session. Please check your configuration and try again.');

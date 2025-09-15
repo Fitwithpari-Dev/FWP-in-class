@@ -12,9 +12,11 @@ import {
 
 interface RoleSelectionProps {
   onSelectRole: (role: UserRole) => void;
+  errorMessage?: string;
+  onReset?: () => void;
 }
 
-export function RoleSelection({ onSelectRole }: RoleSelectionProps) {
+export function RoleSelection({ onSelectRole, errorMessage, onReset }: RoleSelectionProps) {
   return (
     <div className="min-h-screen bg-fitness-dark flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
@@ -26,6 +28,24 @@ export function RoleSelection({ onSelectRole }: RoleSelectionProps) {
           <p className="text-gray-400 text-lg">
             Join your fitness class session
           </p>
+
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="mt-6 p-4 bg-red-900/30 border border-red-700 rounded-lg">
+              <p className="text-red-300 mb-3">
+                Connection failed: {errorMessage}
+              </p>
+              {onReset && (
+                <Button
+                  onClick={onReset}
+                  variant="outline"
+                  className="border-red-600 text-red-300 hover:bg-red-900/20"
+                >
+                  Start Over
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Role Cards */}

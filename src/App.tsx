@@ -73,6 +73,23 @@ export default function App() {
     }
   };
 
+  const resetSession = () => {
+    // Reset all session state to start fresh
+    setHasJoinedSession(false);
+    setCurrentRole(null);
+    setUserName('');
+
+    // Clear any localStorage data that might be cached
+    try {
+      localStorage.removeItem('zoomSessionData');
+      localStorage.removeItem('sessionMetadata');
+    } catch (e) {
+      console.warn('Could not clear localStorage:', e);
+    }
+
+    console.log('🔄 Session reset - returning to role selection');
+  };
+
   const toggleViewPerspective = () => {
     // In Zoom mode, we don't toggle - users are locked to their joined role
     // This is just for demonstration purposes in the UI
@@ -89,9 +106,17 @@ export default function App() {
     isConnecting: fitnessPlatform?.isConnecting
   });
 
-  // Show role selection screen if user hasn't joined yet
-  if (!hasJoinedSession || !currentRole) {
-    return <RoleSelection onSelectRole={handleRoleSelection} />;
+  // Show role selection screen if user hasn't joined yet OR if connection failed
+  const connectionFailed = fitnessPlatform?.connectionState === 'Closed' &&
+                           fitnessPlatform?.error &&
+                           hasJoinedSession;
+
+  if (!hasJoinedSession || !currentRole || connectionFailed) {
+    return <RoleSelection
+      onSelectRole={handleRoleSelection}
+      errorMessage={connectionFailed ? fitnessPlatform?.error : undefined}
+      onReset={connectionFailed ? resetSession : undefined}
+    />;
   }
 
   // Show the appropriate view based on joined role
