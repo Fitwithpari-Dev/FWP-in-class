@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create PWA Icons</title>
+</head>
+<body>
+    <canvas id="canvas192" width="192" height="192" style="border:1px solid #ccc;"></canvas>
+    <br>
+    <canvas id="canvas512" width="512" height="512" style="border:1px solid #ccc;"></canvas>
+    <br>
+    <a id="download192" download="pwa-192x192.png">Download 192x192</a>
+    <br>
+    <a id="download512" download="pwa-512x512.png">Download 512x512</a>
+
+    <script>
+        function createIcon(canvasId, size, downloadId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+
+            // Fill background with fitness green
+            ctx.fillStyle = '#10B981';
+            ctx.fillRect(0, 0, size, size);
+
+            // Add white text
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size/4}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('FWP', size/2, size/2);
+
+            // Create download link
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                document.getElementById(downloadId).href = url;
+            });
+        }
+
+        createIcon('canvas192', 192, 'download192');
+        createIcon('canvas512', 512, 'download512');
+    </script>
+</body>
+</html>

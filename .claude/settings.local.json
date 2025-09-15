@@ -41,7 +41,9 @@
       "WebFetch(domain:www.anthropic.com)",
       "Bash(gh run list:*)",
       "Bash(start msedge --inprivate https://classes.tribe.fit)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(start msedge --inprivate http://localhost:3002)",
+      "Bash(copy:*)"
     ],
     "deny": [],
     "ask": []
