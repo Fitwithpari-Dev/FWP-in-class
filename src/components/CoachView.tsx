@@ -29,6 +29,7 @@ export function CoachView({ onToggleView }: CoachViewProps) {
     formatTime,
     getCurrentUser,
     getSpotlightedParticipant,
+    sdk,
     mockSDK,
   } = useFitnessPlatformContext();
 
@@ -38,19 +39,23 @@ export function CoachView({ onToggleView }: CoachViewProps) {
   const currentUser = getCurrentUser();
   const coachParticipant = participants.find(p => p.isHost);
 
-  const handleToggleVideo = () => {
-    if (isLocalVideoOn) {
-      mockSDK.stopVideo();
-    } else {
-      mockSDK.startVideo();
+  const handleToggleVideo = async () => {
+    try {
+      console.log('🎥 Coach toggling video:', { currentState: isLocalVideoOn });
+      await sdk.toggleVideo();
+      console.log('✅ Video toggle completed');
+    } catch (error) {
+      console.error('❌ Failed to toggle video:', error);
     }
   };
 
-  const handleToggleAudio = () => {
-    if (isLocalAudioOn) {
-      mockSDK.muteLocalAudio();
-    } else {
-      mockSDK.unmuteLocalAudio();
+  const handleToggleAudio = async () => {
+    try {
+      console.log('🎤 Coach toggling audio:', { currentState: isLocalAudioOn });
+      await sdk.toggleAudio();
+      console.log('✅ Audio toggle completed');
+    } catch (error) {
+      console.error('❌ Failed to toggle audio:', error);
     }
   };
 
