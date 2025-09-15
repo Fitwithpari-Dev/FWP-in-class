@@ -371,10 +371,10 @@ export class SessionCoordinator {
   }
 
   private generateSessionId(topic: string): string {
-    // Use topic as base for session ID to ensure consistency
-    const sanitizedTopic = topic.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const timestamp = Date.now();
-    return `${sanitizedTopic}_${timestamp}`;
+    // Use topic directly as session ID for consistency across coach/student
+    // This ensures both coach and student use the same session ID
+    const sanitizedTopic = topic.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    return sanitizedTopic || 'default-session';
   }
 
   private generateUserId(userName: string, role: UserRole): string {
