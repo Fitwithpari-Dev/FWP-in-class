@@ -281,6 +281,7 @@ export function useZoomFitnessPlatform() {
 
       setIsConnecting(true);
       setError(null);
+      let isRetryingAsHost = false;
 
       try {
         // Sanitize user inputs
@@ -368,6 +369,7 @@ export function useZoomFitnessPlatform() {
               // Host should try again immediately - session creation issue
               console.log('🔄 Host session creation failed, retrying...');
               setError('Session creation failed. Retrying...');
+              isRetryingAsHost = true;
 
               // Retry as host after short delay
               setTimeout(async () => {
@@ -423,9 +425,7 @@ export function useZoomFitnessPlatform() {
         }
       } finally {
         // Only set isConnecting to false if we're not doing a host retry
-        if (!(err && typeof err === 'object' && 'type' in err &&
-              (err as any).type === 'IMPROPER_MEETING_STATE' &&
-              (err as any).reason === 'closed' && role === 'coach')) {
+        if (!isRetryingAsHost) {
           setIsConnecting(false);
         }
       }
