@@ -151,7 +151,8 @@ export class TokenService {
           // 'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
-          sessionName,
+          topic: sessionName,        // Lambda expects 'topic' parameter
+          sessionName,               // Keep for backward compatibility
           role,
           sessionKey,
           userIdentity,
