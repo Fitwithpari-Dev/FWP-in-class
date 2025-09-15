@@ -393,15 +393,18 @@ export function useZoomFitnessPlatform() {
         // Sanitize user inputs
         const sanitizedUserName = sanitizeUserInput(userName);
         const isHost = role === 'coach';
-        // CRITICAL FIX: Force consistent session topic across ALL devices
-        // Override any environment/config defaults to ensure identical topic everywhere
-        const sessionTopic = sessionName || 'test123'; // Fixed session name for cross-device testing
+        // CRITICAL FIX: Support predetermined session IDs from URL
+        // Priority: URL params > sessionName > default fallback
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionFromUrl = urlParams.get('session') || urlParams.get('class');
+        const sessionTopic = sessionFromUrl || sessionName || 'test123';
 
-        console.log('🔧 Cross-device session topic fix:', {
+        console.log('🔧 Predetermined session support:', {
+          sessionFromUrl,
           originalSessionName: sessionName,
           configDefaultTopic: ZOOM_CONFIG.topic,
-          forcedSessionTopic: sessionTopic,
-          reason: 'Ensuring all devices use identical Zoom session topic'
+          finalSessionTopic: sessionTopic,
+          urlSupport: 'Users can now join via URL params: ?session=workout-123'
         });
 
         console.log('🎯 Using session management for role-based joining:', {
