@@ -24,7 +24,9 @@ export class TokenService {
 
   constructor() {
     this.apiEndpoint = import.meta.env.VITE_ZOOM_TOKEN_ENDPOINT || '';
-    this.isDevelopment = import.meta.env.DEV || !this.apiEndpoint;
+    // TEMPORARY: Force development mode to bypass Lambda issues
+    this.isDevelopment = true; // import.meta.env.DEV || !this.apiEndpoint;
+    console.log('🚨 TEMP FIX: Forced development mode for token generation');
   }
 
   /**
