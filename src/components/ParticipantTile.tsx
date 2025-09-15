@@ -41,17 +41,31 @@ export function ParticipantTile({
   const { zoomSDK } = useFitnessPlatformContext();
   const videoElementRef = useRef<HTMLVideoElement>(null);
 
-  // Effect to handle video rendering
+  // Effect to handle video rendering with enhanced retry logic
   useEffect(() => {
+    let retryCount = 0;
+    const maxRetries = 5; // Increased retry attempts
+    let retryTimeoutId: NodeJS.Timeout | null = null;
+    let renderingInProgress = false;
+
     const renderParticipantVideo = async () => {
+      // Prevent multiple concurrent render attempts
+      if (renderingInProgress) {
+        console.log(`⏳ Render already in progress for ${participant.name}, skipping...`);
+        return;
+      }
+
       console.log(`🎥 ParticipantTile render check for ${participant.name} (${participant.id}):`, {
         isVideoOn: participant.isVideoOn,
         hasVideoElement: !!videoElementRef.current,
         hasZoomSDK: !!zoomSDK,
-        isHost: participant.isHost
+        isHost: participant.isHost,
+        retryCount,
+        renderingInProgress
       });
 
       if (participant.isVideoOn && videoElementRef.current && zoomSDK) {
+        renderingInProgress = true;
         try {
           // Get video element dimensions based on size
           const videoElement = videoElementRef.current;
@@ -63,10 +77,22 @@ export function ParticipantTile({
           videoElement.width = width;
           videoElement.height = height;
 
+          // Clear the video element src to ensure fresh rendering
+          videoElement.srcObject = null;
+
+          // Add loading state indicator
+          videoElement.style.backgroundColor = '#374151'; // Gray background during loading
+
           // Render video using Zoom SDK service (internally uses attachVideo for video elements)
           console.log(`🎬 Attempting to render video for ${participant.name} (${participant.id}), dimensions: ${width}x${height}`);
           await zoomSDK.renderVideo(participant.id, videoElement, width, height, isSpotlighted);
           console.log(`✅ Successfully rendered video for ${participant.name}`);
+
+          // Clear loading state
+          videoElement.style.backgroundColor = '';
+
+          // Reset retry count on success
+          retryCount = 0;
         } catch (error) {
           console.error(`❌ Error rendering video for ${participant.name} (${participant.id}):`, error);
           console.error(`❌ Video render error details:`, {
@@ -78,8 +104,27 @@ export function ParticipantTile({
               height: videoElementRef.current?.height
             },
             errorType: error?.constructor?.name,
-            errorMessage: error?.message
+            errorMessage: error?.message,
+            retryCount,
+            maxRetries
           });
+
+          // Enhanced retry logic with different backoff strategies
+          if (retryCount < maxRetries) {
+            retryCount++;
+            const retryDelay = retryCount <= 2 ? 500 * retryCount : 2000; // Fast retry first 2 attempts, then slower
+            console.log(`🔄 Retrying video render for ${participant.name} (attempt ${retryCount}/${maxRetries}) in ${retryDelay}ms...`);
+            retryTimeoutId = setTimeout(() => {
+              renderingInProgress = false;
+              renderParticipantVideo();
+            }, retryDelay);
+          } else {
+            console.warn(`⚠️ Maximum retry attempts (${maxRetries}) reached for ${participant.name}. Video rendering failed.`);
+          }
+        } finally {
+          if (retryCount === 0 || retryCount >= maxRetries) {
+            renderingInProgress = false;
+          }
         }
       } else {
         console.log(`🔍 Video not rendering for ${participant.name}:`, {
@@ -87,6 +132,14 @@ export function ParticipantTile({
           hasElement: !!videoElementRef.current,
           hasSDK: !!zoomSDK
         });
+
+        // Enhanced state synchronization wait - if video should be on but state isn't updated
+        if (!participant.isVideoOn && retryCount < maxRetries && videoElementRef.current && zoomSDK) {
+          retryCount++;
+          const waitDelay = retryCount <= 2 ? 300 : 1000; // Shorter initial waits for state updates
+          console.log(`⏳ Waiting for video state to update for ${participant.name} (attempt ${retryCount}/${maxRetries}) - waiting ${waitDelay}ms...`);
+          retryTimeoutId = setTimeout(renderParticipantVideo, waitDelay);
+        }
       }
     };
 
@@ -96,11 +149,14 @@ export function ParticipantTile({
     // Cleanup when component unmounts or video turns off
     return () => {
       clearTimeout(timeoutId);
-      if (videoElementRef.current && zoomSDK && participant.isVideoOn) {
+      if (retryTimeoutId) {
+        clearTimeout(retryTimeoutId);
+      }
+      if (videoElementRef.current && zoomSDK) {
         zoomSDK.stopRenderVideo(participant.id, videoElementRef.current).catch(console.error);
       }
     };
-  }, [participant.isVideoOn, participant.id, zoomSDK, isSpotlighted, size]);
+  }, [participant.isVideoOn, participant.id, participant.name, zoomSDK, isSpotlighted, size]);
 
   const getConnectionIcon = () => {
     switch (participant.connectionQuality) {

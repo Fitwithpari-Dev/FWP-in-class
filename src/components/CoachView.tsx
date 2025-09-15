@@ -7,8 +7,10 @@ import { SidePanel } from './SidePanel';
 import { SettingsModal } from './SettingsModal';
 import { TeachModeView } from './TeachModeView';
 import { StudentLevelGroups } from './StudentLevelGroups';
+import { SessionInfo } from './SessionInfo';
 import { useIsMobile } from './ui/use-mobile';
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from './ui/sheet';
+import { VideoDebugPanel } from './VideoDebugPanel';
 
 interface CoachViewProps {
   onToggleView: () => void;
@@ -96,6 +98,15 @@ export function CoachView({ onToggleView }: CoachViewProps) {
         onCoachModeToggle={handleCoachModeToggle}
       />
 
+      {/* Session Info for Coach */}
+      <div className="px-4">
+        <SessionInfo
+          sessionId={classSession.id}
+          participantCount={participants.length}
+          userRole="coach"
+        />
+      </div>
+
       {/* Main Content */}
       <div className="flex-1 flex">
         {/* Coach always sees the standard video area */}
@@ -172,6 +183,9 @@ export function CoachView({ onToggleView }: CoachViewProps) {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
+
+      {/* Video Debug Panel - Only show in development */}
+      {process.env.NODE_ENV === 'development' && <VideoDebugPanel />}
     </div>
   );
 }

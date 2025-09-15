@@ -8,8 +8,10 @@ import { SettingsModal } from './SettingsModal';
 import { ParticipantTile } from './ParticipantTile';
 import { TeachModeView } from './TeachModeView';
 import { WorkoutModeStudentView } from './WorkoutModeStudentView';
+import { SessionInfo } from './SessionInfo';
 import { useIsMobile } from './ui/use-mobile';
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from './ui/sheet';
+import { VideoDebugPanel } from './VideoDebugPanel';
 
 interface StudentViewProps {
   onToggleView?: () => void;
@@ -91,6 +93,15 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
           currentView="student"
         />
 
+        {/* Session Info for Student */}
+        <div className="px-4">
+          <SessionInfo
+            sessionId={classSession.id}
+            participantCount={participants.length}
+            userRole="student"
+          />
+        </div>
+
         {/* Teach Mode View */}
         <TeachModeView
           classSession={classSession}
@@ -119,6 +130,9 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
         />
+
+        {/* Video Debug Panel - Only show in development */}
+        {process.env.NODE_ENV === 'development' && <VideoDebugPanel />}
       </div>
     );
   }
@@ -137,6 +151,15 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
           onToggleView={onToggleView}
           currentView="student"
         />
+
+        {/* Session Info for Student */}
+        <div className="px-4">
+          <SessionInfo
+            sessionId={classSession.id}
+            participantCount={participants.length}
+            userRole="student"
+          />
+        </div>
 
         {/* Workout Mode View */}
         <WorkoutModeStudentView
@@ -167,6 +190,9 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
         />
+
+        {/* Video Debug Panel - Only show in development */}
+        {process.env.NODE_ENV === 'development' && <VideoDebugPanel />}
       </div>
     );
   }
@@ -185,6 +211,15 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
         onToggleView={onToggleView}
         currentView="student"
       />
+
+      {/* Session Info for Student */}
+      <div className="px-4">
+        <SessionInfo
+          sessionId={classSession.id}
+          participantCount={participants.length}
+          userRole="student"
+        />
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 flex">
@@ -245,6 +280,9 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
+
+      {/* Video Debug Panel - Only show in development */}
+      {process.env.NODE_ENV === 'development' && <VideoDebugPanel />}
     </div>
   );
 }

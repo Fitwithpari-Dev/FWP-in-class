@@ -45,7 +45,8 @@
       "Bash(start msedge --inprivate http://localhost:3002)",
       "Bash(copy:*)",
       "Bash(start msedge --inprivate http://localhost:3000/?session=morning-yoga-test)",
-      "Bash(start msedge --inprivate http://localhost:3002/?session=morning-yoga-test)"
+      "Bash(start msedge --inprivate http://localhost:3002/?session=morning-yoga-test)",
+      "Bash(start msedge --inprivate http://localhost:3002/)"
     ],
     "deny": [],
     "ask": []

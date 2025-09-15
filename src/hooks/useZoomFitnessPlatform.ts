@@ -737,15 +737,94 @@ export function useZoomFitnessPlatform() {
       if (!zoomSDK.current) return;
 
       try {
+        console.log('🎥 Toggling video - current state:', isLocalVideoOn);
+        const newVideoState = !isLocalVideoOn;
+
         if (isLocalVideoOn) {
           await zoomSDK.current.stopVideo();
           setIsLocalVideoOn(false);
+          console.log('📹 Video stopped, state updated to OFF');
+
+          // Immediate state update for current user
+          setParticipants(prev => {
+            const currentUserId = zoomSDK.current?.getSessionInfo()?.userId;
+            const updated = prev.map(p =>
+              p.id === currentUserId ? { ...p, isVideoOn: false } : p
+            );
+            console.log('👤 Participant state updated after video stop:', {
+              currentUserId,
+              participantVideoStates: updated.map(p => ({ id: p.id, name: p.name, isVideoOn: p.isVideoOn }))
+            });
+            return updated;
+          });
         } else {
           await zoomSDK.current.startVideo();
           setIsLocalVideoOn(true);
+          console.log('📹 Video started, state updated to ON');
+
+          // Immediate state update for current user
+          setParticipants(prev => {
+            const currentUserId = zoomSDK.current?.getSessionInfo()?.userId;
+            const updated = prev.map(p =>
+              p.id === currentUserId ? { ...p, isVideoOn: true } : p
+            );
+            console.log('👤 Participant state updated after video start:', {
+              currentUserId,
+              participantVideoStates: updated.map(p => ({ id: p.id, name: p.name, isVideoOn: p.isVideoOn }))
+            });
+            return updated;
+          });
+
+          // Multiple refresh strategies for video rendering
+          // 1. Quick refresh (500ms) - for immediate rendering
+          setTimeout(() => {
+            if (zoomSDK.current) {
+              const quickRefresh = zoomSDK.current.getAllParticipants();
+              console.log('🔄 Quick participant refresh after video start (500ms):', quickRefresh.map(p => ({
+                id: p.id,
+                name: p.name,
+                isVideoOn: p.isVideoOn
+              })));
+              setParticipants(quickRefresh);
+            }
+          }, 500);
+
+          // 2. Standard refresh (1s) - for stable rendering
+          setTimeout(() => {
+            if (zoomSDK.current) {
+              const standardRefresh = zoomSDK.current.getAllParticipants();
+              console.log('🔄 Standard participant refresh after video start (1s):', standardRefresh.map(p => ({
+                id: p.id,
+                name: p.name,
+                isVideoOn: p.isVideoOn
+              })));
+              setParticipants(standardRefresh);
+            }
+          }, 1000);
+
+          // 3. Backup refresh (2s) - for slow connections
+          setTimeout(() => {
+            if (zoomSDK.current) {
+              const backupRefresh = zoomSDK.current.getAllParticipants();
+              console.log('🔄 Backup participant refresh after video start (2s):', backupRefresh.map(p => ({
+                id: p.id,
+                name: p.name,
+                isVideoOn: p.isVideoOn
+              })));
+              setParticipants(backupRefresh);
+            }
+          }, 2000);
         }
+
+        console.log('✅ Video toggled successfully - new state:', newVideoState);
       } catch (err) {
-        console.error('Error toggling video:', err);
+        console.error('❌ Error toggling video:', err);
+        console.error('❌ Video toggle error details:', {
+          previousState: isLocalVideoOn,
+          intendedNewState: !isLocalVideoOn,
+          errorType: err?.constructor?.name,
+          errorMessage: err instanceof Error ? err.message : String(err)
+        });
         setError('Failed to toggle video');
       }
     },

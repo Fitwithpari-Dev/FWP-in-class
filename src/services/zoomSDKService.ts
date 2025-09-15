@@ -86,10 +86,30 @@ export class ZoomSDKService {
       });
     });
 
-    // Video state changes
+    // Video state changes - Listen to multiple events for better reliability
     this.client.on('video-statistic-data-change', (payload: any) => {
       if (payload.userId && this.eventHandlers.onUserVideoStateChange) {
         this.eventHandlers.onUserVideoStateChange(payload.userId, payload.videoOn);
+      }
+    });
+
+    // Additional video state change events for better coverage
+    this.client.on('peer-video-state-change', (payload: any) => {
+      console.log('🎥 Peer video state change:', payload);
+      if (payload.userId && this.eventHandlers.onUserVideoStateChange) {
+        const action = payload.action; // 'Start' or 'Stop'
+        this.eventHandlers.onUserVideoStateChange(payload.userId, action === 'Start');
+      }
+    });
+
+    // Listen for local video state changes
+    this.client.on('video-active-change', (payload: any) => {
+      console.log('🎥 Video active change:', payload);
+      if (this.stream) {
+        const currentUserId = this.client?.getCurrentUserInfo()?.userId;
+        if (currentUserId && this.eventHandlers.onUserVideoStateChange) {
+          this.eventHandlers.onUserVideoStateChange(currentUserId, payload.state === 'Active');
+        }
       }
     });
 
@@ -304,6 +324,17 @@ export class ZoomSDKService {
     try {
       console.log('🎥 Starting video stream...');
 
+      // Check current video state before starting
+      const currentUserId = this.client?.getCurrentUserInfo()?.userId;
+      const allUsers = this.client?.getAllUser() || [];
+      const currentUserBefore = allUsers.find(u => u.userId === currentUserId);
+      console.log('📊 Video state BEFORE startVideo():', {
+        currentUserId,
+        bVideoOn: currentUserBefore?.bVideoOn,
+        userCount: allUsers.length,
+        streamIsVideoOn: this.stream.isVideoOn?.() // Check if stream has this method
+      });
+
       // First check if camera permissions are granted
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         try {
@@ -317,11 +348,49 @@ export class ZoomSDKService {
         }
       }
 
+      console.log('🎬 Calling stream.startVideo()...');
       await this.stream.startVideo();
-      console.log('✅ Video stream started successfully');
+      console.log('✅ stream.startVideo() completed');
+
+      // Immediately check video state after starting
+      const allUsersAfter = this.client?.getAllUser() || [];
+      const currentUserAfter = allUsersAfter.find(u => u.userId === currentUserId);
+      console.log('📊 Video state AFTER startVideo():', {
+        currentUserId,
+        bVideoOn: currentUserAfter?.bVideoOn,
+        userCount: allUsersAfter.length,
+        streamIsVideoOn: this.stream.isVideoOn?.() // Check if stream has this method
+      });
+
+      // CRITICAL: Force update current user's video state immediately
+      const currentUser = this.client?.getCurrentUserInfo();
+      if (currentUser && this.eventHandlers.onUserVideoStateChange) {
+        console.log('🔄 Forcing video state update for current user after startVideo');
+        this.eventHandlers.onUserVideoStateChange(currentUser.userId, true);
+      }
+
+      // Double-check video state after a short delay
+      setTimeout(() => {
+        const users = this.client?.getAllUser() || [];
+        const currentUserId = this.client?.getCurrentUserInfo()?.userId;
+        const currentUserData = users.find(u => u.userId === currentUserId);
+        console.log('🔄 Final video state verification after 500ms:', {
+          currentUserId,
+          bVideoOn: currentUserData?.bVideoOn,
+          streamIsVideoOn: this.stream.isVideoOn?.()
+        });
+        if (currentUserData && this.eventHandlers.onUserVideoStateChange) {
+          this.eventHandlers.onUserVideoStateChange(currentUserId!, currentUserData.bVideoOn || false);
+        }
+      }, 500);
     } catch (error) {
       console.error('❌ Failed to start video stream:', error);
-      console.error('❌ This might be due to camera permissions or browser restrictions');
+      console.error('❌ Video start error details:', {
+        errorType: error?.constructor?.name,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        streamAvailable: !!this.stream,
+        clientAvailable: !!this.client
+      });
       console.error('💡 Users may need to click the video button manually to grant permissions');
       throw new Error(`Failed to start video: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
@@ -330,6 +399,13 @@ export class ZoomSDKService {
   public async stopVideo(): Promise<void> {
     if (!this.stream) throw new Error('Stream not initialized');
     await this.stream.stopVideo();
+
+    // CRITICAL: Force update current user's video state immediately
+    const currentUser = this.client?.getCurrentUserInfo();
+    if (currentUser && this.eventHandlers.onUserVideoStateChange) {
+      console.log('🔄 Forcing video state update for current user after stopVideo');
+      this.eventHandlers.onUserVideoStateChange(currentUser.userId, false);
+    }
   }
 
   public async muteAudio(): Promise<void> {
@@ -454,24 +530,70 @@ export class ZoomSDKService {
 
       // Check if user has video enabled before attempting to render
       const user = allUsers.find(u => u.userId === userId);
-      if (!user?.bVideoOn) {
+
+      // IMPORTANT: For self-view, check if we're currently starting video
+      const currentUserId = this.client.getCurrentUserInfo()?.userId;
+      const isSelfView = userId === currentUserId;
+
+      if (!user?.bVideoOn && !isSelfView) {
         console.warn(`⚠️ User ${userId} (${user?.displayName}) has video disabled. Cannot render video.`);
         console.warn(`🎥 User video status:`, { bVideoOn: user?.bVideoOn, userId, displayName: user?.displayName });
         return;
       }
 
-      console.log(`✅ User ${userId} has video enabled. Proceeding with attachVideo...`);
+      // For self-view, we might need to wait for video to be ready
+      if (isSelfView && !user?.bVideoOn) {
+        console.log(`🎥 Self-view detected, attempting to render even though bVideoOn is false (video might be starting)`);
+      }
+
+      console.log(`✅ User ${userId} ${isSelfView ? '(self)' : ''} proceeding with attachVideo...`);
+
+      // Debug: Check video element state before rendering
+      console.log(`🔍 Video element pre-render state:`, {
+        element: videoElement.tagName,
+        width: videoElement.width,
+        height: videoElement.height,
+        srcObject: videoElement.srcObject,
+        readyState: videoElement.readyState,
+        networkState: videoElement.networkState,
+        paused: videoElement.paused,
+        muted: videoElement.muted,
+        autoplay: videoElement.autoplay,
+        playsInline: videoElement.playsInline
+      });
 
       // Use attachVideo method for video elements (required by modern browsers)
+      console.log(`🎬 Calling Zoom SDK attachVideo with exact parameters:`, {
+        userIdNumber,
+        videoElementTag: videoElement.tagName,
+        videoQuality,
+        streamAvailable: !!this.stream,
+        attachVideoMethod: typeof this.stream.attachVideo
+      });
+
       await this.stream.attachVideo(
         userIdNumber,        // userId as number
         videoElement,        // video element
         videoQuality         // video quality (VideoQuality enum)
       );
 
+      // Debug: Check video element state after rendering
+      console.log(`🔍 Video element post-render state:`, {
+        element: videoElement.tagName,
+        width: videoElement.width,
+        height: videoElement.height,
+        srcObject: videoElement.srcObject,
+        readyState: videoElement.readyState,
+        networkState: videoElement.networkState,
+        paused: videoElement.paused,
+        muted: videoElement.muted,
+        currentTime: videoElement.currentTime,
+        duration: videoElement.duration
+      });
+
       this.renderingParticipants.add(userId);
       this.videoCanvasMap.set(userId, videoElement as any);
-      console.log(`Successfully started video render for user ${userId}`);
+      console.log(`✅ Successfully started video render for user ${userId}`);
     } catch (error) {
       console.error(`Error rendering video for user ${userId}:`, error);
       // Don't throw - let the fallback avatar show instead

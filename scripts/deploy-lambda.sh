@@ -7,8 +7,8 @@
 set -e  # Exit on any error
 
 # Configuration
-ENVIRONMENT=${1:-staging}
-REGION=${2:-us-east-1}
+ENVIRONMENT=${1:-production}
+REGION=${2:-ap-south-1}  # Mumbai region for optimal latency for Indian users
 FUNCTION_NAME="fitwithpari-zoom-token-${ENVIRONMENT}"
 LAMBDA_DIR="lambda"
 ZIP_FILE="function.zip"

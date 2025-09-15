@@ -3,17 +3,38 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "Installing dependencies for Vite React app..."
-        - npm install --include=dev
+        - echo "🚀 Starting FitWithPari deployment with Zoom Video SDK optimization..."
+        - echo "Node version:" && node --version
+        - echo "NPM version:" && npm --version
+        - echo "Installing dependencies with production optimizations..."
+        - npm ci --include=dev --prefer-offline --no-audit --progress=false
+        - echo "✅ Dependencies installed successfully"
     build:
       commands:
-        - echo "Building React + TypeScript app with Vite..."
-        - npm run build
-        - echo "Vite build completed"
+        - echo "🔧 Building React + TypeScript app with Vite for production..."
+        - echo "Environment: $NODE_ENV"
+        - echo "Build target: Production with video streaming optimizations"
+        - npm run build:check
+        - echo "📊 Build statistics:"
+        - du -sh build/ 2>/dev/null || echo "Build size calculation unavailable"
+        - ls -la build/ 2>/dev/null || echo "Build directory listing unavailable"
+        - echo "✅ Vite build completed successfully"
+        - echo "🎥 Verifying Zoom Video SDK assets..."
+        - find build -name "*zoom*" -type f | head -10 || echo "Zoom assets verification complete"
   artifacts:
     baseDirectory: build
     files:
       - '**/*'
+    name: fitwithpari-build-$AWS_COMMIT_ID
   cache:
     paths:
       - node_modules/**/*
+      - .vite/**/*
+  environmentVariables:
+    # Build optimizations for video streaming
+    VITE_BUILD_TARGET: production
+    VITE_OPTIMIZE_DEPS: true
+    # Increase memory for large video SDK builds
+    NODE_OPTIONS: "--max-old-space-size=4096"
+    # Enable source maps for debugging (can be disabled in production)
+    GENERATE_SOURCEMAP: false

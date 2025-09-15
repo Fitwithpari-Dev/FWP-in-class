@@ -2,7 +2,7 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { useZoomFitnessPlatform } from './hooks/useZoomFitnessPlatform';
 import { CoachView } from './components/CoachView';
 import { StudentView } from './components/StudentView';
-import { RoleSelection } from './components/RoleSelection';
+import { SessionManager } from './components/SessionManager';
 import { UserRole } from './types/fitness-platform';
 import { checkBrowserSupport } from './utils/sessionValidator';
 
@@ -36,10 +36,9 @@ export default function App() {
     }
   }, []);
 
-  // Handle role selection and joining Zoom session
-  const handleRoleSelection = async (role: UserRole) => {
-    alert(`Button clicked! Role: ${role}`);
-    console.log('🎯 Button clicked! Role:', role);
+  // Handle session creation
+  const handleCreateSession = async (sessionName: string, className: string, role: UserRole) => {
+    console.log('🎯 Creating session:', { sessionName, className, role });
     console.log('🔍 Fitness Platform SDK:', fitnessPlatform.sdk);
 
     // Check browser compatibility before joining
@@ -55,21 +54,55 @@ export default function App() {
       const defaultName = role === 'coach' ? 'Coach Sarah' : `Student ${Math.floor(Math.random() * 100)}`;
       setUserName(defaultName);
 
-      console.log('🚀 Attempting to join session:', {
+      console.log('🚀 Creating and joining session:', {
         name: defaultName,
         role,
-        session: 'fitwithpari-session' // Using config default
+        sessionName
       });
 
-      // Join the Zoom session using default session name from config
-      console.log('🚀 Attempting to join Zoom session...');
-      await fitnessPlatform.sdk.joinSession(defaultName, role);
+      // Join the Zoom session with the specified session name
+      await fitnessPlatform.sdk.joinSession(defaultName, role, sessionName);
 
-      console.log('✅ Successfully joined Zoom session!');
+      console.log('✅ Successfully created and joined session!');
+      setHasJoinedSession(true);
+    } catch (error) {
+      console.error('❌ Failed to create session:', error);
+      alert(`Failed to create the fitness session: ${error instanceof Error ? error.message : 'Unknown error'}. Please check the console for details.`);
+    }
+  };
+
+  // Handle joining existing session
+  const handleJoinSession = async (sessionId: string, role: UserRole) => {
+    console.log('🎯 Joining session:', { sessionId, role });
+    console.log('🔍 Fitness Platform SDK:', fitnessPlatform.sdk);
+
+    // Check browser compatibility before joining
+    if (browserSupport && !browserSupport.isSupported) {
+      alert(`Your browser (${browserSupport.browser} ${browserSupport.version}) is not supported for video calls. Please use Chrome 88+, Firefox 78+, Safari 13+, or Edge 88+ for the best experience.`);
+      return;
+    }
+
+    try {
+      setCurrentRole(role);
+
+      // Set a default user name based on role
+      const defaultName = role === 'coach' ? 'Coach Sarah' : `Student ${Math.floor(Math.random() * 100)}`;
+      setUserName(defaultName);
+
+      console.log('🚀 Joining existing session:', {
+        name: defaultName,
+        role,
+        sessionId
+      });
+
+      // Join the Zoom session with the specified session ID
+      await fitnessPlatform.sdk.joinSession(defaultName, role, sessionId);
+
+      console.log('✅ Successfully joined session!');
       setHasJoinedSession(true);
     } catch (error) {
       console.error('❌ Failed to join session:', error);
-      alert(`Failed to join the fitness class: ${error instanceof Error ? error.message : 'Unknown error'}. Please check the console for details.`);
+      alert(`Failed to join the fitness session: ${error instanceof Error ? error.message : 'Unknown error'}. Please check the console for details.`);
     }
   };
 
@@ -112,10 +145,10 @@ export default function App() {
                            hasJoinedSession;
 
   if (!hasJoinedSession || !currentRole || connectionFailed) {
-    return <RoleSelection
-      onSelectRole={handleRoleSelection}
-      errorMessage={connectionFailed ? fitnessPlatform?.error : undefined}
-      onReset={connectionFailed ? resetSession : undefined}
+    return <SessionManager
+      onCreateSession={handleCreateSession}
+      onJoinSession={handleJoinSession}
+      isLoading={fitnessPlatform?.isConnecting}
     />;
   }
 
