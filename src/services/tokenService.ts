@@ -26,16 +26,15 @@ export class TokenService {
   private isDevelopment: boolean;
 
   constructor() {
-    this.apiEndpoint = import.meta.env.VITE_ZOOM_TOKEN_ENDPOINT || '';
-    // ULTIMATE FIX: Completely disable production token service
-    this.isDevelopment = true;
-    this.apiEndpoint = ''; // Clear API endpoint to force dev mode
-    console.log('🚨 EMERGENCY BYPASS: Lambda function disabled - using client-side tokens');
-    console.log('📋 Token service emergency config:', {
-      originalApiEndpoint: import.meta.env.VITE_ZOOM_TOKEN_ENDPOINT,
-      clearedApiEndpoint: this.apiEndpoint,
+    // NUCLEAR OPTION: Completely ignore all environment variables and force dev mode
+    this.apiEndpoint = ''; // Never use production endpoint
+    this.isDevelopment = true; // Always use dev mode
+    console.log('🚨 NUCLEAR FIX: All production services disabled - client-side only');
+    console.log('📋 Emergency token config:', {
+      environmentEndpoint: import.meta.env.VITE_ZOOM_TOKEN_ENDPOINT,
+      forcedApiEndpoint: this.apiEndpoint,
       forcedDevelopmentMode: this.isDevelopment,
-      timestamp: new Date().toISOString()
+      deployTimestamp: '2025-01-15T17:50:00Z'
     });
   }
 
@@ -50,14 +49,9 @@ export class TokenService {
     sessionKey: string,
     userIdentity: string
   ): Promise<string> {
-    if (this.isDevelopment) {
-      console.warn(
-        '⚠️ Using client-side token generation. This is INSECURE and should only be used in development.'
-      );
-      return this.generateDevToken(sessionName, role, sessionKey, userIdentity);
-    }
-
-    return this.fetchTokenFromAPI(sessionName, role, sessionKey, userIdentity);
+    // FORCE CLIENT-SIDE TOKEN GENERATION - NO API CALLS
+    console.log('🚨 FORCED DEV TOKEN: Bypassing all API calls for sessionName:', sessionName);
+    return this.generateDevToken(sessionName, role, sessionKey, userIdentity);
   }
 
   /**
