@@ -14,38 +14,49 @@ export const ZOOM_CONFIG = {
   password: import.meta.env.VITE_SESSION_PASSWORD || 'test123',
   roleType: 1, // 1 for host, 0 for attendee
 
-  // Video configuration optimized for fitness classes
+  // Video configuration optimized for ultra-fast real-time fitness classes
   videoConfig: {
-    // Canvas rendering for better performance with 50+ participants
-    renderMode: 'canvas' as const,
+    // Video element rendering for better WebRTC compatibility and speed
+    renderMode: 'video' as const,
 
-    // Video quality settings
+    // Ultra-fast video quality settings
     videoQuality: {
-      // Adaptive quality based on participant count
-      default: '360p',
-      spotlight: '720p',
-      maxReceiveQuality: '720p',
+      // Optimized for speed over quality
+      default: '180p',  // Lower default for faster processing
+      spotlight: '360p', // Reduced spotlight quality for speed
+      maxReceiveQuality: '360p', // Cap max quality for performance
 
-      // Bandwidth optimization
+      // Optimized bandwidth for ultra-fast delivery
       maxBandwidth: {
-        uplink: 1500, // kbps
-        downlink: 3000, // kbps
+        uplink: 800,   // kbps - reduced for faster upload
+        downlink: 2000, // kbps - optimized for multiple fast streams
       },
+
+      // Frame rate optimization
+      targetFrameRate: 15, // 15fps for fitness (smooth but not CPU intensive)
+      maxFrameRate: 30,    // Cap at 30fps
     },
 
-    // Layout configuration
+    // Layout configuration for speed
     layout: {
-      maxTilesInGallery: 49, // Optimal for fitness classes
+      maxTilesInGallery: 16, // Reduced for faster rendering
       defaultLayout: 'gallery',
       spotlightUserFirst: true,
+      enableLazyRendering: true, // Only render visible participants
     },
 
-    // Performance settings
+    // Ultra-fast performance settings
     performance: {
       enableHardwareAcceleration: true,
-      maxRenderingParticipants: 25, // Render up to 25 videos simultaneously
-      paginationThreshold: 25, // Paginate after 25 participants
+      maxRenderingParticipants: 16, // Reduced for faster rendering
+      paginationThreshold: 16,      // Earlier pagination for speed
       enableVideoQualityOptimization: true,
+
+      // Real-time optimizations
+      enableFastStartup: true,
+      prioritizeLatencyOverQuality: true,
+      enableResourceThrottling: true,
+      renderingStrategy: 'performance', // vs 'quality'
     },
   },
 
@@ -57,21 +68,36 @@ export const ZOOM_CONFIG = {
     enableStereoAudio: false, // Mono is sufficient for fitness classes
   },
 
-  // Network optimization
+  // Network optimization for ultra-fast real-time performance
   networkConfig: {
     // Enable simulcast for bandwidth optimization
     enableSimulcast: true,
 
-    // Connection quality thresholds
-    qualityThresholds: {
-      excellent: { rtt: 150, packetLoss: 1 },
-      good: { rtt: 300, packetLoss: 3 },
-      poor: { rtt: 500, packetLoss: 5 },
+    // Ultra-fast WebRTC optimizations
+    webrtcOptimizations: {
+      enableUltraLowLatency: true,
+      preferredCodec: 'VP9', // Better compression than H.264
+      enableTemporalLayering: true, // SVC for adaptive streaming
+      maxKeyframeInterval: 30, // More frequent keyframes for faster recovery
     },
 
-    // Retry configuration
-    reconnectAttempts: 3,
-    reconnectDelay: 2000, // ms
+    // Aggressive connection quality thresholds for speed
+    qualityThresholds: {
+      excellent: { rtt: 100, packetLoss: 0.5 }, // <100ms target for ultra-fast
+      good: { rtt: 200, packetLoss: 2 },
+      poor: { rtt: 400, packetLoss: 4 },
+    },
+
+    // Fast retry configuration
+    reconnectAttempts: 5,
+    reconnectDelay: 1000, // Faster reconnection (1s instead of 2s)
+
+    // Bandwidth adaptation for real-time performance
+    bandwidthAdaptation: {
+      enableAggressiveAdaptation: true,
+      targetLatency: 100, // ms - ultra-low latency target
+      bufferSize: 50, // ms - minimal buffering for speed
+    },
   },
 
   // Features specific to fitness platform

@@ -420,7 +420,7 @@ export class ZoomSDKService {
       // Set video quality enum value
       const videoQuality = isSpotlight ? 2 : 1; // 0=90p, 1=180p, 2=360p, 3=720p, 4=1080p
 
-      console.log(`🎬 Calling Zoom SDK renderVideo with params:`, {
+      console.log(`🎬 Calling Zoom SDK attachVideo with params:`, {
         userIdNumber,
         width,
         height,
@@ -428,15 +428,11 @@ export class ZoomSDKService {
         elementType: videoElement.tagName
       });
 
-      // Start rendering using correct Zoom SDK API with proper parameters
-      await this.stream.renderVideo(
-        videoElement,        // canvas/video element
+      // Use attachVideo method for video elements (required by modern browsers)
+      await this.stream.attachVideo(
         userIdNumber,        // userId as number
-        width,              // width
-        height,             // height
-        0,                  // x coordinate
-        0,                  // y coordinate
-        videoQuality        // video quality (VideoQuality enum)
+        videoElement,        // video element
+        videoQuality         // video quality (VideoQuality enum)
       );
 
       this.renderingParticipants.add(userId);
@@ -456,7 +452,8 @@ export class ZoomSDKService {
       const userIdNumber = parseInt(userId, 10);
       console.log(`🛑 Stopping video render for user ${userId} (${userIdNumber})`);
 
-      await this.stream.stopRenderVideo(videoElement, userIdNumber);
+      // Use detachVideo for video elements (corresponding to attachVideo)
+      await this.stream.detachVideo(userIdNumber);
       this.renderingParticipants.delete(userId);
       this.videoCanvasMap.delete(userId);
       console.log(`✅ Successfully stopped video render for user ${userId}`);
@@ -675,11 +672,11 @@ export class ZoomSDKService {
   }
 
   private cleanupParticipantResources(userId: string): void {
-    // Clean up video canvas
-    const canvas = this.videoCanvasMap.get(userId);
-    if (canvas && this.stream) {
+    // Clean up video element
+    const videoElement = this.videoCanvasMap.get(userId);
+    if (videoElement && this.stream) {
       const userIdNumber = parseInt(userId, 10);
-      this.stream.stopRenderVideo(canvas, userIdNumber).catch(console.error);
+      this.stream.detachVideo(userIdNumber).catch(console.error);
     }
 
     // Clean up tracking maps
@@ -691,10 +688,10 @@ export class ZoomSDKService {
 
   private async cleanup(): Promise<void> {
     // Stop all video renders
-    for (const [userId, canvas] of this.videoCanvasMap) {
+    for (const [userId, videoElement] of this.videoCanvasMap) {
       if (this.stream) {
         const userIdNumber = parseInt(userId, 10);
-        await this.stream.stopRenderVideo(canvas, userIdNumber).catch(console.error);
+        await this.stream.detachVideo(userIdNumber).catch(console.error);
       }
     }
 
