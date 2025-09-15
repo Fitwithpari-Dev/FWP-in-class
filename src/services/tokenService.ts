@@ -143,7 +143,7 @@ export class TokenService {
     }
 
     try {
-      const response = await fetch(`${this.apiEndpoint}/zoom/token`, {
+      const response = await fetch(`${this.apiEndpoint}/token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
