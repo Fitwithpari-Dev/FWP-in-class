@@ -300,7 +300,31 @@ export class ZoomSDKService {
   // Video control methods
   public async startVideo(): Promise<void> {
     if (!this.stream) throw new Error('Stream not initialized');
-    await this.stream.startVideo();
+
+    try {
+      console.log('🎥 Starting video stream...');
+
+      // First check if camera permissions are granted
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+          console.log('📹 Checking camera permissions...');
+          await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          console.log('✅ Camera permissions granted');
+        } catch (permError) {
+          console.warn('⚠️ Camera permission denied or not available:', permError);
+          console.warn('🔧 User needs to manually grant camera permissions');
+          // Continue anyway - let Zoom SDK handle the permission request
+        }
+      }
+
+      await this.stream.startVideo();
+      console.log('✅ Video stream started successfully');
+    } catch (error) {
+      console.error('❌ Failed to start video stream:', error);
+      console.error('❌ This might be due to camera permissions or browser restrictions');
+      console.error('💡 Users may need to click the video button manually to grant permissions');
+      throw new Error(`Failed to start video: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   public async stopVideo(): Promise<void> {
@@ -427,6 +451,16 @@ export class ZoomSDKService {
         videoQuality,
         elementType: videoElement.tagName
       });
+
+      // Check if user has video enabled before attempting to render
+      const user = allUsers.find(u => u.userId === userId);
+      if (!user?.bVideoOn) {
+        console.warn(`⚠️ User ${userId} (${user?.displayName}) has video disabled. Cannot render video.`);
+        console.warn(`🎥 User video status:`, { bVideoOn: user?.bVideoOn, userId, displayName: user?.displayName });
+        return;
+      }
+
+      console.log(`✅ User ${userId} has video enabled. Proceeding with attachVideo...`);
 
       // Use attachVideo method for video elements (required by modern browsers)
       await this.stream.attachVideo(
