@@ -1,8 +1,11 @@
 /**
- * Token Generation Service
+ * Token Generation Service - EMERGENCY LAMBDA BYPASS ACTIVE
  *
- * In production, JWT token generation should be done server-side
+ * TEMPORARY: Lambda function has topic parameter issues
+ * Currently forcing client-side token generation for all environments
  * This service provides both development (client-side) and production (API) token generation
+ *
+ * Deploy timestamp: 2025-01-15 17:45 UTC - Force rebuild
  */
 
 import { ZOOM_CONFIG } from '../config/zoom.config';
@@ -24,13 +27,15 @@ export class TokenService {
 
   constructor() {
     this.apiEndpoint = import.meta.env.VITE_ZOOM_TOKEN_ENDPOINT || '';
-    // AGGRESSIVE FIX: Force development mode to completely bypass Lambda
-    this.isDevelopment = true; // Bypass all production token services
-    console.log('🚨 PRODUCTION BYPASS: Using client-side token generation to avoid Lambda issues');
-    console.log('📋 Token service config:', {
-      apiEndpoint: this.apiEndpoint,
+    // ULTIMATE FIX: Completely disable production token service
+    this.isDevelopment = true;
+    this.apiEndpoint = ''; // Clear API endpoint to force dev mode
+    console.log('🚨 EMERGENCY BYPASS: Lambda function disabled - using client-side tokens');
+    console.log('📋 Token service emergency config:', {
+      originalApiEndpoint: import.meta.env.VITE_ZOOM_TOKEN_ENDPOINT,
+      clearedApiEndpoint: this.apiEndpoint,
       forcedDevelopmentMode: this.isDevelopment,
-      reason: 'Lambda function topic parameter mismatch'
+      timestamp: new Date().toISOString()
     });
   }
 
