@@ -4,7 +4,7 @@ frontend:
     preBuild:
       commands:
         - echo "Installing dependencies for Vite React app..."
-        - npm install
+        - npm install --include=dev
     build:
       commands:
         - echo "Building React + TypeScript app with Vite..."
