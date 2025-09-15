@@ -7,19 +7,18 @@
 
 const jwt = require('jsonwebtoken');
 
-// CORS headers for API Gateway
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*', // Configure specific domain in production
-  'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-  'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
-  'Content-Type': 'application/json'
-};
-
-// Response helper function
+// Response helper function - CORS is handled by Lambda Function URL configuration
 const createResponse = (statusCode, body, additionalHeaders = {}) => {
+  // For Lambda Function URLs, only set Content-Type and essential headers
+  // CORS is handled by the Function URL configuration, not code
+  const headers = {
+    'Content-Type': 'application/json',
+    ...additionalHeaders
+  };
+
   return {
     statusCode,
-    headers: { ...corsHeaders, ...additionalHeaders },
+    headers,
     body: JSON.stringify(body)
   };
 };

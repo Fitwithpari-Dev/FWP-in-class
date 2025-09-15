@@ -17,6 +17,7 @@ import {
   sanitizeUserInput
 } from '../utils/sessionValidator';
 import { PerformanceMonitor } from '../utils/performanceMonitor';
+import { simpleSessionManager } from '../services/SimpleSessionManager';
 
 export function useZoomFitnessPlatform() {
   // SDK instance
@@ -288,7 +289,37 @@ export function useZoomFitnessPlatform() {
         const sanitizedUserName = sanitizeUserInput(userName);
         const isHost = role === 'coach';
         // Use default session name from config, or generate a unique one if needed
-        const topic = sessionName || ZOOM_CONFIG.topic;
+        const sessionTopic = sessionName || ZOOM_CONFIG.topic;
+
+        console.log('🎯 Using session management for role-based joining:', {
+          sessionTopic,
+          userName: sanitizedUserName,
+          role,
+          isHost
+        });
+
+        // Use our new session management system for coordination
+        const sessionResult = await simpleSessionManager.handleRoleBasedJoin(
+          sessionTopic,
+          sanitizedUserName,
+          role
+        );
+
+        console.log('🎯 Session coordination result:', sessionResult);
+
+        // Check if we should retry (student waiting for coach)
+        if (sessionResult.shouldRetry && role === 'student') {
+          setError(sessionResult.error || 'Waiting for instructor to start the class...');
+          // Set a timeout to retry after a few seconds
+          setTimeout(() => {
+            sdk.joinSession(userName, role, sessionName);
+          }, 3000);
+          return;
+        }
+
+        // Use the coordinated session details
+        const topic = sessionResult.sessionId;
+        const sessionDisplayName = sessionResult.sessionName;
 
         // Validate session configuration
         const validation = validateSessionConfig({
@@ -306,8 +337,9 @@ export function useZoomFitnessPlatform() {
           console.warn('Session validation warnings:', validation.warnings);
         }
 
-        console.log('🔧 Session details:', {
+        console.log('🔧 Final session details:', {
           topic,
+          sessionDisplayName,
           userName: sanitizedUserName,
           isHost,
           sessionKey: ZOOM_CONFIG.password
@@ -347,7 +379,7 @@ export function useZoomFitnessPlatform() {
         setClassSession(prev => ({
           ...prev,
           id: topic,
-          title: `Live Fitness Session - ${topic}`,
+          title: `Live Fitness Session - ${sessionDisplayName}`,
           startTime: new Date(),
         }));
 
@@ -405,15 +437,22 @@ export function useZoomFitnessPlatform() {
             setError(`Zoom error: ${zoomError.type} ${zoomError.reason ? `- ${zoomError.reason}` : ''}`);
           }
         } else {
-          // Handle other error types
+          // Handle other error types including session coordination errors
           const errorMessage = err instanceof Error ? err.message : 'Failed to join session';
 
-          if (errorMessage.includes('token')) {
+          // Check for session coordination specific errors
+          if (errorMessage.includes('Session not available yet') ||
+              errorMessage.includes('Please wait for the instructor')) {
+            // Student trying to join before coach - this is handled by the retry logic above
+            setError(errorMessage);
+          } else if (errorMessage.includes('token')) {
             setError('Authentication failed. Please check your credentials and try again.');
           } else if (errorMessage.includes('network')) {
             setError('Network error. Please check your internet connection.');
           } else if (errorMessage.includes('browser')) {
             setError('Browser not supported. Please use Chrome, Firefox, or Safari.');
+          } else if (errorMessage.includes('Session is at full capacity')) {
+            setError('This class is full. Please try joining another session.');
           } else {
             setError(errorMessage);
           }
@@ -436,6 +475,15 @@ export function useZoomFitnessPlatform() {
 
       try {
         await zoomSDK.current.leaveSession();
+
+        // Clean up session management
+        if (currentUser) {
+          const sessionId = classSession.id;
+          const userId = currentUser.id;
+          await simpleSessionManager.leaveSession(sessionId, userId);
+          console.log('🚪 Left session via session manager:', { sessionId, userId });
+        }
+
         setParticipants([]);
         setCurrentUser(null);
         setConnectionState(null);

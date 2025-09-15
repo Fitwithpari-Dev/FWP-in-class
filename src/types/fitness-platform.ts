@@ -48,6 +48,49 @@ export type UserRole = 'coach' | 'student';
 export type CoachMode = 'teach' | 'workout';
 export type StudentLevel = 'beginner' | 'intermediate' | 'advanced';
 
+// Session Management Types
+export interface SessionMetadata {
+  id: string;
+  name: string;
+  topic: string;
+  coachId: string;
+  coachName: string;
+  createdAt: Date;
+  status: 'waiting' | 'active' | 'ended';
+  participantCount: number;
+  maxParticipants: number;
+  isPrivate: boolean;
+  sessionKey?: string; // Optional password/key for private sessions
+}
+
+export interface SessionRegistry {
+  activeSessions: Map<string, SessionMetadata>;
+  userSessions: Map<string, string>; // userId -> sessionId mapping
+}
+
+export interface SessionCoordinationEvent {
+  type: 'session_created' | 'session_joined' | 'session_left' | 'session_ended' | 'participant_updated';
+  sessionId: string;
+  userId: string;
+  userRole: UserRole;
+  timestamp: Date;
+  metadata?: Record<string, any>;
+}
+
+export interface SessionJoinRequest {
+  sessionId: string;
+  userName: string;
+  userRole: UserRole;
+  sessionKey?: string;
+}
+
+export interface SessionJoinResponse {
+  success: boolean;
+  sessionMetadata?: SessionMetadata;
+  zoomToken?: string;
+  error?: string;
+}
+
 export interface ZoomSDKInterface {
   // Session management
   joinSession: (userName: string, role: UserRole, sessionName?: string) => Promise<void>;
