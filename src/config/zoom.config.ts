@@ -9,9 +9,9 @@ export const ZOOM_CONFIG = {
   sdkSecret: import.meta.env.VITE_ZOOM_SDK_SECRET || '',
 
   // Session configuration - Fixed session for multi-user testing
-  topic: 'test123', // Simple session name to test IMPROPER_MEETING_STATE fix
+  topic: import.meta.env.VITE_DEFAULT_SESSION_NAME || 'test123',
   userName: '', // Will be set dynamically
-  password: 'test123', // Simple session password
+  password: import.meta.env.VITE_SESSION_PASSWORD || 'test123',
   roleType: 1, // 1 for host, 0 for attendee
 
   // Video configuration optimized for fitness classes
