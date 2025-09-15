@@ -83,20 +83,46 @@ export function useZoomFitnessPlatform() {
         // Set up event handlers
         zoomSDK.current.setEventHandlers({
           onUserJoin: (userId, user) => {
-            const newParticipant: Participant = {
-              id: userId,
-              name: user.displayName || 'Unknown',
-              isVideoOn: user.bVideoOn || false,
-              isAudioOn: !user.muted,
-              isHost: false,
-              connectionQuality: 'good',
-              hasRaisedHand: false,
-            };
-            setParticipants(prev => [...prev.filter(p => p.id !== userId), newParticipant]);
+            console.log(`👤 User joined: ${userId} (${user.displayName})`);
+
+            // Refresh entire participant list from Zoom SDK to ensure consistency
+            setTimeout(() => {
+              try {
+                const allParticipants = zoomSDK.current?.getAllParticipants() || [];
+                console.log('🔄 Refreshing full participant list after user join:', allParticipants.length);
+                setParticipants(allParticipants);
+
+                // Auto-start session when multiple participants are present
+                if (allParticipants.length >= 1) {
+                  setClassSession(current => {
+                    if (current.currentExercise === 'Waiting to start' || current.currentExercise === 'Joining session...') {
+                      console.log('🏃 Session auto-starting - multiple participants detected');
+                      return {
+                        ...current,
+                        currentExercise: 'Full Body Workout'
+                      };
+                    }
+                    return current;
+                  });
+                }
+              } catch (error) {
+                console.error('Error refreshing participants after user join:', error);
+              }
+            }, 500);
           },
 
           onUserLeave: (userId) => {
-            setParticipants(prev => prev.filter(p => p.id !== userId));
+            console.log(`👤 User left: ${userId}`);
+            // Refresh entire participant list to ensure consistency
+            setTimeout(() => {
+              try {
+                const allParticipants = zoomSDK.current?.getAllParticipants() || [];
+                console.log('🔄 Refreshing full participant list after user leave:', allParticipants.length);
+                setParticipants(allParticipants);
+              } catch (error) {
+                console.error('Error refreshing participants after user leave:', error);
+              }
+            }, 300);
           },
 
           onUserVideoStateChange: (userId, videoOn) => {
@@ -391,7 +417,19 @@ export function useZoomFitnessPlatform() {
           id: topic,
           title: `Live Fitness Session - ${sessionDisplayName}`,
           startTime: new Date(),
+          currentExercise: isHost ? 'Full Body Workout' : 'Joining session...',
         }));
+
+        // For students, add immediate transition after successful join
+        if (!isHost) {
+          setTimeout(() => {
+            setClassSession(prev => ({
+              ...prev,
+              currentExercise: 'Full Body Workout',
+            }));
+            console.log('🏃 Student session state updated to active');
+          }, 2000); // 2 second delay to allow media setup
+        }
 
         // Get initial participants (this may fail but shouldn't prevent connection)
         try {
@@ -413,6 +451,27 @@ export function useZoomFitnessPlatform() {
           await zoomSDK.current.unmuteAudio();
           setIsLocalVideoOn(true);
           setIsLocalAudioOn(true);
+
+          // Force refresh participants to trigger video rendering
+          setTimeout(() => {
+            try {
+              const updatedParticipants = zoomSDK.current?.getAllParticipants() || [];
+              setParticipants(updatedParticipants);
+              console.log('🔄 Refreshed participants for video rendering:', updatedParticipants.length);
+
+              // If student, always update session state to active after successful join
+              if (!isHost) {
+                setClassSession(prev => ({
+                  ...prev,
+                  currentExercise: 'Full Body Workout',
+                }));
+                console.log('🏃 Student session now active - after successful join');
+              }
+            } catch (e) {
+              console.warn('Could not refresh participants:', e);
+            }
+          }, 1000);
+
           console.log('✅ Video and audio started successfully');
         } catch (mediaError) {
           console.warn('Could not auto-start media (permissions may be needed):', mediaError);
@@ -460,6 +519,18 @@ export function useZoomFitnessPlatform() {
                     await zoomSDK.current!.unmuteAudio();
                     setIsLocalVideoOn(true);
                     setIsLocalAudioOn(true);
+
+                    // Force refresh participants for retry case
+                    setTimeout(() => {
+                      try {
+                        const updatedParticipants = zoomSDK.current?.getAllParticipants() || [];
+                        setParticipants(updatedParticipants);
+                        console.log('🔄 Refreshed participants for video rendering (retry):', updatedParticipants.length);
+                      } catch (e) {
+                        console.warn('Could not refresh participants on retry:', e);
+                      }
+                    }, 1000);
+
                     console.log('✅ Video and audio started successfully (retry)');
                   } catch (mediaError) {
                     console.warn('Could not auto-start media on retry:', mediaError);

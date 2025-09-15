@@ -1,6 +1,8 @@
 import { Participant, UserRole } from '../types/fitness-platform';
 import { Badge } from './ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { useRef, useEffect } from 'react';
+import { useFitnessPlatformContext } from '../App';
 import {
   Mic,
   MicOff,
@@ -26,9 +28,9 @@ interface ParticipantTileProps {
   onRemove?: (participantId: string) => void;
 }
 
-export function ParticipantTile({ 
-  participant, 
-  userRole, 
+export function ParticipantTile({
+  participant,
+  userRole,
   isSpotlighted = false,
   size = 'medium',
   className = '',
@@ -36,6 +38,43 @@ export function ParticipantTile({
   onMute,
   onRemove
 }: ParticipantTileProps) {
+  const { zoomSDK } = useFitnessPlatformContext();
+  const videoElementRef = useRef<HTMLVideoElement>(null);
+
+  // Effect to handle video rendering
+  useEffect(() => {
+    const renderParticipantVideo = async () => {
+      if (participant.isVideoOn && videoElementRef.current && zoomSDK) {
+        try {
+          // Get video element dimensions based on size
+          const videoElement = videoElementRef.current;
+          const rect = videoElement.getBoundingClientRect();
+          const width = rect.width || (size === 'small' ? 160 : size === 'medium' ? 384 : 768);
+          const height = rect.height || (size === 'small' ? 120 : size === 'medium' ? 288 : 576);
+
+          // Set video element dimensions
+          videoElement.width = width;
+          videoElement.height = height;
+
+          // Render video using Zoom SDK with video element
+          console.log(`Attempting to render video for participant: ${participant.id}, video dimensions: ${width}x${height}`);
+          await zoomSDK.renderVideo(participant.id, videoElement, width, height, isSpotlighted);
+        } catch (error) {
+          console.error(`Error rendering video for participant ${participant.id}:`, error);
+        }
+      }
+    };
+
+    renderParticipantVideo();
+
+    // Cleanup when component unmounts or video turns off
+    return () => {
+      if (videoElementRef.current && zoomSDK && participant.isVideoOn) {
+        zoomSDK.stopRenderVideo(participant.id, videoElementRef.current).catch(console.error);
+      }
+    };
+  }, [participant.isVideoOn, participant.id, zoomSDK, isSpotlighted, size]);
+
   const getConnectionIcon = () => {
     switch (participant.connectionQuality) {
       case 'excellent':
@@ -63,22 +102,34 @@ export function ParticipantTile({
       isSpotlighted ? 'border-fitness-green' : 'border-gray-700'
     } ${className.includes('!w-') || className.includes('!h-') ? '' : getSizeClasses()} ${className}`}>
       {/* Video/Avatar Area */}
-      <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+      <div className="w-full h-full bg-gray-800 flex items-center justify-center relative">
         {participant.isVideoOn ? (
-          <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
-            <div className={`${
-              size === 'small' ? 'text-lg sm:text-2xl' : 
-              size === 'medium' ? 'text-2xl sm:text-4xl' : 
-              'text-4xl sm:text-6xl'
-            } text-white font-bold`}>
-              {participant.name.charAt(0)}
+          <>
+            <video
+              ref={videoElementRef}
+              className="w-full h-full object-cover"
+              style={{ display: 'block' }}
+              autoPlay
+              muted
+              playsInline
+            />
+            {/* Fallback if video fails to render */}
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800"
+                 style={{ zIndex: -1 }}>
+              <div className={`${
+                size === 'small' ? 'text-lg sm:text-2xl' :
+                size === 'medium' ? 'text-2xl sm:text-4xl' :
+                'text-4xl sm:text-6xl'
+              } text-white font-bold`}>
+                {participant.name.charAt(0)}
+              </div>
             </div>
-          </div>
+          </>
         ) : (
           <div className="flex flex-col items-center gap-1 sm:gap-2 text-gray-400">
             <VideoOff className={`${
-              size === 'small' ? 'w-4 h-4 sm:w-6 sm:h-6' : 
-              size === 'medium' ? 'w-6 h-6 sm:w-8 sm:h-8' : 
+              size === 'small' ? 'w-4 h-4 sm:w-6 sm:h-6' :
+              size === 'medium' ? 'w-6 h-6 sm:w-8 sm:h-8' :
               'w-8 h-8 sm:w-12 sm:h-12'
             }`} />
             {size !== 'small' && (

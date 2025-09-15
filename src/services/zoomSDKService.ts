@@ -183,17 +183,31 @@ export class ZoomSDKService {
     if (!this.stream) return;
 
     try {
-      // Host starts with video and audio on
+      // Start video first
+      console.log('🎥 Starting video for host...');
       await this.stream.startVideo();
+
+      // Join audio session
+      console.log('🔊 Starting audio for host...');
       await this.stream.startAudio();
+
+      // Small delay to ensure audio is properly initialized
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Unmute audio for host (they should be able to speak)
+      console.log('🎤 Unmuting host audio...');
+      await this.stream.unmuteAudio();
+
+      console.log('✅ Host settings configured successfully');
 
       // Enable host-specific features
       if (this.client) {
-        // Host can manage participants
-        await this.client.setCommandChannelPermission(true);
+        // Host privileges are automatically granted by the token
+        console.log('👑 Host privileges active');
       }
     } catch (error) {
       console.error('Error configuring host settings:', error);
+      // Don't throw - allow session to continue even if audio config fails
     }
   }
 
@@ -201,11 +215,25 @@ export class ZoomSDKService {
     if (!this.stream) return;
 
     try {
-      // Participants start with video on, audio muted
+      // Start video first
+      console.log('🎥 Starting video for participant...');
       await this.stream.startVideo();
+
+      // Join audio first, then mute (required sequence for Zoom SDK)
+      console.log('🔊 Joining audio session...');
+      await this.stream.startAudio();
+
+      // Small delay to ensure audio is properly initialized
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Now mute the audio
+      console.log('🔇 Muting participant audio...');
       await this.stream.muteAudio();
+
+      console.log('✅ Participant settings configured successfully');
     } catch (error) {
       console.error('Error configuring participant settings:', error);
+      // Don't throw - allow session to continue even if audio config fails
     }
   }
 
@@ -217,19 +245,33 @@ export class ZoomSDKService {
       const participantCount = this.client.getAllUser().length;
 
       if (participantCount > 25) {
-        // Lower quality for large classes
-        await this.stream.setVideoQuality('360p');
+        // Lower quality for large classes - handled during rendering
+        console.log('Large class detected, will use lower quality rendering');
       } else {
-        // Higher quality for smaller classes
-        await this.stream.setVideoQuality('720p');
+        // Higher quality for smaller classes - handled during rendering
+        console.log('Small class detected, will use higher quality rendering');
       }
 
-      // Enable optimizations
-      await this.stream.enableHardwareAcceleration();
+      // Enable optimizations (if available)
+      try {
+        if (this.stream.enableHardwareAcceleration) {
+          await this.stream.enableHardwareAcceleration();
+        }
+      } catch (error) {
+        console.log('Hardware acceleration not available:', error);
+      }
 
-      // Configure audio for fitness environment
-      await this.stream.setAudioNoiseSuppression(true);
-      await this.stream.setAudioEchoCancellation(true);
+      // Configure audio for fitness environment (if available)
+      try {
+        if (this.stream.setAudioNoiseSuppression) {
+          await this.stream.setAudioNoiseSuppression(true);
+        }
+        if (this.stream.setAudioEchoCancellation) {
+          await this.stream.setAudioEchoCancellation(true);
+        }
+      } catch (error) {
+        console.log('Audio enhancement features not available:', error);
+      }
     } catch (error) {
       console.error('Error optimizing for fitness class:', error);
     }
@@ -301,47 +343,68 @@ export class ZoomSDKService {
   // Video rendering for fitness platform
   public async renderVideo(
     userId: string,
-    canvas: HTMLCanvasElement,
+    videoElement: HTMLVideoElement,
     width: number,
     height: number,
     isSpotlight: boolean = false
   ): Promise<void> {
-    if (!this.stream) throw new Error('Stream not initialized');
+    if (!this.stream) {
+      console.error('Stream not initialized - cannot render video');
+      throw new Error('Stream not initialized');
+    }
+
+    if (!this.client) {
+      console.error('Client not initialized - cannot render video');
+      throw new Error('Client not initialized');
+    }
 
     try {
+      // Validate user exists in the session
+      const allUsers = this.client.getAllUser();
+      const userExists = allUsers.some(user => user.userId === userId);
+
+      if (!userExists) {
+        console.warn(`User ${userId} not found in session. Available users:`, allUsers.map(u => u.userId));
+        return;
+      }
+
       // Clean up existing rendering for this user
       if (this.renderingParticipants.has(userId)) {
-        await this.stopRenderVideo(userId, canvas);
+        console.log(`Cleaning up existing render for user ${userId}`);
+        await this.stopRenderVideo(userId, videoElement);
       }
 
       // Set video quality based on view mode
       const quality = isSpotlight ? '720p' : '360p';
       this.videoQualitySettings.set(userId, quality as VideoQuality);
 
-      // Start rendering
+      console.log(`Starting video render for user ${userId} on video element ${width}x${height}, quality: ${quality}`);
+
+      // Start rendering using correct Zoom SDK API with video element
       await this.stream.renderVideo(
-        canvas,
+        videoElement,
         userId,
         width,
         height,
         0, // x coordinate
         0, // y coordinate
-        3  // video quality level
+        isSpotlight ? 1 : 0 // video quality level (0=low, 1=high)
       );
 
       this.renderingParticipants.add(userId);
-      this.videoCanvasMap.set(userId, canvas as VideoCanvas);
+      this.videoCanvasMap.set(userId, videoElement as any);
+      console.log(`Successfully started video render for user ${userId}`);
     } catch (error) {
       console.error(`Error rendering video for user ${userId}:`, error);
-      throw error;
+      // Don't throw - let the fallback avatar show instead
     }
   }
 
-  public async stopRenderVideo(userId: string, canvas: HTMLCanvasElement): Promise<void> {
+  public async stopRenderVideo(userId: string, videoElement: HTMLVideoElement): Promise<void> {
     if (!this.stream) throw new Error('Stream not initialized');
 
     try {
-      await this.stream.stopRenderVideo(canvas, userId);
+      await this.stream.stopRenderVideo(videoElement, userId);
       this.renderingParticipants.delete(userId);
       this.videoCanvasMap.delete(userId);
     } catch (error) {
@@ -482,14 +545,20 @@ export class ZoomSDKService {
 
     try {
       const users = this.client.getAllUser();
-      const currentUserId = this.client.getSessionInfo().userId;
+      const sessionInfo = this.client.getSessionInfo();
+
+      console.log('📋 Getting all participants:', {
+        totalUsers: users.length,
+        currentUser: sessionInfo?.userId,
+        userNames: users.map(u => ({ id: u.userId, name: u.displayName }))
+      });
 
       return users.map((user: ZoomParticipant) => ({
         id: user.userId,
         name: user.displayName || 'Unknown',
         isVideoOn: user.bVideoOn || false,
         isAudioOn: !user.muted,
-        isHost: user.userId === currentUserId,
+        isHost: user.isHost || false, // Use Zoom's isHost property
         connectionQuality: this.getUserConnectionQuality(user.userId),
         hasRaisedHand: false, // Will be tracked separately
         level: this.participantLevels.get(user.userId),
