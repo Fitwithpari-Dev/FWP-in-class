@@ -393,8 +393,16 @@ export function useZoomFitnessPlatform() {
         // Sanitize user inputs
         const sanitizedUserName = sanitizeUserInput(userName);
         const isHost = role === 'coach';
-        // Use default session name from config, or generate a unique one if needed
-        const sessionTopic = sessionName || ZOOM_CONFIG.topic;
+        // CRITICAL FIX: Force consistent session topic across ALL devices
+        // Override any environment/config defaults to ensure identical topic everywhere
+        const sessionTopic = sessionName || 'test123'; // Fixed session name for cross-device testing
+
+        console.log('🔧 Cross-device session topic fix:', {
+          originalSessionName: sessionName,
+          configDefaultTopic: ZOOM_CONFIG.topic,
+          forcedSessionTopic: sessionTopic,
+          reason: 'Ensuring all devices use identical Zoom session topic'
+        });
 
         console.log('🎯 Using session management for role-based joining:', {
           sessionTopic,
@@ -428,9 +436,17 @@ export function useZoomFitnessPlatform() {
           return;
         }
 
-        // Use the coordinated session details
-        const topic = sessionResult.sessionId;
-        const sessionDisplayName = sessionResult.sessionName;
+        // CRITICAL CROSS-DEVICE FIX: Use original sessionTopic directly
+        // Bypass session coordination to ensure all devices use identical topic
+        const topic = sessionTopic; // NO transformation - use original directly!
+        const sessionDisplayName = `Live Fitness Session - ${sessionTopic}`;
+
+        console.log('🚨 CROSS-DEVICE FIX: Using original topic directly', {
+          originalSessionTopic: sessionTopic,
+          bypassedSessionId: sessionResult.sessionId,
+          finalZoomTopic: topic,
+          userRole: role
+        });
 
         // Validate session configuration
         const validation = validateSessionConfig({

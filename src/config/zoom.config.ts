@@ -116,11 +116,46 @@ export const ZOOM_CONFIG = {
     enableHealthConsiderations: true,
   },
 
-  // Session limits
+  // Global scale session limits - optimized for 100s of students worldwide
   limits: {
-    maxParticipants: 100,
-    maxVideos: 25,
-    sessionTimeout: 90 * 60 * 1000, // 90 minutes
+    maxParticipants: 500,      // Zoom Video SDK supports up to 500 participants
+    maxVideos: 16,             // Coach + 15 spotlighted students for performance
+    maxAudioParticipants: 500, // All students can have audio
+    sessionTimeout: 120 * 60 * 1000, // 2-hour fitness classes
+
+    // Global performance thresholds
+    regionalLoadBalancing: true,
+    enableGlobalCDN: true,
+    adaptiveQualityByRegion: true,
+  },
+
+  // Global scalability features
+  globalScale: {
+    // Multi-region support
+    regions: ['us-west', 'us-east', 'eu-central', 'ap-southeast', 'ap-northeast'],
+
+    // Load balancing for 100s of students
+    loadBalancing: {
+      enableAutoScaling: true,
+      maxStudentsPerTile: 50,        // Paginate every 50 students
+      enableLazyVideoLoading: true,  // Load videos only when visible
+      prioritizeCoachVideo: true,    // Coach video always loads first
+    },
+
+    // Bandwidth optimization for global students
+    adaptiveBandwidth: {
+      lowBandwidthMode: '90p',       // For students with poor connection
+      standardMode: '180p',          // Default for most students
+      highBandwidthMode: '360p',     // For students with great connection
+      autoDetectConnection: true,    // Automatically adjust based on network
+    },
+
+    // Mobile optimization for global reach
+    mobileOptimizations: {
+      enableDataSaver: true,         // Reduce data usage on mobile
+      prioritizeAudioOverVideo: true,// Keep audio if video struggles
+      maxMobileVideos: 8,            // Fewer videos on mobile for performance
+    },
   },
 };
 
