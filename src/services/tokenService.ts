@@ -24,9 +24,14 @@ export class TokenService {
 
   constructor() {
     this.apiEndpoint = import.meta.env.VITE_ZOOM_TOKEN_ENDPOINT || '';
-    // TEMPORARY: Force development mode to bypass Lambda issues
-    this.isDevelopment = true; // import.meta.env.DEV || !this.apiEndpoint;
-    console.log('🚨 TEMP FIX: Forced development mode for token generation');
+    // AGGRESSIVE FIX: Force development mode to completely bypass Lambda
+    this.isDevelopment = true; // Bypass all production token services
+    console.log('🚨 PRODUCTION BYPASS: Using client-side token generation to avoid Lambda issues');
+    console.log('📋 Token service config:', {
+      apiEndpoint: this.apiEndpoint,
+      forcedDevelopmentMode: this.isDevelopment,
+      reason: 'Lambda function topic parameter mismatch'
+    });
   }
 
   /**
