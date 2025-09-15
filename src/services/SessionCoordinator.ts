@@ -177,6 +177,9 @@ export class SessionCoordinator {
     } else if (!session && userRole === 'student') {
       // Student waits for coach to create session
       throw new Error('Session not available yet. Please wait for the instructor to start the class.');
+    } else if (session && userRole === 'student' && session.status === 'waiting') {
+      // Session exists but coach hasn't fully joined yet
+      throw new Error('Session is starting. Please wait for the instructor to be ready...');
     }
 
     if (!session) {

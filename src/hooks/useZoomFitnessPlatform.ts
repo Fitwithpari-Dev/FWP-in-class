@@ -310,10 +310,16 @@ export function useZoomFitnessPlatform() {
         // Check if we should retry (student waiting for coach)
         if (sessionResult.shouldRetry && role === 'student') {
           setError(sessionResult.error || 'Waiting for instructor to start the class...');
-          // Set a timeout to retry after a few seconds
+          // Set a timeout to retry after a few seconds with exponential backoff
+          const retryDelay = Math.min(3000 + (sessionRetryCount * 1000), 10000);
+          console.log('🔄 Student retrying session join in', retryDelay, 'ms, attempt:', sessionRetryCount + 1);
           setTimeout(() => {
-            sdk.joinSession(userName, role, sessionName);
-          }, 3000);
+            if (sessionRetryCount < 10) { // Limit retries to prevent infinite loop
+              sdk.joinSession(userName, role, sessionName);
+            } else {
+              setError('Unable to join session. Please refresh the page and try again.');
+            }
+          }, retryDelay);
           return;
         }
 
