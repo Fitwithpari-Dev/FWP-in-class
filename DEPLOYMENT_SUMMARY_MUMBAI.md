@@ -30,18 +30,24 @@
 
 ## 🔧 Next Steps Required
 
-### 1. 🔗 Connect Repository to Amplify
-The Amplify app needs to be connected to your Git repository:
+### 1. ✅ Repository Created and Available
+Your code is now available on GitHub:
+- **Repository URL:** https://github.com/Fitwithpari-Dev/FWP-in-class
+- **Organization:** Fitwithpari-Dev
+- **Status:** ✅ All code pushed successfully
 
-```bash
-# Go to AWS Console
-https://console.aws.amazon.com/amplify/home#/d23dvg5nctliuu
+### 2. 🔗 Connect Repository to Amplify (Manual Step)
+Connect your GitHub repository in the AWS Console:
 
-# Or use AWS CLI to connect repository
-aws amplify connect-repository --app-id d23dvg5nctliuu --repository-url https://github.com/your-username/FWP-in-class
-```
+1. **Go to Amplify Console:** https://console.aws.amazon.com/amplify/home#/d23dvg5nctliuu
+2. **Click "Connect repository"**
+3. **Select GitHub as provider**
+4. **Authorize AWS Amplify** to access your GitHub account
+5. **Select repository:** Fitwithpari-Dev/FWP-in-class
+6. **Select branch:** master
+7. **Confirm deployment settings**
 
-### 2. ⚙️ Configure Environment Variables
+### 3. ⚙️ Configure Environment Variables
 Set these in Amplify Console under Environment Variables:
 
 ```bash

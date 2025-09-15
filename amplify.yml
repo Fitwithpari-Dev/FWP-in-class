@@ -39,11 +39,11 @@ applications:
           commands:
             - echo "Post-build optimizations..."
             - echo "Verifying build artifacts..."
-            - ls -la build/
+            - ls -la dist/
             - echo "Setting up custom headers and security configurations..."
             - echo "Deployment ready for fitness platform with video streaming"
     artifacts:
-      baseDirectory: build
+      baseDirectory: dist
       files:
         - '**/*'
     cache:
