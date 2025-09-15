@@ -138,7 +138,7 @@ export const FitnessPlatformProvider: React.FC<{ children: React.ReactNode }> = 
 
       onConnectionChange: (state) => {
         setConnectionState(state);
-        if (state === 'Closed' || state === 'Failed') {
+        if (state === ConnectionState.Closed || state === ConnectionState.Fail) {
           setError('Connection lost. Please try rejoining the session.');
         }
       },

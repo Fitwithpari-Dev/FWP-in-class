@@ -219,7 +219,7 @@ export function useSupabaseFitnessPlatform({
         .eq('id', sessionId)
         .single()
 
-      if (sessionError) {
+      if (sessionError || !sessionData) {
         setError('Failed to load session data')
         return
       }

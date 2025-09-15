@@ -14,7 +14,7 @@ frontend:
         - echo "🔧 Building React + TypeScript app with Vite for production..."
         - 'echo "Environment: $NODE_ENV"'
         - echo "Build target Production with video streaming optimizations"
-        - npm run build:check
+        - npm run build
         - echo "📊 Build statistics"
         - du -sh build/ 2>/dev/null || echo "Build size calculation unavailable"
         - ls -la build/ 2>/dev/null || echo "Build directory listing unavailable"

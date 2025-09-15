@@ -22,14 +22,14 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
   className = '',
   zoomSDK,
 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isRendering, setIsRendering] = useState(false);
   const [renderError, setRenderError] = useState<string | null>(null);
   const { currentUser } = useFitnessPlatform();
 
   // Start rendering video
   useEffect(() => {
-    if (!canvasRef.current || !zoomSDK || !participant.isVideoOn) {
+    if (!videoRef.current || !zoomSDK || !participant.isVideoOn) {
       return;
     }
 
@@ -42,7 +42,7 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
 
         await zoomSDK.renderVideo(
           participant.id,
-          canvasRef.current!,
+          videoRef.current!,
           width,
           height,
           isSpotlight
@@ -65,8 +65,8 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
     // Cleanup
     return () => {
       isMounted = false;
-      if (canvasRef.current && zoomSDK) {
-        zoomSDK.stopRenderVideo(participant.id, canvasRef.current).catch(console.error);
+      if (videoRef.current && zoomSDK) {
+        zoomSDK.stopRenderVideo(participant.id, videoRef.current).catch(console.error);
       }
       setIsRendering(false);
     };
@@ -85,14 +85,17 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
 
   return (
     <div className={`relative bg-gray-900 rounded-lg overflow-hidden ${className}`}>
-      {/* Video Canvas */}
-      <canvas
-        ref={canvasRef}
+      {/* Video Element */}
+      <video
+        ref={videoRef}
         width={width}
         height={height}
         className="w-full h-full object-cover"
         onClick={handleCanvasClick}
         style={{ cursor: showControls && currentUser?.role === 'coach' ? 'pointer' : 'default' }}
+        autoPlay
+        muted
+        playsInline
       />
 
       {/* Overlay when video is off */}
