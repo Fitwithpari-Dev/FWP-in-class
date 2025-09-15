@@ -23,7 +23,7 @@ export class TokenService {
   private isDevelopment: boolean;
 
   constructor() {
-    this.apiEndpoint = import.meta.env.VITE_API_ENDPOINT || '';
+    this.apiEndpoint = import.meta.env.VITE_ZOOM_TOKEN_ENDPOINT || '';
     this.isDevelopment = import.meta.env.DEV || !this.apiEndpoint;
   }
 
