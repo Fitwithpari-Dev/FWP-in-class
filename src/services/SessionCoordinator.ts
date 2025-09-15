@@ -156,13 +156,14 @@ export class SessionCoordinator {
 
   /**
    * Get or create session for coach-student coordination
+   * Uses deterministic session naming to work across devices
    */
   public async getOrCreateSession(
     sessionTopic: string,
     coachName: string,
     userRole: UserRole
   ): Promise<SessionMetadata> {
-    console.log('🔍 Getting or creating session:', {
+    console.log('🔍 Getting or creating session (cross-device):', {
       sessionTopic,
       coachName,
       userRole

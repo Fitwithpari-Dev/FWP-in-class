@@ -94,6 +94,7 @@ export class SimpleSessionManager {
 
   /**
    * Handle the specific case from the existing hook
+   * Simplified for cross-device compatibility - bypasses complex session discovery
    */
   public async handleRoleBasedJoin(
     sessionTopic: string,
@@ -106,43 +107,38 @@ export class SimpleSessionManager {
     error?: string;
   }> {
     try {
-      const result = await this.joinOrCreateSession(sessionTopic, userName, userRole);
+      // SIMPLIFIED CROSS-DEVICE APPROACH:
+      // Skip complex localStorage-based discovery and use sessionTopic directly
+      console.log('🎯 Cross-device session join: Using direct topic approach', {
+        sessionTopic,
+        userName,
+        userRole
+      });
 
-      if (result.success && result.sessionMetadata) {
-        return {
-          sessionId: result.sessionMetadata.id,
-          sessionName: result.sessionMetadata.name,
-          shouldRetry: false
-        };
-      } else {
-        // Handle specific error cases
-        const errorMessage = result.error || 'Unknown error';
+      // All participants (coach + students from any device) use the same topic
+      const sessionId = sessionTopic;
+      const sessionName = `Live Fitness Session - ${sessionTopic}`;
 
-        if (errorMessage.includes('not available yet') || errorMessage.includes('not found')) {
-          // Student trying to join before coach creates session
-          return {
-            sessionId: sessionTopic,
-            sessionName: sessionTopic,
-            shouldRetry: true,
-            error: errorMessage
-          };
-        }
+      console.log('✅ Direct session assignment (cross-device compatible):', {
+        sessionId,
+        sessionName,
+        userRole
+      });
 
-        return {
-          sessionId: sessionTopic,
-          sessionName: sessionTopic,
-          shouldRetry: false,
-          error: errorMessage
-        };
-      }
+      return {
+        sessionId,
+        sessionName,
+        shouldRetry: false
+      };
+
     } catch (error) {
-      console.error('❌ Role-based join failed:', error);
+      console.error('❌ Direct session assignment failed:', error);
 
       return {
         sessionId: sessionTopic,
         sessionName: sessionTopic,
         shouldRetry: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Cross-device session assignment error'
       };
     }
   }
