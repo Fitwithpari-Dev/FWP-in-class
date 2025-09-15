@@ -619,8 +619,8 @@ export function useZoomFitnessPlatform() {
               setTimeout(async () => {
                 try {
                   setIsConnecting(true);
-                  const retryToken = await generateSessionToken(topic, 1, ZOOM_CONFIG.password, sanitizedUserName);
-                  await zoomSDK.current!.joinSession(topic, retryToken, sanitizedUserName, true);
+                  const retryToken = await generateSessionToken(sessionTopic, 1, ZOOM_CONFIG.password, sanitizedUserName);
+                  await zoomSDK.current!.joinSession(sessionTopic, retryToken, sanitizedUserName, true);
 
                   // Set connection state immediately after successful join
                   setConnectionState('Connected' as ConnectionState);
@@ -632,7 +632,7 @@ export function useZoomFitnessPlatform() {
                     setCurrentUser({ id: sessionInfo.userId, role: 'coach' });
                     setSpotlightedParticipant(sessionInfo.userId);
                   }
-                  setClassSession(prev => ({ ...prev, id: topic, title: `Live Fitness Session - ${topic}`, startTime: new Date() }));
+                  setClassSession(prev => ({ ...prev, id: sessionTopic, title: `Live Fitness Session - ${sessionTopic}`, startTime: new Date() }));
                   setError(null);
 
                   // Auto-start video and audio for retry case

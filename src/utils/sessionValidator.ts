@@ -252,7 +252,7 @@ export function validateSessionConfig(config: {
   // Check for participant limits
   const maxParticipants = ZOOM_CONFIG.limits?.maxParticipants || 100;
   if (maxParticipants > 100) {
-    warnings.push(`Session configured for ${maxParticipants} participants. Performance may degrade with > 50 participants`);
+    allWarnings.push(`Session configured for ${maxParticipants} participants. Performance may degrade with > 50 participants`);
   }
 
   return {
