@@ -63,8 +63,8 @@ export function ParticipantTile({
           videoElement.width = width;
           videoElement.height = height;
 
-          // Render video using Zoom SDK with video element
-          console.log(`🎬 Attempting to render video for ${participant.name} (${participant.id}), dimensions: ${width}x${height}, isSpotlighted: ${isSpotlighted}`);
+          // Render video using Zoom SDK service (internally uses attachVideo for video elements)
+          console.log(`🎬 Attempting to render video for ${participant.name} (${participant.id}), dimensions: ${width}x${height}`);
           await zoomSDK.renderVideo(participant.id, videoElement, width, height, isSpotlighted);
           console.log(`✅ Successfully rendered video for ${participant.name}`);
         } catch (error) {
