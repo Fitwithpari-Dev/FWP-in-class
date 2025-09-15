@@ -35,7 +35,12 @@
       "Bash(git remote add:*)",
       "Bash(git push:*)",
       "Bash(git remote remove:*)",
-      "WebFetch(domain:docs.amplify.aws)"
+      "WebFetch(domain:docs.amplify.aws)",
+      "Bash(nslookup:*)",
+      "Bash(zip:*)",
+      "WebFetch(domain:www.anthropic.com)",
+      "Bash(gh run list:*)",
+      "Bash(start msedge --inprivate https://classes.tribe.fit)"
     ],
     "deny": [],
     "ask": []

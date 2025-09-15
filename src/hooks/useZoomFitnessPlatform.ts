@@ -357,17 +357,64 @@ export function useZoomFitnessPlatform() {
         setConnectionState('Connected' as ConnectionState);
       } catch (err) {
         console.error('Failed to join session:', err);
-        const errorMessage = err instanceof Error ? err.message : 'Failed to join session';
 
-        // Provide specific error guidance
-        if (errorMessage.includes('token')) {
-          setError('Authentication failed. Please check your credentials and try again.');
-        } else if (errorMessage.includes('network')) {
-          setError('Network error. Please check your internet connection.');
-        } else if (errorMessage.includes('browser')) {
-          setError('Browser not supported. Please use Chrome, Firefox, or Safari.');
+        // Handle Zoom SDK specific errors
+        if (err && typeof err === 'object' && 'type' in err) {
+          const zoomError = err as { type: string; reason?: string };
+          console.error('Zoom SDK Error Details:', zoomError);
+
+          if (zoomError.type === 'IMPROPER_MEETING_STATE' && zoomError.reason === 'closed') {
+            if (role === 'coach') {
+              // Host should try again immediately - session creation issue
+              console.log('🔄 Host session creation failed, retrying...');
+              setError('Session creation failed. Retrying...');
+
+              // Retry as host after short delay
+              setTimeout(async () => {
+                try {
+                  setIsConnecting(true);
+                  const retryToken = await generateSessionToken(topic, 1, ZOOM_CONFIG.password, sanitizedUserName);
+                  await zoomSDK.current!.joinSession(topic, retryToken, sanitizedUserName, true);
+
+                  // Success - update session state
+                  const sessionInfo = zoomSDK.current!.getSessionInfo();
+                  if (sessionInfo) {
+                    setCurrentUser({ id: sessionInfo.userId, role: 'coach' });
+                    setSpotlightedParticipant(sessionInfo.userId);
+                  }
+                  setClassSession(prev => ({ ...prev, id: topic, title: `Live Fitness Session - ${topic}`, startTime: new Date() }));
+                  setConnectionState('Connected' as ConnectionState);
+                  setError(null);
+                } catch (retryErr) {
+                  console.error('Host retry failed:', retryErr);
+                  setError('Unable to create session. Please check your configuration and try again.');
+                } finally {
+                  setIsConnecting(false);
+                }
+              }, 1000);
+              return; // Don't set error state immediately, let retry run
+            } else {
+              // Student should wait for host
+              setError('Session not started yet. Please wait for the instructor to begin the class.');
+            }
+          } else if (zoomError.type === 'INVALID_PARAMETER') {
+            setError('Session configuration error. Please check your setup and try again.');
+          } else {
+            setError(`Zoom error: ${zoomError.type} ${zoomError.reason ? `- ${zoomError.reason}` : ''}`);
+          }
         } else {
-          setError(errorMessage);
+          // Handle other error types
+          const errorMessage = err instanceof Error ? err.message : 'Failed to join session';
+
+          if (errorMessage.includes('token')) {
+            setError('Authentication failed. Please check your credentials and try again.');
+          } else if (errorMessage.includes('network')) {
+            setError('Network error. Please check your internet connection.');
+          } else if (errorMessage.includes('browser')) {
+            setError('Browser not supported. Please use Chrome, Firefox, or Safari.');
+          } else {
+            setError(errorMessage);
+          }
         }
 
         // Attempt to clean up on failure
@@ -375,7 +422,12 @@ export function useZoomFitnessPlatform() {
           await zoomSDK.current.leaveSession().catch(() => {});
         }
       } finally {
-        setIsConnecting(false);
+        // Only set isConnecting to false if we're not doing a host retry
+        if (!(err && typeof err === 'object' && 'type' in err &&
+              (err as any).type === 'IMPROPER_MEETING_STATE' &&
+              (err as any).reason === 'closed' && role === 'coach')) {
+          setIsConnecting(false);
+        }
       }
     },
 

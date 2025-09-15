@@ -1,0 +1,10 @@
+{
+  "domainName": "classes.tribe.fit",
+  "subDomainSettings": [
+    {
+      "prefix": "",
+      "branchName": "main"
+    }
+  ],
+  "enableAutoSubDomain": false
+}
