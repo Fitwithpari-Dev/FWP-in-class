@@ -271,12 +271,35 @@ export const FitnessPlatformProvider: React.FC<{ children: React.ReactNode }> = 
         await zoomSDK.current.stopVideo();
         setIsLocalVideoOn(false);
       } else {
-        await zoomSDK.current.startVideo();
-        setIsLocalVideoOn(true);
+        // Check if mobile device when starting video
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        if (isMobile) {
+          console.log('📱 Mobile device detected - requesting camera permissions for video toggle...');
+          try {
+            // Request camera permissions on mobile before starting Zoom video
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            console.log('📷 Camera permission granted for mobile video toggle');
+            // Stop the test stream
+            stream.getTracks().forEach(track => track.stop());
+
+            // Now start video with Zoom SDK
+            await zoomSDK.current.startVideo();
+            setIsLocalVideoOn(true);
+          } catch (permissionError) {
+            console.error('❌ Camera permission denied on mobile video toggle:', permissionError);
+            setError('Camera permission denied. Please allow camera access in your browser settings.');
+            return;
+          }
+        } else {
+          // For desktop, start video directly
+          await zoomSDK.current.startVideo();
+          setIsLocalVideoOn(true);
+        }
       }
     } catch (err) {
-      console.error('Error toggling video:', err);
-      setError('Failed to toggle video');
+      console.error('❌ Error toggling video:', err);
+      setError('Failed to toggle video. Please check your camera permissions.');
     }
   };
 

@@ -200,21 +200,8 @@ export class ZoomSDKService {
 
       // Handle video initialization based on device type
       if (isMobile) {
-        console.log('📱 Mobile host detected - requesting camera permissions...');
-        try {
-          // Request camera permissions on mobile
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-          console.log('📷 Camera permission granted for mobile host');
-          // Stop the test stream
-          stream.getTracks().forEach(track => track.stop());
-
-          // Now start video with Zoom SDK
-          console.log('🎥 Starting video for mobile host...');
-          await this.stream.startVideo();
-        } catch (permissionError) {
-          console.error('❌ Camera permission denied for mobile host:', permissionError);
-          // Continue without video but log the issue
-        }
+        console.log('📱 Mobile host detected - skipping auto-start video (user must tap video button)');
+        // Don't auto-start video on mobile - let user interaction handle it
       } else {
         // For desktop, start video directly
         console.log('🎥 Starting video for desktop host...');
@@ -253,23 +240,10 @@ export class ZoomSDKService {
       console.log('🔇 Muting participant audio...');
       await this.stream.muteAudio();
 
-      // For mobile devices, request camera permissions explicitly first
+      // For mobile devices, skip auto-start video - let user manually enable it
       if (isMobile) {
-        console.log('📱 Mobile device detected - requesting camera permissions...');
-        try {
-          // Request camera permissions on mobile
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-          console.log('📷 Camera permission granted on mobile');
-          // Stop the test stream
-          stream.getTracks().forEach(track => track.stop());
-
-          // Now start video with Zoom SDK
-          console.log('🎥 Starting video for mobile participant...');
-          await this.stream.startVideo();
-        } catch (permissionError) {
-          console.error('❌ Camera permission denied on mobile:', permissionError);
-          // Continue without video but log the issue
-        }
+        console.log('📱 Mobile device detected - skipping auto-start video (user must tap video button)');
+        // Don't auto-start video on mobile - let user interaction handle it
       } else {
         // For desktop, start video directly
         console.log('🎥 Starting video for desktop participant...');
