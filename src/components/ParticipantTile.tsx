@@ -44,6 +44,13 @@ export function ParticipantTile({
   // Effect to handle video rendering
   useEffect(() => {
     const renderParticipantVideo = async () => {
+      console.log(`🎥 ParticipantTile render check for ${participant.name} (${participant.id}):`, {
+        isVideoOn: participant.isVideoOn,
+        hasVideoElement: !!videoElementRef.current,
+        hasZoomSDK: !!zoomSDK,
+        isHost: participant.isHost
+      });
+
       if (participant.isVideoOn && videoElementRef.current && zoomSDK) {
         try {
           // Get video element dimensions based on size
@@ -57,11 +64,16 @@ export function ParticipantTile({
           videoElement.height = height;
 
           // Render video using Zoom SDK with video element
-          console.log(`Attempting to render video for participant: ${participant.id}, video dimensions: ${width}x${height}`);
+          console.log(`🎬 Attempting to render video for ${participant.name} (${participant.id}), dimensions: ${width}x${height}, isSpotlighted: ${isSpotlighted}`);
           await zoomSDK.renderVideo(participant.id, videoElement, width, height, isSpotlighted);
+          console.log(`✅ Successfully rendered video for ${participant.name}`);
         } catch (error) {
-          console.error(`Error rendering video for participant ${participant.id}:`, error);
+          console.error(`❌ Error rendering video for ${participant.name} (${participant.id}):`, error);
         }
+      } else {
+        if (!participant.isVideoOn) console.log(`📹 Video is OFF for ${participant.name}`);
+        if (!videoElementRef.current) console.log(`🚫 No video element ref for ${participant.name}`);
+        if (!zoomSDK) console.log(`🚫 No Zoom SDK for ${participant.name}`);
       }
     };
 

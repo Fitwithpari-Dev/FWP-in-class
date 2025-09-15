@@ -126,12 +126,43 @@ export function useZoomFitnessPlatform() {
           },
 
           onUserVideoStateChange: (userId, videoOn) => {
-            setParticipants(prev =>
-              prev.map(p => p.id === userId ? { ...p, isVideoOn: videoOn } : p)
-            );
+            console.log(`📹 Video state change: ${userId} -> ${videoOn ? 'ON' : 'OFF'}`);
+
+            // Update participant video state
+            setParticipants(prev => {
+              const updated = prev.map(p => p.id === userId ? { ...p, isVideoOn: videoOn } : p);
+              console.log(`👥 Updated participants after video state change:`, updated.map(p => ({
+                id: p.id,
+                name: p.name,
+                isVideoOn: p.isVideoOn,
+                isHost: p.isHost
+              })));
+              return updated;
+            });
+
+            // Update local video state if it's the current user
             if (userId === currentUser?.id) {
               setIsLocalVideoOn(videoOn);
+              console.log(`🎥 Local video state updated: ${videoOn}`);
             }
+
+            // Force a participant list refresh after video state change to ensure synchronization
+            setTimeout(() => {
+              try {
+                if (zoomSDK.current) {
+                  const refreshedParticipants = zoomSDK.current.getAllParticipants();
+                  console.log(`🔄 Refreshing participant list after video state change:`, refreshedParticipants.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    isVideoOn: p.isVideoOn,
+                    isHost: p.isHost
+                  })));
+                  setParticipants(refreshedParticipants);
+                }
+              } catch (error) {
+                console.error('Error refreshing participants after video state change:', error);
+              }
+            }, 500); // Small delay to let Zoom SDK sync
           },
 
           onUserAudioStateChange: (userId, audioOn) => {

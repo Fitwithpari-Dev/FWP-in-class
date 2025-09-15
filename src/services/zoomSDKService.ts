@@ -363,8 +363,19 @@ export class ZoomSDKService {
       const allUsers = this.client.getAllUser();
       const userExists = allUsers.some(user => user.userId === userId);
 
+      console.log(`🔍 Validating user ${userId} for video rendering:`, {
+        userExists,
+        totalUsers: allUsers.length,
+        availableUsers: allUsers.map(u => ({
+          id: u.userId,
+          name: u.displayName,
+          hasVideo: u.bVideoOn,
+          isHost: u.isHost
+        }))
+      });
+
       if (!userExists) {
-        console.warn(`User ${userId} not found in session. Available users:`, allUsers.map(u => u.userId));
+        console.warn(`❌ User ${userId} not found in session. Available users:`, allUsers.map(u => ({ id: u.userId, name: u.displayName })));
         return;
       }
 
