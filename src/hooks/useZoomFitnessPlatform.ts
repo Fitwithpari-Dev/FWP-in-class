@@ -368,6 +368,10 @@ export function useZoomFitnessPlatform() {
 
         await zoomSDK.current.joinSession(topic, token, sanitizedUserName, isHost);
 
+        // Set connection state immediately after successful join
+        setConnectionState('Connected' as ConnectionState);
+        console.log('✅ Successfully joined Zoom session!');
+
         // Get session info
         const sessionInfo = zoomSDK.current.getSessionInfo();
         if (sessionInfo) {
@@ -389,11 +393,18 @@ export function useZoomFitnessPlatform() {
           startTime: new Date(),
         }));
 
-        // Get initial participants
-        const allParticipants = zoomSDK.current.getAllParticipants();
-        setParticipants(allParticipants);
+        // Get initial participants (this may fail but shouldn't prevent connection)
+        try {
+          const allParticipants = zoomSDK.current.getAllParticipants();
+          setParticipants(allParticipants);
+        } catch (participantError) {
+          console.warn('Could not get initial participants:', participantError);
+          // Initialize with empty array, participants will be updated via events
+          setParticipants([]);
+        }
 
-        setConnectionState('Connected' as ConnectionState);
+        // Clear any previous errors on successful connection
+        setError(null);
       } catch (err) {
         console.error('Failed to join session:', err);
 
@@ -416,6 +427,10 @@ export function useZoomFitnessPlatform() {
                   const retryToken = await generateSessionToken(topic, 1, ZOOM_CONFIG.password, sanitizedUserName);
                   await zoomSDK.current!.joinSession(topic, retryToken, sanitizedUserName, true);
 
+                  // Set connection state immediately after successful join
+                  setConnectionState('Connected' as ConnectionState);
+                  console.log('✅ Successfully joined Zoom session on retry!');
+
                   // Success - update session state
                   const sessionInfo = zoomSDK.current!.getSessionInfo();
                   if (sessionInfo) {
@@ -423,7 +438,6 @@ export function useZoomFitnessPlatform() {
                     setSpotlightedParticipant(sessionInfo.userId);
                   }
                   setClassSession(prev => ({ ...prev, id: topic, title: `Live Fitness Session - ${topic}`, startTime: new Date() }));
-                  setConnectionState('Connected' as ConnectionState);
                   setError(null);
                 } catch (retryErr) {
                   console.error('Host retry failed:', retryErr);
