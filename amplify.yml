@@ -4,18 +4,18 @@ frontend:
     preBuild:
       commands:
         - echo "🚀 Starting FitWithPari deployment with Zoom Video SDK optimization..."
-        - echo "Node version:" && node --version
-        - echo "NPM version:" && npm --version
+        - 'echo "Node version:" && node --version'
+        - 'echo "NPM version:" && npm --version'
         - echo "Installing dependencies with production optimizations..."
         - npm ci --include=dev --prefer-offline --no-audit --progress=false
         - echo "✅ Dependencies installed successfully"
     build:
       commands:
         - echo "🔧 Building React + TypeScript app with Vite for production..."
-        - echo "Environment: $NODE_ENV"
-        - echo "Build target: Production with video streaming optimizations"
+        - 'echo "Environment: $NODE_ENV"'
+        - echo "Build target Production with video streaming optimizations"
         - npm run build:check
-        - echo "📊 Build statistics:"
+        - echo "📊 Build statistics"
         - du -sh build/ 2>/dev/null || echo "Build size calculation unavailable"
         - ls -la build/ 2>/dev/null || echo "Build directory listing unavailable"
         - echo "✅ Vite build completed successfully"
