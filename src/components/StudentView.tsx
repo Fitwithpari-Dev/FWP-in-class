@@ -31,7 +31,6 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
     getCurrentUser,
     getSpotlightedParticipant,
     sdk,
-    mockSDK,
   } = useFitnessPlatformContext();
 
   const isMobile = useIsMobile();
@@ -63,9 +62,9 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
 
   const handleSwitchView = () => {
     if (viewMode === 'spotlight') {
-      mockSDK.switchToGalleryView();
+      setViewMode('gallery');
     } else {
-      mockSDK.switchToSpotlightView(spotlightedParticipant);
+      setViewMode('spotlight');
     }
   };
 
@@ -109,7 +108,7 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
           viewMode={viewMode}
           onToggleVideo={handleToggleVideo}
           onToggleAudio={handleToggleAudio}
-          onRaiseHand={mockSDK.raiseHand}
+          onRaiseHand={sdk.raiseHand}
           onToggleChat={() => setIsSidePanelOpen(!isSidePanelOpen)}
           onSwitchView={handleSwitchView}
           onLeave={handleLeave}
@@ -157,7 +156,7 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
           viewMode={viewMode}
           onToggleVideo={handleToggleVideo}
           onToggleAudio={handleToggleAudio}
-          onRaiseHand={mockSDK.raiseHand}
+          onRaiseHand={sdk.raiseHand}
           onToggleChat={() => setIsSidePanelOpen(!isSidePanelOpen)}
           onSwitchView={handleSwitchView}
           onLeave={handleLeave}
@@ -235,7 +234,7 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
         viewMode={viewMode}
         onToggleVideo={handleToggleVideo}
         onToggleAudio={handleToggleAudio}
-        onRaiseHand={mockSDK.raiseHand}
+        onRaiseHand={sdk.raiseHand}
         onToggleChat={() => setIsSidePanelOpen(!isSidePanelOpen)}
         onSwitchView={handleSwitchView}
         onLeave={handleLeave}

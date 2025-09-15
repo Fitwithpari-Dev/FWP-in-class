@@ -30,7 +30,6 @@ export function CoachView({ onToggleView }: CoachViewProps) {
     getCurrentUser,
     getSpotlightedParticipant,
     sdk,
-    mockSDK,
   } = useFitnessPlatformContext();
 
   const isMobile = useIsMobile();
@@ -61,9 +60,9 @@ export function CoachView({ onToggleView }: CoachViewProps) {
 
   const handleSwitchView = () => {
     if (viewMode === 'spotlight') {
-      mockSDK.switchToGalleryView();
+      setViewMode('gallery');
     } else {
-      mockSDK.switchToSpotlightView(spotlightedParticipant);
+      setViewMode('spotlight');
     }
   };
 
@@ -75,11 +74,11 @@ export function CoachView({ onToggleView }: CoachViewProps) {
   };
 
   const handleCoachModeToggle = (mode: 'teach' | 'workout') => {
-    mockSDK.setCoachMode(mode);
+    sdk.setCoachMode(mode);
   };
 
   const handleLevelHighlight = (level: 'beginner' | 'intermediate' | 'advanced' | null) => {
-    mockSDK.highlightLevel(level);
+    sdk.highlightLevel(level);
   };
 
   return (
@@ -106,9 +105,9 @@ export function CoachView({ onToggleView }: CoachViewProps) {
           spotlightedParticipant={spotlightedParticipant}
           userRole="coach"
           highlightedLevel={highlightedLevel}
-          onSpotlight={mockSDK.spotlightParticipant}
-          onMute={mockSDK.muteParticipant}
-          onRemove={mockSDK.removeParticipant}
+          onSpotlight={sdk.spotlightParticipant}
+          onMute={sdk.muteParticipant}
+          onRemove={sdk.removeParticipant}
         />
 
         {/* Desktop Side Panel */}
@@ -118,9 +117,9 @@ export function CoachView({ onToggleView }: CoachViewProps) {
             userRole="coach"
             isVisible={isSidePanelOpen}
             onClose={() => setIsSidePanelOpen(false)}
-            onSpotlight={mockSDK.spotlightParticipant}
-            onMute={mockSDK.muteParticipant}
-            onRemove={mockSDK.removeParticipant}
+            onSpotlight={sdk.spotlightParticipant}
+            onMute={sdk.muteParticipant}
+            onRemove={sdk.removeParticipant}
             highlightedLevel={highlightedLevel}
             onHighlightLevel={handleLevelHighlight}
             showLevelGroups={true}
@@ -141,9 +140,9 @@ export function CoachView({ onToggleView }: CoachViewProps) {
               userRole="coach"
               isVisible={true}
               onClose={() => setIsSidePanelOpen(false)}
-              onSpotlight={mockSDK.spotlightParticipant}
-              onMute={mockSDK.muteParticipant}
-              onRemove={mockSDK.removeParticipant}
+              onSpotlight={sdk.spotlightParticipant}
+              onMute={sdk.muteParticipant}
+              onRemove={sdk.removeParticipant}
               highlightedLevel={highlightedLevel}
               onHighlightLevel={handleLevelHighlight}
               showLevelGroups={true}
@@ -161,10 +160,10 @@ export function CoachView({ onToggleView }: CoachViewProps) {
         viewMode={viewMode}
         onToggleVideo={handleToggleVideo}
         onToggleAudio={handleToggleAudio}
-        onRaiseHand={mockSDK.raiseHand}
+        onRaiseHand={sdk.raiseHand}
         onToggleChat={() => setIsSidePanelOpen(!isSidePanelOpen)}
         onSwitchView={handleSwitchView}
-        onMuteAll={mockSDK.muteAll}
+        onMuteAll={sdk.muteAll}
         onLeave={handleLeave}
       />
 
