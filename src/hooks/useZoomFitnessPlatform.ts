@@ -240,6 +240,44 @@ export function useZoomFitnessPlatform() {
     return () => clearInterval(interval);
   }, []);
 
+  // Periodic participant refresh to ensure video states are up to date
+  useEffect(() => {
+    if (!zoomSDK.current || connectionState !== 'Connected') return;
+
+    const refreshInterval = setInterval(() => {
+      try {
+        const updatedParticipants = zoomSDK.current?.getAllParticipants() || [];
+        console.log('🔄 Periodic participant refresh:', updatedParticipants.map(p => ({
+          id: p.id,
+          name: p.name,
+          isVideoOn: p.isVideoOn,
+          isAudioOn: p.isAudioOn
+        })));
+
+        setParticipants(prev => {
+          // Only update if there are actual changes to avoid unnecessary re-renders
+          const hasChanges = updatedParticipants.some((newP, index) => {
+            const oldP = prev[index];
+            return !oldP ||
+              oldP.isVideoOn !== newP.isVideoOn ||
+              oldP.isAudioOn !== newP.isAudioOn ||
+              oldP.name !== newP.name;
+          });
+
+          if (hasChanges || prev.length !== updatedParticipants.length) {
+            console.log('📊 Participants updated via periodic refresh');
+            return updatedParticipants;
+          }
+          return prev;
+        });
+      } catch (error) {
+        console.warn('Error in periodic participant refresh:', error);
+      }
+    }, 5000); // Refresh every 5 seconds
+
+    return () => clearInterval(refreshInterval);
+  }, [connectionState]);
+
   useEffect(() => {
     if (exerciseTimer > 0) {
       const interval = setInterval(() => {

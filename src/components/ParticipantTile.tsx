@@ -69,18 +69,33 @@ export function ParticipantTile({
           console.log(`✅ Successfully rendered video for ${participant.name}`);
         } catch (error) {
           console.error(`❌ Error rendering video for ${participant.name} (${participant.id}):`, error);
+          console.error(`❌ Video render error details:`, {
+            participantId: participant.id,
+            participantName: participant.name,
+            isVideoOn: participant.isVideoOn,
+            elementDimensions: {
+              width: videoElementRef.current?.width,
+              height: videoElementRef.current?.height
+            },
+            errorType: error?.constructor?.name,
+            errorMessage: error?.message
+          });
         }
       } else {
-        if (!participant.isVideoOn) console.log(`📹 Video is OFF for ${participant.name}`);
-        if (!videoElementRef.current) console.log(`🚫 No video element ref for ${participant.name}`);
-        if (!zoomSDK) console.log(`🚫 No Zoom SDK for ${participant.name}`);
+        console.log(`🔍 Video not rendering for ${participant.name}:`, {
+          videoOn: participant.isVideoOn,
+          hasElement: !!videoElementRef.current,
+          hasSDK: !!zoomSDK
+        });
       }
     };
 
-    renderParticipantVideo();
+    // Add a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(renderParticipantVideo, 100);
 
     // Cleanup when component unmounts or video turns off
     return () => {
+      clearTimeout(timeoutId);
       if (videoElementRef.current && zoomSDK && participant.isVideoOn) {
         zoomSDK.stopRenderVideo(participant.id, videoElementRef.current).catch(console.error);
       }

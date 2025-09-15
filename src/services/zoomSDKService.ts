@@ -605,19 +605,39 @@ export class ZoomSDKService {
       console.log('📋 Getting all participants:', {
         totalUsers: users.length,
         currentUser: sessionInfo?.userId,
-        userNames: users.map(u => ({ id: u.userId, name: u.displayName }))
+        userDetails: users.map(u => ({
+          id: u.userId,
+          name: u.displayName,
+          bVideoOn: u.bVideoOn,
+          muted: u.muted,
+          isHost: u.isHost
+        }))
       });
 
-      return users.map((user: ZoomParticipant) => ({
-        id: user.userId,
-        name: user.displayName || 'Unknown',
-        isVideoOn: user.bVideoOn || false,
-        isAudioOn: !user.muted,
-        isHost: user.isHost || false, // Use Zoom's isHost property
-        connectionQuality: this.getUserConnectionQuality(user.userId),
-        hasRaisedHand: false, // Will be tracked separately
-        level: this.participantLevels.get(user.userId),
-      }));
+      const participants = users.map((user: ZoomParticipant) => {
+        const participant = {
+          id: user.userId,
+          name: user.displayName || 'Unknown',
+          isVideoOn: user.bVideoOn || false,
+          isAudioOn: !user.muted,
+          isHost: user.isHost || false,
+          connectionQuality: this.getUserConnectionQuality(user.userId),
+          hasRaisedHand: false,
+          level: this.participantLevels.get(user.userId),
+        };
+
+        console.log(`👤 Participant ${participant.name} (${participant.id}):`, {
+          isVideoOn: participant.isVideoOn,
+          rawBVideoOn: user.bVideoOn,
+          isAudioOn: participant.isAudioOn,
+          rawMuted: user.muted,
+          isHost: participant.isHost
+        });
+
+        return participant;
+      });
+
+      return participants;
     } catch (error) {
       console.error('Error getting participants:', error);
       return [];
