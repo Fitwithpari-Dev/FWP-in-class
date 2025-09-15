@@ -26,27 +26,31 @@ const createResponse = (statusCode, body, additionalHeaders = {}) => {
 
 // Main Lambda handler
 exports.handler = async (event, context) => {
+  // Function URLs use different event structure than API Gateway
+  const httpMethod = event.requestContext?.http?.method || event.httpMethod;
+  const path = event.requestContext?.http?.path || event.path || event.rawPath;
+
   console.log('Lambda function invoked:', {
-    httpMethod: event.httpMethod,
-    path: event.path,
-    requestId: context.awsRequestId
+    httpMethod: httpMethod,
+    path: path,
+    requestId: context.awsRequestId,
+    eventKeys: Object.keys(event)
   });
 
   try {
     // Handle preflight OPTIONS request
-    if (event.httpMethod === 'OPTIONS') {
+    if (httpMethod === 'OPTIONS') {
       return createResponse(200, { message: 'CORS preflight' });
     }
 
     // Route based on path
-    const path = event.path || event.rawPath;
 
     if (path.includes('/health')) {
       return await handleHealthCheck(event);
     } else if (path.includes('/token')) {
-      return await handleTokenGeneration(event);
+      return await handleTokenGeneration(event, httpMethod);
     } else if (path.includes('/validate')) {
-      return await handleTokenValidation(event);
+      return await handleTokenValidation(event, httpMethod);
     } else if (path.includes('/config')) {
       return await handleConfigRequest(event);
     } else {
@@ -77,8 +81,8 @@ async function handleHealthCheck(event) {
 }
 
 // Token generation handler
-async function handleTokenGeneration(event) {
-  if (event.httpMethod !== 'POST') {
+async function handleTokenGeneration(event, httpMethod) {
+  if (httpMethod !== 'POST') {
     return createResponse(405, {
       error: 'Method Not Allowed',
       message: 'Only POST method is allowed'
@@ -178,8 +182,8 @@ async function handleTokenGeneration(event) {
 }
 
 // Token validation handler (for debugging)
-async function handleTokenValidation(event) {
-  if (event.httpMethod !== 'POST') {
+async function handleTokenValidation(event, httpMethod) {
+  if (httpMethod !== 'POST') {
     return createResponse(405, {
       error: 'Method Not Allowed',
       message: 'Only POST method is allowed'
