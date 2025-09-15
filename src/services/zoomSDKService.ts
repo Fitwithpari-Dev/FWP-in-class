@@ -183,11 +183,11 @@ export class ZoomSDKService {
     if (!this.stream) return;
 
     try {
-      // Start video first
-      console.log('🎥 Starting video for host...');
-      await this.stream.startVideo();
+      // Check if mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      console.log(`📱 Host device type: ${isMobile ? 'Mobile' : 'Desktop'}`);
 
-      // Join audio session
+      // Join audio session first
       console.log('🔊 Starting audio for host...');
       await this.stream.startAudio();
 
@@ -197,6 +197,29 @@ export class ZoomSDKService {
       // Unmute audio for host (they should be able to speak)
       console.log('🎤 Unmuting host audio...');
       await this.stream.unmuteAudio();
+
+      // Handle video initialization based on device type
+      if (isMobile) {
+        console.log('📱 Mobile host detected - requesting camera permissions...');
+        try {
+          // Request camera permissions on mobile
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          console.log('📷 Camera permission granted for mobile host');
+          // Stop the test stream
+          stream.getTracks().forEach(track => track.stop());
+
+          // Now start video with Zoom SDK
+          console.log('🎥 Starting video for mobile host...');
+          await this.stream.startVideo();
+        } catch (permissionError) {
+          console.error('❌ Camera permission denied for mobile host:', permissionError);
+          // Continue without video but log the issue
+        }
+      } else {
+        // For desktop, start video directly
+        console.log('🎥 Starting video for desktop host...');
+        await this.stream.startVideo();
+      }
 
       console.log('✅ Host settings configured successfully');
 
@@ -215,9 +238,9 @@ export class ZoomSDKService {
     if (!this.stream) return;
 
     try {
-      // Start video first
-      console.log('🎥 Starting video for participant...');
-      await this.stream.startVideo();
+      // Check if mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      console.log(`📱 Device type: ${isMobile ? 'Mobile' : 'Desktop'}`);
 
       // Join audio first, then mute (required sequence for Zoom SDK)
       console.log('🔊 Joining audio session...');
@@ -230,10 +253,33 @@ export class ZoomSDKService {
       console.log('🔇 Muting participant audio...');
       await this.stream.muteAudio();
 
+      // For mobile devices, request camera permissions explicitly first
+      if (isMobile) {
+        console.log('📱 Mobile device detected - requesting camera permissions...');
+        try {
+          // Request camera permissions on mobile
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          console.log('📷 Camera permission granted on mobile');
+          // Stop the test stream
+          stream.getTracks().forEach(track => track.stop());
+
+          // Now start video with Zoom SDK
+          console.log('🎥 Starting video for mobile participant...');
+          await this.stream.startVideo();
+        } catch (permissionError) {
+          console.error('❌ Camera permission denied on mobile:', permissionError);
+          // Continue without video but log the issue
+        }
+      } else {
+        // For desktop, start video directly
+        console.log('🎥 Starting video for desktop participant...');
+        await this.stream.startVideo();
+      }
+
       console.log('✅ Participant settings configured successfully');
     } catch (error) {
-      console.error('Error configuring participant settings:', error);
-      // Don't throw - allow session to continue even if audio config fails
+      console.error('❌ Error configuring participant settings:', error);
+      // Don't throw - allow session to continue even if audio/video config fails
     }
   }
 
