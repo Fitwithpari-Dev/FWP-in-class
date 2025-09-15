@@ -71,8 +71,10 @@ export class TokenService {
       );
     }
 
-    // CRITICAL: Token generation times per Zoom SDK requirements
-    const iat = Math.round(new Date().getTime() / 1000) - 30; // 30 seconds in the past to account for clock skew
+    // CRITICAL FIX: Use deterministic timestamps for same session
+    // Generate a base timestamp that's consistent across all participants in the same session
+    const sessionTimestamp = this.getSessionTimestamp(sessionName);
+    const iat = sessionTimestamp - 30; // 30 seconds in the past to account for clock skew
     const exp = iat + 60 * 60 * 2; // 2 hours expiry
 
     const payload: TokenPayload = {
@@ -176,6 +178,39 @@ export class TokenService {
       console.error('Failed to fetch token from API:', error);
       throw new Error('Unable to generate session token. Please try again.');
     }
+  }
+
+  /**
+   * Generate deterministic timestamp for session coordination
+   * All participants in the same session will get the same base timestamp
+   */
+  private getSessionTimestamp(sessionName: string): number {
+    // Create a deterministic timestamp based on session name
+    // This ensures all participants joining the same session get the same token timestamp
+    let hash = 0;
+    for (let i = 0; i < sessionName.length; i++) {
+      const char = sessionName.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+
+    // Use the current hour as base time to avoid expired tokens
+    const currentHour = Math.floor(Date.now() / (60 * 60 * 1000)) * 60 * 60;
+
+    // Add hash-based offset (max 30 minutes) to create session-specific timestamp
+    const hashOffset = Math.abs(hash) % (30 * 60); // 0-30 minutes in seconds
+    const sessionTimestamp = currentHour + hashOffset;
+
+    console.log('🕐 Session timestamp coordination:', {
+      sessionName,
+      hash,
+      currentHour: new Date(currentHour * 1000).toISOString(),
+      hashOffset: `${hashOffset}s`,
+      sessionTimestamp: new Date(sessionTimestamp * 1000).toISOString(),
+      reason: 'All participants in this session will use this exact timestamp'
+    });
+
+    return sessionTimestamp;
   }
 
   /**
