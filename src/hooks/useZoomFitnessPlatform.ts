@@ -95,11 +95,21 @@ export function useZoomFitnessPlatform() {
                 // Auto-start session when multiple participants are present
                 if (allParticipants.length >= 1) {
                   setClassSession(current => {
-                    if (current.currentExercise === 'Waiting to start' || current.currentExercise === 'Joining session...') {
-                      console.log('🏃 Session auto-starting - multiple participants detected');
+                    const shouldTransition =
+                      current.currentExercise === 'Waiting to start' ||
+                      current.currentExercise === 'Joining session...' ||
+                      current.title === 'Connecting to Session...';
+
+                    if (shouldTransition) {
+                      console.log('🏃 Session auto-starting - multiple participants detected', {
+                        participantCount: allParticipants.length,
+                        currentExercise: current.currentExercise,
+                        currentTitle: current.title
+                      });
                       return {
                         ...current,
-                        currentExercise: 'Full Body Workout'
+                        currentExercise: 'Full Body Workout',
+                        title: 'Live Fitness Session - Active Workout'
                       };
                     }
                     return current;
@@ -451,15 +461,32 @@ export function useZoomFitnessPlatform() {
           currentExercise: isHost ? 'Full Body Workout' : 'Joining session...',
         }));
 
-        // For students, add immediate transition after successful join
+        // For students, add multiple transition mechanisms for reliability
         if (!isHost) {
+          // Immediate transition
           setTimeout(() => {
             setClassSession(prev => ({
               ...prev,
               currentExercise: 'Full Body Workout',
+              title: 'Live Fitness Session - Active Workout'
             }));
-            console.log('🏃 Student session state updated to active');
-          }, 2000); // 2 second delay to allow media setup
+            console.log('🏃 Student session state updated to active (2s timeout)');
+          }, 2000);
+
+          // Backup transition for students joining existing sessions
+          setTimeout(() => {
+            setClassSession(prev => {
+              if (prev.currentExercise === 'Joining session...' || prev.title === 'Connecting to Session...') {
+                console.log('🔄 Backup transition: Student joining existing active session');
+                return {
+                  ...prev,
+                  currentExercise: 'Full Body Workout',
+                  title: 'Live Fitness Session - Active Workout'
+                };
+              }
+              return prev;
+            });
+          }, 5000); // Longer timeout for slower connections
         }
 
         // Get initial participants (this may fail but shouldn't prevent connection)
@@ -495,6 +522,7 @@ export function useZoomFitnessPlatform() {
                 setClassSession(prev => ({
                   ...prev,
                   currentExercise: 'Full Body Workout',
+                  title: 'Live Fitness Session - Active Workout'
                 }));
                 console.log('🏃 Student session now active - after successful join');
               }
@@ -509,12 +537,19 @@ export function useZoomFitnessPlatform() {
           // This is non-critical - users can manually enable via UI controls
         }
       } catch (err) {
-        console.error('Failed to join session:', err);
+        console.error('❌ Failed to join session:', err);
+        console.error('❌ Join failure context:', {
+          topic,
+          userName,
+          isHost,
+          sessionDisplayName,
+          currentState: connectionState
+        });
 
         // Handle Zoom SDK specific errors
         if (err && typeof err === 'object' && 'type' in err) {
           const zoomError = err as { type: string; reason?: string };
-          console.error('Zoom SDK Error Details:', zoomError);
+          console.error('❌ Zoom SDK Error Details:', zoomError);
 
           if (zoomError.type === 'IMPROPER_MEETING_STATE' && zoomError.reason === 'closed') {
             if (role === 'coach') {
