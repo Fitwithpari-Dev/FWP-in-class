@@ -35,12 +35,12 @@ export function useZoomFitnessPlatform() {
   // State management
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [classSession, setClassSession] = useState<ClassSession>({
-    id: 'class-1',
-    title: 'HIIT Cardio Blast',
+    id: 'waiting-to-join',
+    title: 'Connecting to Session...',
     startTime: new Date(),
     duration: 45,
     isRecording: false,
-    currentExercise: 'Warm-up',
+    currentExercise: 'Waiting to start',
     exerciseTimer: 180,
     coachMode: 'teach',
   });
@@ -341,6 +341,14 @@ export function useZoomFitnessPlatform() {
             setSpotlightedParticipant(sessionInfo.userId);
           }
         }
+
+        // Update session info with real data
+        setClassSession(prev => ({
+          ...prev,
+          id: topic,
+          title: `Live Fitness Session - ${topic}`,
+          startTime: new Date(),
+        }));
 
         // Get initial participants
         const allParticipants = zoomSDK.current.getAllParticipants();
