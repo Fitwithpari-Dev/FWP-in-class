@@ -391,15 +391,32 @@ export class ZoomSDKService {
 
       console.log(`Starting video render for user ${userId} on video element ${width}x${height}, quality: ${quality}`);
 
-      // Start rendering using correct Zoom SDK API with video element
-      await this.stream.renderVideo(
-        videoElement,
-        userId,
+      // Convert userId to number as required by Zoom SDK
+      const userIdNumber = parseInt(userId, 10);
+      if (isNaN(userIdNumber)) {
+        throw new Error(`Invalid userId: ${userId} - must be convertible to number`);
+      }
+
+      // Set video quality enum value
+      const videoQuality = isSpotlight ? 2 : 1; // 0=90p, 1=180p, 2=360p, 3=720p, 4=1080p
+
+      console.log(`🎬 Calling Zoom SDK renderVideo with params:`, {
+        userIdNumber,
         width,
         height,
-        0, // x coordinate
-        0, // y coordinate
-        isSpotlight ? 1 : 0 // video quality level (0=low, 1=high)
+        videoQuality,
+        elementType: videoElement.tagName
+      });
+
+      // Start rendering using correct Zoom SDK API with proper parameters
+      await this.stream.renderVideo(
+        videoElement,        // canvas/video element
+        userIdNumber,        // userId as number
+        width,              // width
+        height,             // height
+        0,                  // x coordinate
+        0,                  // y coordinate
+        videoQuality        // video quality (VideoQuality enum)
       );
 
       this.renderingParticipants.add(userId);
@@ -415,11 +432,16 @@ export class ZoomSDKService {
     if (!this.stream) throw new Error('Stream not initialized');
 
     try {
-      await this.stream.stopRenderVideo(videoElement, userId);
+      // Convert userId to number as required by Zoom SDK
+      const userIdNumber = parseInt(userId, 10);
+      console.log(`🛑 Stopping video render for user ${userId} (${userIdNumber})`);
+
+      await this.stream.stopRenderVideo(videoElement, userIdNumber);
       this.renderingParticipants.delete(userId);
       this.videoCanvasMap.delete(userId);
+      console.log(`✅ Successfully stopped video render for user ${userId}`);
     } catch (error) {
-      console.error(`Error stopping video render for user ${userId}:`, error);
+      console.error(`❌ Error stopping video render for user ${userId}:`, error);
     }
   }
 
@@ -450,9 +472,11 @@ export class ZoomSDKService {
         const x = col * tileWidth;
         const y = row * tileHeight;
 
+        // Convert participant ID to number for Zoom SDK
+        const participantIdNumber = parseInt(participants[i], 10);
         await this.stream.renderVideo(
           canvas,
-          participants[i],
+          participantIdNumber,
           tileWidth,
           tileHeight,
           x,
@@ -614,7 +638,8 @@ export class ZoomSDKService {
     // Clean up video canvas
     const canvas = this.videoCanvasMap.get(userId);
     if (canvas && this.stream) {
-      this.stream.stopRenderVideo(canvas, userId).catch(console.error);
+      const userIdNumber = parseInt(userId, 10);
+      this.stream.stopRenderVideo(canvas, userIdNumber).catch(console.error);
     }
 
     // Clean up tracking maps
@@ -628,7 +653,8 @@ export class ZoomSDKService {
     // Stop all video renders
     for (const [userId, canvas] of this.videoCanvasMap) {
       if (this.stream) {
-        await this.stream.stopRenderVideo(canvas, userId).catch(console.error);
+        const userIdNumber = parseInt(userId, 10);
+        await this.stream.stopRenderVideo(canvas, userIdNumber).catch(console.error);
       }
     }
 
