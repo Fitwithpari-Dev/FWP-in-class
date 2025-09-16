@@ -18,10 +18,10 @@ export function VideoDebugPanel() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [testToggleCount, setTestToggleCount] = useState(0);
 
-  // Only show in development
-  if (process.env.NODE_ENV === 'production') {
-    return null;
-  }
+  // Temporarily enable in production for debugging
+  // if (process.env.NODE_ENV === 'production') {
+  //   return null;
+  // }
 
   const handleTestToggle = async () => {
     try {
@@ -131,6 +131,49 @@ export function VideoDebugPanel() {
         errorMessage: error instanceof Error ? error.message : String(error),
         hasZoomSDK: !!zoomSDK
       });
+    }
+  };
+
+  const handleExplicitPermissionRequest = async () => {
+    console.log('🔐 Debug: Requesting explicit camera and microphone permissions...');
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+
+      console.log('✅ Debug: Permissions granted successfully!', {
+        videoTracks: stream.getVideoTracks().length,
+        audioTracks: stream.getAudioTracks().length,
+        videoEnabled: stream.getVideoTracks()[0]?.enabled,
+        audioEnabled: stream.getAudioTracks()[0]?.enabled
+      });
+
+      // Stop the test stream
+      stream.getTracks().forEach(track => {
+        track.stop();
+        console.log(`🛑 Debug: Stopped ${track.kind} track`);
+      });
+
+      console.log('💡 Debug: Permissions granted - now try starting video in Zoom');
+
+    } catch (error) {
+      console.error('❌ Debug: Permission request failed:', error);
+      console.error('❌ Debug: Error details:', {
+        name: error.name,
+        message: error.message,
+        constraint: error.constraint
+      });
+
+      if (error.name === 'NotAllowedError') {
+        console.error('🔒 User explicitly denied camera/microphone access');
+        console.error('💡 Solution: Click the camera icon in browser address bar and allow permissions');
+      } else if (error.name === 'NotFoundError') {
+        console.error('📷 No camera/microphone found on this device');
+      } else if (error.name === 'NotReadableError') {
+        console.error('🔧 Camera/microphone is already in use by another application');
+      }
     }
   };
 
@@ -302,6 +345,15 @@ export function VideoDebugPanel() {
               >
                 <RefreshCw className="w-3 h-3 mr-1" />
                 Force Start Video Stream
+              </Button>
+              <Button
+                onClick={handleExplicitPermissionRequest}
+                variant="outline"
+                size="sm"
+                className="border-blue-600 text-blue-300 hover:bg-blue-700 text-xs h-8"
+              >
+                <Bug className="w-3 h-3 mr-1" />
+                Request Camera Permissions
               </Button>
               <Button
                 onClick={handleNetworkTest}
