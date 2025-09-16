@@ -1,14 +1,23 @@
-# FitWithPari - Live Fitness Platform with Zoom Video SDK
+# FitWithPari - Live Fitness Platform with Multi-Video SDK Support
 
 ## Project Overview
-A real-time fitness platform built with React + TypeScript + Vite, integrated with Zoom Video SDK for live video sessions, Supabase for backend services, and deployed on AWS Amplify.
+A real-time fitness platform built with React + TypeScript + Vite, featuring modular video service architecture with support for both Zoom Video SDK and Agora Interactive Live Streaming. Uses Supabase for backend services and deployed on AWS Amplify.
 
-**IMPORTANT**: This is a production fitness platform using real Zoom Video SDK integration, not mock data.
+**IMPORTANT**: This is a production fitness platform using real video SDK integrations with a unified service provider architecture for easy switching between video platforms.
+
+## Video Service Architecture
+The platform uses a **Unified Video Service Provider** pattern allowing seamless switching between:
+- **Primary**: Agora Interactive Live Streaming SDK (current default)
+- **Fallback**: Zoom Video SDK (for compatibility/backup)
+
+Switch between services by changing `VIDEO_SERVICE` in `src/config/video.config.ts`
 
 ## Architecture
 - **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
-- **Video**: Zoom Video SDK (real-time video streaming for 50+ participants)
-- **Backend**: Supabase (authentication, database) + AWS Lambda (Zoom token generation)
+- **Video Services**:
+  - **Agora Interactive Live Streaming SDK** (primary - supports 50+ participants)
+  - **Zoom Video SDK** (fallback - enterprise-grade backup)
+- **Backend**: Supabase (authentication, database) + AWS Lambda (token generation)
 - **Deployment**: AWS Amplify Gen2 + CloudFront (Mumbai region: ap-south-1)
 - **Domain**: classes.tribe.fit (production)
 
@@ -37,10 +46,16 @@ aws lambda update-function-code --function-name fitwithpari-zoom-token-staging -
 ```
 
 ## Environment Variables (.env)
-**CRITICAL**: These must be configured for real Zoom sessions:
+**CRITICAL**: These must be configured for real video sessions:
 
 ```bash
-# Zoom Video SDK (Required for real sessions)
+# Agora Interactive Live Streaming SDK (Primary)
+VITE_AGORA_APP_ID=your_agora_app_id
+VITE_AGORA_APP_CERTIFICATE=your_agora_app_certificate
+AGORA_APP_ID=your_agora_app_id
+AGORA_APP_CERTIFICATE=your_agora_app_certificate
+
+# Zoom Video SDK (Fallback)
 VITE_ZOOM_SDK_KEY=your_zoom_sdk_key
 VITE_ZOOM_SDK_SECRET=your_zoom_sdk_secret
 VITE_ZOOM_TOKEN_ENDPOINT=https://your-lambda-url.lambda-url.ap-south-1.on.aws
@@ -53,6 +68,59 @@ VITE_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
 VITE_DEFAULT_SESSION_NAME=fitwithpari-session
 VITE_SESSION_PASSWORD=your_session_password
 ```
+
+## Agora Interactive Live Streaming SDK Integration
+
+### Official Documentation
+- **Product Overview**: https://docs.agora.io/en/interactive-live-streaming/overview/product-overview
+- **Main Documentation**: https://docs.agora.io/en/
+- **Authentication Workflow**: https://docs.agora.io/en/interactive-live-streaming/get-started/authentication-workflow
+
+### Core Components
+- `src/services/agoraSDKService.ts` - Core Agora RTC SDK wrapper
+- `src/services/agoraVideoService.ts` - Unified video service implementation
+- `src/services/agoraTokenService.ts` - Token generation and management
+- `src/config/agora.config.ts` - Agora-specific configuration
+- `src/hooks/useVideoFitnessPlatform.ts` - React hook for unified video services
+
+### Authentication Architecture
+```
+1. App ID + App Certificate → Token Generation
+2. Role-based Access: Coach (Host/Publisher) | Student (Audience/Subscriber)
+3. Channel Management: fitwithpari_sessionId naming convention
+4. Token Expiration: 1 hour with automatic renewal capability
+```
+
+### Session Lifecycle (Agora)
+1. **Initialize**: Configure Agora client in 'live' mode for role-based streaming
+2. **Generate Token**: Use App Certificate for secure channel access
+3. **Join Channel**: Coach as 'host', Students as 'audience'
+4. **Stream Management**: Real-time video/audio publishing and subscribing
+5. **Leave Channel**: Cleanup tracks and connections
+
+### Key Features Implemented (Agora)
+- ✅ Interactive Live Streaming with 50+ participants
+- ✅ Token-based authentication with automatic generation
+- ✅ Role-based permissions (host/audience)
+- ✅ Real-time video/audio streaming optimized for fitness
+- ✅ Channel management with session-based naming
+- ✅ Network quality monitoring and connection recovery
+- ✅ Testing mode fallback for development
+
+### Agora vs Zoom Comparison
+| Feature | Agora ILS | Zoom SDK |
+|---------|-----------|----------|
+| **Participants** | 50+ (optimized) | 50+ (enterprise) |
+| **Role System** | Host/Audience | Meeting/Webinar |
+| **Authentication** | Token-based | JWT-based |
+| **Pricing** | Usage-based | Subscription |
+| **Latency** | Ultra-low | Low |
+| **Global CDN** | 200+ regions | Global |
+
+### Configuration Files
+- **agora.config.ts**: Streaming optimization, role configs, network settings
+- **video.config.ts**: Service provider selection (`VIDEO_SERVICE = 'agora'`)
+- **agoraTokenService.ts**: Secure token generation with role mapping
 
 ## Zoom Video SDK Integration
 
@@ -83,11 +151,26 @@ VITE_SESSION_PASSWORD=your_session_password
 npm run typecheck
 ```
 
-### Testing Real Zoom Sessions
+### Testing Real Video Sessions
+
+#### Agora Testing (Primary)
+1. Configure `VITE_AGORA_APP_ID` and optionally `VITE_AGORA_APP_CERTIFICATE`
+2. Set `VIDEO_SERVICE = 'agora'` in `src/config/video.config.ts`
+3. Join as Coach (host) and Student (audience) in separate browsers
+4. Test role-based permissions and streaming capabilities
+5. Monitor token generation and authentication workflow
+
+#### Zoom Testing (Fallback)
 1. Ensure `VITE_ZOOM_TOKEN_ENDPOINT` points to working Lambda Function URL
-2. Join as different roles in separate browser windows/devices
-3. Test video/audio controls, participant management, chat
-4. Monitor browser console for SDK errors
+2. Set `VIDEO_SERVICE = 'zoom'` in `src/config/video.config.ts`
+3. Join as different roles in separate browser windows/devices
+4. Test video/audio controls, participant management, chat
+5. Monitor browser console for SDK errors
+
+#### Cross-Platform Testing
+1. Test service switching between Agora and Zoom
+2. Verify fallback mechanisms work correctly
+3. Check unified interface consistency across both SDKs
 
 ### Code Style
 - Use ES modules with explicit imports
@@ -139,16 +222,30 @@ curl -X POST your-lambda-url/token -H "Content-Type: application/json" -d '{"ses
 ## File Structure
 ```
 src/
-├── components/          # React components (CoachView, StudentView, etc.)
-├── hooks/              # Custom hooks (useZoomFitnessPlatform)
-├── services/           # SDK services (zoomSDKService, tokenService)
+├── components/          # React components (CoachView, StudentView, UnifiedVideoTile)
+├── hooks/              # Custom hooks (useVideoFitnessPlatform, useZoomFitnessPlatform)
+├── services/           # Video SDK services
+│   ├── videoServiceProvider.ts    # Unified service provider/factory
+│   ├── agoraSDKService.ts         # Core Agora RTC SDK wrapper
+│   ├── agoraVideoService.ts       # Agora unified interface implementation
+│   ├── agoraTokenService.ts       # Agora token generation
+│   ├── zoomSDKService.ts          # Zoom SDK wrapper
+│   ├── zoomVideoService.ts        # Zoom unified interface implementation
+│   └── tokenService.ts            # Zoom JWT token service
 ├── context/            # React context providers
+│   └── FitnessPlatformContext.tsx # Unified video platform context
 ├── types/              # TypeScript type definitions
+│   ├── video-service.ts           # Unified video service interfaces
+│   └── fitness-platform.ts       # Platform-specific types
 ├── utils/              # Utility functions and validators
-└── config/             # Configuration files
+├── config/             # Configuration files
+│   ├── video.config.ts            # Video service provider selection
+│   ├── agora.config.ts            # Agora-specific configuration
+│   └── zoom.config.ts             # Zoom-specific configuration
+└── lib/                # Core libraries and security
 
 lambda/                 # AWS Lambda functions
-├── zoom-token-handler.js
+├── zoom-token-handler.js          # Zoom JWT token generation
 └── package.json
 
 amplify/               # AWS Amplify Gen2 configuration
@@ -169,12 +266,51 @@ amplify/               # AWS Amplify Gen2 configuration
 - Test with multiple participants when possible
 
 ## Debugging Tips
+
+### Agora Debugging (Primary)
+1. **Authentication Issues**:
+   - Check `VITE_AGORA_APP_ID` format (32-character string)
+   - Verify App Certificate configuration in Agora Console
+   - Monitor token generation logs in browser console
+   - Test with testing mode (empty App Certificate) first
+
+2. **Connection Errors**:
+   - Look for `CAN_NOT_GET_GATEWAY_SERVER` in console
+   - Verify network connectivity and firewall settings
+   - Check Agora service region availability
+   - Test with different browser/incognito mode
+
+3. **Role & Permission Issues**:
+   - Verify coach = 'host', student = 'audience' mapping
+   - Check setClientRole() calls for 'live' mode requirement
+   - Monitor user-published/unpublished events
+
+### Zoom Debugging (Fallback)
 1. Check browser console for Zoom SDK errors
 2. Monitor network tab for failed token requests
 3. Verify JWT token structure and expiration
 4. Test Lambda function directly with curl
-5. Use incognito mode to test without cache
-6. Check AWS CloudWatch logs for Lambda errors
+5. Check AWS CloudWatch logs for Lambda errors
+
+### Universal Debugging
+1. **Service Provider Issues**:
+   - Check `VIDEO_SERVICE` setting in `video.config.ts`
+   - Verify service initialization in browser console
+   - Test service switching mechanism
+   - Monitor unified interface consistency
+
+2. **General Video Issues**:
+   - Use incognito mode to test without cache
+   - Check camera/microphone permissions
+   - Verify HTTPS connection (required for media access)
+   - Test with multiple participants when possible
+   - Monitor video track rendering and cleanup
+
+3. **Performance Debugging**:
+   - Check network quality indicators
+   - Monitor video/audio bitrate and quality
+   - Test with different device capabilities
+   - Verify optimal encoder configurations
 
 ---
 **CRITICAL**: This platform handles real-time video sessions for fitness classes. Always prioritize session reliability and participant experience.

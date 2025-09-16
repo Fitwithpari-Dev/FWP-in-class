@@ -3,7 +3,7 @@ import { VideoParticipant } from '../types/video-service';
 import { Badge } from './ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { useRef, useEffect } from 'react';
-import { useFitnessPlatformContext } from '../App';
+import { useFitnessPlatformContext } from '../context/FitnessPlatformContext';
 import { UnifiedVideoTile } from './UnifiedVideoTile';
 import {
   Mic,
@@ -40,7 +40,7 @@ export function ParticipantTile({
   onMute,
   onRemove
 }: ParticipantTileProps) {
-  const { currentUser } = useFitnessPlatformContext();
+  const { currentUser, videoService } = useFitnessPlatformContext();
   const videoElementRef = useRef<HTMLVideoElement>(null);
 
   // Convert Participant to VideoParticipant for unified video service
@@ -70,13 +70,13 @@ export function ParticipantTile({
       console.log(`🎥 ParticipantTile render check for ${participant.name} (${participant.id}):`, {
         isVideoOn: participant.isVideoOn,
         hasVideoElement: !!videoElementRef.current,
-        hasZoomSDK: !!zoomSDK,
+        hasVideoService: !!videoService,
         isHost: participant.isHost,
         retryCount,
         renderingInProgress
       });
 
-      if (participant.isVideoOn && videoElementRef.current && zoomSDK) {
+      if (participant.isVideoOn && videoElementRef.current && videoService) {
         renderingInProgress = true;
         try {
           // Get video element dimensions based on size
@@ -95,9 +95,9 @@ export function ParticipantTile({
           // Add loading state indicator
           videoElement.style.backgroundColor = '#374151'; // Gray background during loading
 
-          // Render video using Zoom SDK service (internally uses attachVideo for video elements)
+          // Render video using unified video service (supports both Zoom and Agora)
           console.log(`🎬 Attempting to render video for ${participant.name} (${participant.id}), dimensions: ${width}x${height}`);
-          await zoomSDK.renderVideo(participant.id, videoElement, width, height, isSpotlighted);
+          await videoService.renderVideo(participant.id, videoElement);
           console.log(`✅ Successfully rendered video for ${participant.name}`);
 
           // Clear loading state
@@ -142,11 +142,11 @@ export function ParticipantTile({
         console.log(`🔍 Video not rendering for ${participant.name}:`, {
           videoOn: participant.isVideoOn,
           hasElement: !!videoElementRef.current,
-          hasSDK: !!zoomSDK
+          hasSDK: !!videoService
         });
 
         // Enhanced state synchronization wait - if video should be on but state isn't updated
-        if (!participant.isVideoOn && retryCount < maxRetries && videoElementRef.current && zoomSDK) {
+        if (!participant.isVideoOn && retryCount < maxRetries && videoElementRef.current && videoService) {
           retryCount++;
           const waitDelay = retryCount <= 2 ? 300 : 1000; // Shorter initial waits for state updates
           console.log(`⏳ Waiting for video state to update for ${participant.name} (attempt ${retryCount}/${maxRetries}) - waiting ${waitDelay}ms...`);
@@ -164,11 +164,11 @@ export function ParticipantTile({
       if (retryTimeoutId) {
         clearTimeout(retryTimeoutId);
       }
-      if (videoElementRef.current && zoomSDK) {
-        zoomSDK.stopRenderVideo(participant.id, videoElementRef.current).catch(console.error);
+      if (videoElementRef.current && videoService) {
+        videoService.stopRenderingVideo(participant.id).catch(console.error);
       }
     };
-  }, [participant.isVideoOn, participant.id, participant.name, zoomSDK, isSpotlighted, size]);
+  }, [participant.isVideoOn, participant.id, participant.name, videoService, isSpotlighted, size]);
 
   const getConnectionIcon = () => {
     switch (participant.connectionQuality) {

@@ -7,7 +7,7 @@ import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Settings, RefreshCw, Info } from 'lucide-react';
 import { VIDEO_SERVICE, SERVICE_NAMES, getVideoConfigInfo } from '../config/video.config';
-import { useFitnessPlatformContext } from '../App';
+import { useFitnessPlatformContext } from '../context/FitnessPlatformContext';
 
 export function VideoServiceIndicator() {
   const [isExpanded, setIsExpanded] = useState(false);

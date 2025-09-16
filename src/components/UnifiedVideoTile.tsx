@@ -4,7 +4,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { VideoParticipant } from '../types/video-service';
 import { Mic, MicOff, Video, VideoOff, Crown } from 'lucide-react';
-import { useFitnessPlatformContext } from '../App';
+import { useFitnessPlatformContext } from '../context/FitnessPlatformContext';
 import { VIDEO_SERVICE } from '../config/video.config';
 import { AgoraVideoTile } from './AgoraVideoTile';
 

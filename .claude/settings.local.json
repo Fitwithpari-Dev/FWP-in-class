@@ -46,7 +46,15 @@
       "Bash(copy:*)",
       "Bash(start msedge --inprivate http://localhost:3000/?session=morning-yoga-test)",
       "Bash(start msedge --inprivate http://localhost:3002/?session=morning-yoga-test)",
-      "Bash(start msedge --inprivate http://localhost:3002/)"
+      "Bash(start msedge --inprivate http://localhost:3002/)",
+      "WebFetch(domain:docs.agora.io)",
+      "Bash(npm uninstall:*)",
+      "Bash(/agents create agora-expert \"Agora Video SDK authentication and token management expert. Specializes in Agora.io Interactive Live Streaming authentication workflows, token generation, App ID/Certificate management, testing vs production modes, troubleshooting authentication errors like CAN_NOT_GET_GATEWAY_SERVER, channel naming, role-based access control, and security best practices for video streaming platforms.\")",
+      "Bash(sed:*)",
+      "Bash(set VITE_AGORA_APP_ID=39a27953242243799ea996e3f460a22a)",
+      "Bash(start msedge --inprivate http://localhost:3004)",
+      "Bash(start msedge --inprivate http://localhost:3005)",
+      "Bash(del test-agora-config.js)"
     ],
     "deny": [],
     "ask": []

@@ -1,5 +1,6 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import { useVideoFitnessPlatform } from './hooks/useVideoFitnessPlatform';
+import { FitnessPlatformContext } from './context/FitnessPlatformContext';
 import { CoachView } from './components/CoachView';
 import { StudentView } from './components/StudentView';
 import { SessionManager } from './components/SessionManager';
@@ -10,17 +11,6 @@ import { checkBrowserSupport } from './utils/sessionValidator';
 import { VIDEO_SERVICE, SERVICE_NAMES } from './config/video.config';
 
 type ViewPerspective = 'coach' | 'student';
-
-// Create context to share fitness platform state with unified video service
-const FitnessPlatformContext = createContext<ReturnType<typeof useVideoFitnessPlatform> | null>(null);
-
-export const useFitnessPlatformContext = () => {
-  const context = useContext(FitnessPlatformContext);
-  if (!context) {
-    throw new Error('useFitnessPlatformContext must be used within FitnessPlatformProvider');
-  }
-  return context;
-};
 
 export default function App() {
   const [hasJoinedSession, setHasJoinedSession] = useState(false);
@@ -150,30 +140,30 @@ export default function App() {
                            fitnessPlatform?.error &&
                            hasJoinedSession;
 
-  if (!hasJoinedSession || !currentRole || connectionFailed) {
-    return (
-      <>
-        <SessionManager
-          onCreateSession={handleCreateSession}
-          onJoinSession={handleJoinSession}
-          isLoading={fitnessPlatform?.isConnecting}
-        />
-        <VideoServiceIndicator />
-        <AgoraDebugPanel />
-      </>
-    );
-  }
-
-  // Show the appropriate view based on joined role
+  // Always wrap everything in the context provider
   return (
     <FitnessPlatformContext.Provider value={fitnessPlatform}>
-      {currentRole === 'student' ? (
-        <StudentView onToggleView={toggleViewPerspective} isCoachViewing={false} />
+      {(!hasJoinedSession || !currentRole || connectionFailed) ? (
+        <>
+          <SessionManager
+            onCreateSession={handleCreateSession}
+            onJoinSession={handleJoinSession}
+            isLoading={fitnessPlatform?.isConnecting}
+          />
+          <VideoServiceIndicator />
+          <AgoraDebugPanel />
+        </>
       ) : (
-        <CoachView onToggleView={toggleViewPerspective} />
+        <>
+          {currentRole === 'student' ? (
+            <StudentView onToggleView={toggleViewPerspective} isCoachViewing={false} />
+          ) : (
+            <CoachView onToggleView={toggleViewPerspective} />
+          )}
+          <VideoServiceIndicator />
+          <AgoraDebugPanel />
+        </>
       )}
-      <VideoServiceIndicator />
-      <AgoraDebugPanel />
     </FitnessPlatformContext.Provider>
   );
 }

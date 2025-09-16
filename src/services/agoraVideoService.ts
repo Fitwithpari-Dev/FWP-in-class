@@ -5,6 +5,7 @@ import { IVideoService, VideoParticipant, ConnectionState, VideoServiceCapabilit
 import { UserRole } from '../types/fitness-platform';
 import { agoraService } from './agoraSDKService';
 import { generateChannelName } from '../config/agora.config';
+import { getAgoraTokenService } from './agoraTokenService';
 
 export class AgoraVideoService implements IVideoService {
   readonly serviceName = 'Agora RTC SDK';
@@ -36,7 +37,20 @@ export class AgoraVideoService implements IVideoService {
     try {
       console.log('🚀 AgoraVideoService: Initializing...');
 
-      await agoraService.initialize(import.meta.env.VITE_AGORA_APP_ID!, {
+      const agoraAppId = import.meta.env.VITE_AGORA_APP_ID;
+      console.log('🔧 AgoraVideoService: Agora App ID check:', {
+        appId: agoraAppId ? `${agoraAppId.substring(0, 8)}...` : 'MISSING',
+        appIdExists: !!agoraAppId,
+        appIdLength: agoraAppId?.length || 0,
+        envVars: Object.keys(import.meta.env).filter(key => key.includes('AGORA'))
+      });
+
+      if (!agoraAppId) {
+        throw new Error('VITE_AGORA_APP_ID environment variable is not set');
+      }
+
+      console.log('🎯 AgoraVideoService: Initializing agoraService with App ID...');
+      await agoraService.initialize(agoraAppId, {
         onUserJoined: (user, mediaType) => {
           console.log('👤 AgoraVideoService: User joined:', user.uid);
 
@@ -125,11 +139,41 @@ export class AgoraVideoService implements IVideoService {
   async joinSession(userName: string, userRole: UserRole, sessionId: string): Promise<void> {
     try {
       console.log('🚪 AgoraVideoService: Joining session:', { userName, userRole, sessionId });
+      console.log('🔍 AgoraVideoService: Current state before join:', {
+        isInitialized: this.connectionState !== 'Disconnected',
+        currentChannel: this.currentChannel,
+        participants: this.participants.size
+      });
 
       this.currentChannel = generateChannelName(sessionId);
+      console.log('📺 AgoraVideoService: Generated channel name:', this.currentChannel);
 
-      // Join the channel
-      const uid = await agoraService.joinChannel(this.currentChannel, null, null, userRole);
+      // Map fitness platform roles to Agora roles
+      const agoraRole = userRole === 'coach' ? 'host' : 'audience';
+      console.log('📝 AgoraVideoService: Role mapping:', { userRole, agoraRole });
+
+      // Generate token using token service
+      console.log('🔑 AgoraVideoService: Generating token...');
+      const tokenService = getAgoraTokenService();
+
+      let token: string | null;
+      try {
+        token = await tokenService.generateRtcToken({
+          channelName: this.currentChannel,
+          uid: null, // Let Agora assign UID
+          role: agoraRole,
+          expirationTimeInSeconds: 3600 // 1 hour
+        });
+        console.log('✅ AgoraVideoService: Token generated successfully');
+      } catch (error) {
+        console.warn('⚠️ AgoraVideoService: Token generation failed, using testing mode:', error);
+        token = null; // Use null for testing mode (Agora requirement)
+      }
+
+      // Join the channel with correct Agora role and token
+      console.log('🚀 AgoraVideoService: Attempting to join channel...');
+      const uid = await agoraService.joinChannel(this.currentChannel, token, null, agoraRole);
+      console.log('✅ AgoraVideoService: Successfully joined channel with UID:', uid);
 
       // Create current user participant
       this.currentUser = {
@@ -149,9 +193,28 @@ export class AgoraVideoService implements IVideoService {
 
       console.log('✅ AgoraVideoService: Joined session successfully');
     } catch (error) {
-      console.error('❌ AgoraVideoService: Failed to join session:', error);
+      console.error('❌ AgoraVideoService: Failed to join session - DETAILED ERROR:', {
+        error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorStack: error instanceof Error ? error.stack : 'No stack trace',
+        errorType: typeof error,
+        agoraServiceState: {
+          initialized: !!agoraService,
+          currentChannel: this.currentChannel
+        }
+      });
+
+      // Log additional context for debugging
+      console.error('🔍 AgoraVideoService: Additional error context:', {
+        userName: userName,
+        userRole: userRole,
+        sessionId: sessionId,
+        generatedChannel: this.currentChannel,
+        connectionState: this.connectionState
+      });
+
       throw new VideoServiceError(
-        'Failed to join session',
+        `Failed to join session: ${error instanceof Error ? error.message : 'Unknown error'}`,
         this.serviceName,
         VIDEO_ERROR_CODES.CONNECTION_FAILED,
         error
@@ -225,7 +288,9 @@ export class AgoraVideoService implements IVideoService {
     try {
       console.log('🎥 AgoraVideoService: Starting video...');
 
-      this.localVideoTrack = await agoraService.startLocalVideo();
+      // Pass role to optimize video settings
+      const role = this.currentUser?.role === 'coach' ? 'host' : 'audience';
+      this.localVideoTrack = await agoraService.startLocalVideo(role);
       this.isVideoOn = true;
 
       // Update current user state
@@ -234,7 +299,7 @@ export class AgoraVideoService implements IVideoService {
         this.onVideoStateChanged?.(this.currentUser.id, true);
       }
 
-      console.log('✅ AgoraVideoService: Video started successfully');
+      console.log('✅ AgoraVideoService: Video started successfully with role:', role);
     } catch (error) {
       console.error('❌ AgoraVideoService: Failed to start video:', error);
       throw new VideoServiceError(
@@ -270,7 +335,9 @@ export class AgoraVideoService implements IVideoService {
     try {
       console.log('🎤 AgoraVideoService: Starting audio...');
 
-      await agoraService.startLocalAudio();
+      // Pass role to optimize audio settings
+      const role = this.currentUser?.role === 'coach' ? 'host' : 'audience';
+      await agoraService.startLocalAudio(role);
       this.isAudioOn = true;
 
       // Update current user state
@@ -279,7 +346,7 @@ export class AgoraVideoService implements IVideoService {
         this.onAudioStateChanged?.(this.currentUser.id, true);
       }
 
-      console.log('✅ AgoraVideoService: Audio started successfully');
+      console.log('✅ AgoraVideoService: Audio started successfully with role:', role);
     } catch (error) {
       console.error('❌ AgoraVideoService: Failed to start audio:', error);
       throw new VideoServiceError(

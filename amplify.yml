@@ -3,7 +3,7 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "🚀 Starting FitWithPari deployment with Zoom Video SDK optimization..."
+        - echo "🚀 Starting FitWithPari deployment with Unified Video SDK (Agora + Zoom)..."
         - 'echo "Node version:" && node --version'
         - 'echo "NPM version:" && npm --version'
         - echo "Installing dependencies with production optimizations..."
@@ -19,8 +19,8 @@ frontend:
         - du -sh build/ 2>/dev/null || echo "Build size calculation unavailable"
         - ls -la build/ 2>/dev/null || echo "Build directory listing unavailable"
         - echo "✅ Vite build completed successfully"
-        - echo "🎥 Verifying Zoom Video SDK assets..."
-        - find build -name "*zoom*" -type f | head -10 || echo "Zoom assets verification complete"
+        - echo "🎥 Verifying Video SDK assets..."
+        - find build -name "*zoom*" -o -name "*agora*" -type f | head -10 || echo "Video SDK assets verification complete"
   artifacts:
     baseDirectory: build
     files:

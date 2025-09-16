@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useFitnessPlatformContext } from '../App';
+import { useFitnessPlatformContext } from '../context/FitnessPlatformContext';
 import { TopBar } from './TopBar';
 import { VideoArea } from './VideoArea';
 import { ControlBar } from './ControlBar';

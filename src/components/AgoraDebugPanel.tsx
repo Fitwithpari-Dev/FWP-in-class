@@ -6,6 +6,7 @@ import { Bug, Video, VideoOff, Mic, MicOff, Users } from 'lucide-react';
 import { agoraService } from '../services/agoraSDKService';
 import { AGORA_CONFIG, validateAgoraConfig, generateChannelName } from '../config/agora.config';
 import { AgoraVideoTile } from './AgoraVideoTile';
+import { getAgoraTokenService } from '../services/agoraTokenService';
 
 export function AgoraDebugPanel() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -74,6 +75,8 @@ export function AgoraDebugPanel() {
       }
 
       const testChannel = generateChannelName('test-session-' + Date.now());
+
+      console.log('🧪 DEBUG: Testing with null token first (testing mode)...');
       const uid = await agoraService.joinChannel(testChannel, null, null, 'host');
 
       setCurrentChannel(testChannel);
@@ -84,6 +87,40 @@ export function AgoraDebugPanel() {
 
     } catch (error) {
       console.error('❌ Failed to join channel:', error);
+    }
+  };
+
+  const handleJoinWithToken = async () => {
+    try {
+      console.log('🚪 DEBUG: Joining Agora channel WITH TOKEN...');
+
+      if (!isInitialized) {
+        await handleInitializeAgora();
+      }
+
+      const testChannel = generateChannelName('test-session-' + Date.now());
+
+      // Generate proper token
+      console.log('🔑 DEBUG: Generating token for channel:', testChannel);
+      const tokenService = getAgoraTokenService();
+      const token = await tokenService.generateRtcToken({
+        channelName: testChannel,
+        uid: null,
+        role: 'host',
+        expirationTimeInSeconds: 3600
+      });
+
+      console.log('🧪 DEBUG: Testing with generated token:', token ? `${token.substring(0, 20)}...` : 'null');
+      const uid = await agoraService.joinChannel(testChannel, token, null, 'host');
+
+      setCurrentChannel(testChannel);
+      setCurrentUID(String(uid));
+      setIsConnected(true);
+
+      console.log('✅ Joined channel with token:', testChannel, 'with UID:', uid);
+
+    } catch (error) {
+      console.error('❌ Failed to join channel with token:', error);
     }
   };
 
@@ -367,9 +404,18 @@ export function AgoraDebugPanel() {
                   size="sm"
                   className="border-blue-600 text-blue-300 hover:bg-blue-700 text-xs h-8"
                 >
-                  {isConnected ? 'Leave' : 'Join'} Channel
+                  {isConnected ? 'Leave' : 'Join'} (No Token)
                 </Button>
               </div>
+              <Button
+                onClick={handleJoinWithToken}
+                disabled={!isInitialized || isConnected}
+                variant="outline"
+                size="sm"
+                className="w-full border-orange-600 text-orange-300 hover:bg-orange-700 text-xs h-8"
+              >
+                🔑 Join with Token
+              </Button>
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   onClick={handleToggleVideo}
@@ -431,6 +477,62 @@ export function AgoraDebugPanel() {
               </div>
             </div>
           )}
+
+          {/* Environment Debug Info */}
+          <div className="space-y-2">
+            <h4 className="text-white font-medium">Environment Debug</h4>
+            <div className="bg-gray-800 p-2 rounded space-y-1 text-xs">
+              <div className="text-yellow-300 font-bold">🔍 Environment Variables:</div>
+              <div className="text-green-300">
+                VITE_AGORA_APP_ID: {import.meta.env.VITE_AGORA_APP_ID ? `${import.meta.env.VITE_AGORA_APP_ID.substring(0, 8)}...` : '❌ MISSING'}
+              </div>
+              <div className="text-green-300">
+                VITE_AGORA_APP_CERTIFICATE: {import.meta.env.VITE_AGORA_APP_CERTIFICATE ? `${import.meta.env.VITE_AGORA_APP_CERTIFICATE.substring(0, 8)}...` : '❌ MISSING'}
+              </div>
+
+              <div className="text-yellow-300 font-bold mt-2">🔧 Token Service Status:</div>
+              {(() => {
+                try {
+                  const tokenService = getAgoraTokenService();
+                  const serviceInfo = tokenService.getServiceInfo();
+                  return (
+                    <>
+                      <div className="text-blue-300">
+                        App ID: {serviceInfo.appId}
+                      </div>
+                      <div className="text-blue-300">
+                        Has Certificate: {serviceInfo.hasCertificate ? '✅ YES' : '❌ NO'}
+                      </div>
+                      <div className="text-blue-300">
+                        Testing Mode: {serviceInfo.isTestingMode ? '⚠️ YES (INSECURE)' : '✅ NO (SECURE)'}
+                      </div>
+                      <div className="text-blue-300">
+                        Valid Config: {serviceInfo.validation.isValid ? '✅ YES' : '❌ NO'}
+                      </div>
+                      {serviceInfo.validation.issues.length > 0 && (
+                        <div className="text-red-300">
+                          Issues: {serviceInfo.validation.issues.join(', ')}
+                        </div>
+                      )}
+                    </>
+                  );
+                } catch (error) {
+                  return <div className="text-red-300">❌ Token service error: {String(error)}</div>;
+                }
+              })()}
+
+              <div className="text-yellow-300 font-bold mt-2">🌐 Browser Environment:</div>
+              <div className="text-gray-300">
+                Mode: {import.meta.env.MODE}
+              </div>
+              <div className="text-gray-300">
+                Secure Context: {window.isSecureContext ? '✅' : '❌'}
+              </div>
+              <div className="text-gray-300">
+                Protocol: {window.location.protocol}
+              </div>
+            </div>
+          </div>
 
           <div className="text-xs text-blue-400 mt-2">
             💡 Testing Agora SDK as backup to Zoom SDK

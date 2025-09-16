@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useFitnessPlatformContext } from '../App';
+import { useFitnessPlatformContext } from '../context/FitnessPlatformContext';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';

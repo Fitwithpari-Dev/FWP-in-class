@@ -44,7 +44,7 @@ export class AgoraSDKService {
 
       // Create Agora client
       this.client = AgoraRTC.createClient({
-        mode: 'rtc', // Real-time communication mode
+        mode: 'live', // Live broadcasting mode (required for setClientRole)
         codec: 'vp8' // Use VP8 codec for better compatibility
       });
 
@@ -109,8 +109,56 @@ export class AgoraSDKService {
       }
     });
 
-    // Network quality
+    // Network quality monitoring with adaptive bitrate
     this.client.on('network-quality', (stats) => {
+      const { uplinkNetworkQuality, downlinkNetworkQuality } = stats;
+
+      // Log network quality
+      console.log('📊 Network Quality:', {
+        uplink: uplinkNetworkQuality,
+        downlink: downlinkNetworkQuality,
+        // Quality levels: 0 (unknown), 1 (excellent), 2 (good),
+        // 3 (poor), 4 (bad), 5 (very bad), 6 (disconnected)
+      });
+
+      // Auto-adjust video quality based on network conditions
+      if (uplinkNetworkQuality >= 4 || downlinkNetworkQuality >= 4) {
+        console.warn('⚠️ Poor network quality detected, adjusting video settings...');
+
+        // Reduce video quality for poor network
+        if (this.localVideoTrack && this.localVideoTrack.enabled) {
+          this.localVideoTrack.setEncoderConfiguration({
+            width: 480,
+            height: 360,
+            frameRate: 15,
+            bitrateMax: 500
+          });
+          console.log('📉 Video quality reduced for better stability');
+        }
+      } else if (uplinkNetworkQuality <= 2 && downlinkNetworkQuality <= 2) {
+        // Restore video quality for good network
+        if (this.localVideoTrack && this.localVideoTrack.enabled) {
+          const role = this.client?.role || 'audience';
+          if (role === 'host') {
+            this.localVideoTrack.setEncoderConfiguration({
+              width: 1280,
+              height: 720,
+              frameRate: 30,
+              bitrateMax: 2500
+            });
+          } else {
+            this.localVideoTrack.setEncoderConfiguration({
+              width: 640,
+              height: 480,
+              frameRate: 24,
+              bitrateMax: 1200
+            });
+          }
+          console.log('📈 Video quality restored for good network');
+        }
+      }
+
+      // Pass to event handler
       if (this.eventHandlers.onNetworkQuality) {
         this.eventHandlers.onNetworkQuality(stats);
       }
@@ -137,22 +185,51 @@ export class AgoraSDKService {
     }
 
     try {
-      console.log('🚪 Joining Agora channel:', { channel, uid, role });
+      console.log('🚪 AgoraSDKService: Joining Agora channel:', { channel, uid, role });
+      console.log('🔍 AgoraSDKService: Client state:', {
+        clientExists: !!this.client,
+        isInitialized: this.isInitialized,
+        appId: this.appId ? `${this.appId.substring(0, 8)}...` : 'MISSING',
+        currentChannel: this.currentChannel,
+        currentUID: this.currentUID
+      });
 
       // Set client role
+      console.log('👑 AgoraSDKService: Setting client role to:', role);
       await this.client.setClientRole(role);
 
       // Join the channel
+      console.log('🚀 AgoraSDKService: Calling client.join with:', {
+        appId: this.appId ? `${this.appId.substring(0, 8)}...` : 'MISSING',
+        channel,
+        token: token || 'null',
+        uid: uid || 'null'
+      });
+
+      // Use provided token (null for testing mode, proper token for production)
+      console.log('🔑 AgoraSDKService: Using token:', token ? `${token.substring(0, 20)}...` : 'testing mode (null token)');
+
       const assignedUID = await this.client.join(this.appId, channel, token, uid);
 
       this.currentChannel = channel;
       this.currentUID = assignedUID;
 
-      console.log('✅ Successfully joined channel:', channel, 'with UID:', assignedUID);
+      console.log('✅ AgoraSDKService: Successfully joined channel:', channel, 'with UID:', assignedUID);
       return assignedUID;
 
     } catch (error) {
-      console.error('❌ Failed to join channel:', error);
+      console.error('❌ AgoraSDKService: Failed to join channel - DETAILED ERROR:', {
+        error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorStack: error instanceof Error ? error.stack : 'No stack trace',
+        errorType: typeof error,
+        clientState: {
+          exists: !!this.client,
+          initialized: this.isInitialized,
+          appId: this.appId ? `${this.appId.substring(0, 8)}...` : 'MISSING'
+        },
+        joinParams: { channel, token, uid, role }
+      });
       throw error;
     }
   }
@@ -182,29 +259,43 @@ export class AgoraSDKService {
     }
   }
 
-  // Start local video
-  public async startLocalVideo(): Promise<ICameraVideoTrack> {
+  // Start local video with role-based optimization
+  public async startLocalVideo(role: 'host' | 'audience' = 'audience'): Promise<ICameraVideoTrack> {
     try {
-      console.log('🎥 Starting local video...');
+      console.log('🎥 Starting local video for role:', role);
 
       if (this.localVideoTrack) {
         console.log('📹 Video track already exists, reusing...');
         return this.localVideoTrack;
       }
 
-      // Create camera video track
-      this.localVideoTrack = await AgoraRTC.createCameraVideoTrack({
-        optimizationMode: 'motion', // Optimized for fitness/movement
+      // Role-based video configuration for fitness streaming
+      const videoConfig = role === 'host' ? {
+        // Coach configuration - high quality for instruction
+        optimizationMode: 'detail' as const, // Better for stationary coaching position
+        encoderConfig: {
+          width: 1280,
+          height: 720,
+          frameRate: 30, // Smooth movement demonstration
+          bitrateMin: 1000,
+          bitrateMax: 2500
+        }
+      } : {
+        // Student configuration - balanced for exercise
+        optimizationMode: 'motion' as const, // Better for exercise movements
         encoderConfig: {
           width: 640,
           height: 480,
-          frameRate: 15, // Good balance for fitness classes
-          bitrateMin: 400,
-          bitrateMax: 1000
+          frameRate: 24, // Good balance for movement
+          bitrateMin: 600,
+          bitrateMax: 1200
         }
-      });
+      };
 
-      console.log('✅ Local video track created successfully');
+      // Create camera video track with role-based config
+      this.localVideoTrack = await AgoraRTC.createCameraVideoTrack(videoConfig);
+
+      console.log('✅ Local video track created successfully with config:', videoConfig);
 
       // Publish if we're in a channel
       if (this.client && this.currentChannel) {
@@ -244,25 +335,36 @@ export class AgoraSDKService {
     }
   }
 
-  // Start local audio
-  public async startLocalAudio(): Promise<IMicrophoneAudioTrack> {
+  // Start local audio with role-based optimization
+  public async startLocalAudio(role: 'host' | 'audience' = 'audience'): Promise<IMicrophoneAudioTrack> {
     try {
-      console.log('🎤 Starting local audio...');
+      console.log('🎤 Starting local audio for role:', role);
 
       if (this.localAudioTrack) {
         console.log('🔊 Audio track already exists, reusing...');
         return this.localAudioTrack;
       }
 
-      // Create microphone audio track
-      this.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack({
-        encoderConfig: 'music_standard', // Good quality for fitness instruction
-        AEC: true, // Acoustic Echo Cancellation
-        ANS: true, // Automatic Noise Suppression
-        AGC: true  // Automatic Gain Control
-      });
+      // Role-based audio configuration for fitness classes
+      const audioConfig = role === 'host' ? {
+        // Coach configuration - high quality for instruction with music
+        encoderConfig: 'music_high_quality_stereo', // Best quality for music + voice
+        AEC: true,  // Acoustic Echo Cancellation
+        ANS: true,  // Automatic Noise Suppression (moderate for music)
+        AGC: true,  // Automatic Gain Control
+        audioProfile: 'music_high_quality_stereo' as const
+      } : {
+        // Student configuration - optimized for voice feedback
+        encoderConfig: 'speech_standard', // Optimized for voice
+        AEC: true,  // Strong echo cancellation
+        ANS: true,  // Strong noise suppression
+        AGC: true   // Automatic gain control
+      };
 
-      console.log('✅ Local audio track created successfully');
+      // Create microphone audio track with role-based config
+      this.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack(audioConfig);
+
+      console.log('✅ Local audio track created successfully with config:', audioConfig);
 
       // Publish if we're in a channel
       if (this.client && this.currentChannel) {
