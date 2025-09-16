@@ -83,13 +83,29 @@ export class AgoraSDKService {
     // User published track
     this.client.on('user-published', async (user, mediaType) => {
       console.log('📡 User published:', user.uid, 'Media type:', mediaType);
+      console.log('🔍 Current remote users before subscription:', this.client.remoteUsers.map(u => ({ uid: u.uid, video: !!u.videoTrack, audio: !!u.audioTrack })));
 
-      // Subscribe to the user's track
-      await this.client!.subscribe(user, mediaType);
-      console.log('✅ Subscribed to user:', user.uid, mediaType);
+      try {
+        // Subscribe to the user's track
+        await this.client!.subscribe(user, mediaType);
+        console.log('✅ Subscribed to user:', user.uid, mediaType);
 
-      if (this.eventHandlers.onUserPublished) {
-        this.eventHandlers.onUserPublished(user, mediaType);
+        // Verify subscription worked
+        console.log('🔍 Remote user after subscription:', {
+          uid: user.uid,
+          hasVideoTrack: !!user.videoTrack,
+          hasAudioTrack: !!user.audioTrack,
+          videoTrackEnabled: user.videoTrack?.enabled ?? false,
+          audioTrackEnabled: user.audioTrack?.enabled ?? false
+        });
+
+        console.log('🔍 All remote users after subscription:', this.client.remoteUsers.map(u => ({ uid: u.uid, video: !!u.videoTrack, audio: !!u.audioTrack })));
+
+        if (this.eventHandlers.onUserPublished) {
+          this.eventHandlers.onUserPublished(user, mediaType);
+        }
+      } catch (error) {
+        console.error('❌ Failed to subscribe to user:', user.uid, mediaType, error);
       }
     });
 
@@ -298,8 +314,17 @@ export class AgoraSDKService {
 
       // Publish if we're in a channel
       if (this.client && this.currentChannel) {
+        console.log('📡 Publishing local video to channel:', this.currentChannel);
         await this.client.publish(this.localVideoTrack);
-        console.log('📡 Local video published to channel');
+        console.log('✅ Local video published successfully');
+
+        // Log current state after publishing
+        console.log('🔍 Local tracks after video publish:', {
+          localVideo: !!this.localVideoTrack,
+          localAudio: !!this.localAudioTrack,
+          remoteUsers: this.client.remoteUsers.length,
+          currentUID: this.currentUID
+        });
       }
 
       return this.localVideoTrack;

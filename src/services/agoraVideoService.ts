@@ -427,24 +427,61 @@ export class AgoraVideoService implements IVideoService {
 
       const participant = this.participants.get(participantId);
       if (!participant) {
+        console.error('❌ AgoraVideoService: Participant not found in participants map:', participantId);
+        console.log('🔍 Available participants:', Array.from(this.participants.keys()));
         throw new Error(`Participant ${participantId} not found`);
       }
+
+      console.log('🔍 AgoraVideoService: Participant details:', {
+        id: participant.id,
+        name: participant.name,
+        isVideoOn: participant.isVideoOn,
+        isCurrentUser: this.currentUser?.id === participantId
+      });
 
       // For local video (current user)
       if (this.currentUser && participantId === this.currentUser.id && this.localVideoTrack) {
         console.log('📹 AgoraVideoService: Rendering local video track');
+        console.log('🔍 Local video track details:', {
+          enabled: this.localVideoTrack.enabled,
+          muted: this.localVideoTrack.muted,
+          trackMediaType: this.localVideoTrack.trackMediaType
+        });
         this.localVideoTrack.play(element);
         return;
       }
 
       // For remote video
       const remoteUsers = agoraService.getRemoteUsers();
+      console.log('🔍 AgoraVideoService: Looking for remote user in:', remoteUsers.map(u => ({
+        uid: String(u.uid),
+        hasVideo: !!u.videoTrack,
+        hasAudio: !!u.audioTrack,
+        videoEnabled: u.videoTrack?.enabled ?? false
+      })));
+
       const remoteUser = remoteUsers.find(user => String(user.uid) === participantId);
 
-      if (remoteUser && remoteUser.videoTrack) {
-        console.log('📹 AgoraVideoService: Rendering remote video track for user:', remoteUser.uid);
-        remoteUser.videoTrack.play(element);
-        return;
+      if (remoteUser) {
+        console.log('🔍 AgoraVideoService: Found remote user:', {
+          uid: remoteUser.uid,
+          hasVideoTrack: !!remoteUser.videoTrack,
+          videoTrackDetails: remoteUser.videoTrack ? {
+            enabled: remoteUser.videoTrack.enabled,
+            muted: remoteUser.videoTrack.muted,
+            trackMediaType: remoteUser.videoTrack.trackMediaType
+          } : 'No video track'
+        });
+
+        if (remoteUser.videoTrack) {
+          console.log('📹 AgoraVideoService: Rendering remote video track for user:', remoteUser.uid);
+          remoteUser.videoTrack.play(element);
+          return;
+        } else {
+          console.warn('⚠️ AgoraVideoService: Remote user found but no video track:', remoteUser.uid);
+        }
+      } else {
+        console.warn('⚠️ AgoraVideoService: Remote user not found for participant ID:', participantId);
       }
 
       console.warn('⚠️ AgoraVideoService: No video track found for participant:', participantId);
