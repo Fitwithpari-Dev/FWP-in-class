@@ -33,6 +33,19 @@ interface UseVideoFitnessPlatformReturn {
   switchToFallback: () => Promise<void>;
   getServiceInfo: () => any;
 
+  // Legacy compatibility properties (for existing components)
+  classSession: any;
+  viewMode: string;
+  spotlightedParticipant: string;
+  elapsedTime: number;
+  exerciseTimer: any;
+  highlightedLevel: any;
+  setViewMode: (mode: string) => void;
+  formatTime: (time: number) => string;
+  getCurrentUser: () => VideoParticipant | null;
+  getSpotlightedParticipant: () => VideoParticipant | null;
+  zoomSDK: any;
+
   // Legacy compatibility (for existing components)
   sdk: {
     joinSession: (userName: string, userRole: UserRole, sessionId: string) => Promise<void>;
@@ -42,6 +55,11 @@ interface UseVideoFitnessPlatformReturn {
     stopVideo: () => Promise<void>;
     startAudio: () => Promise<void>;
     stopAudio: () => Promise<void>;
+    setCoachMode: () => void;
+    highlightLevel: (level: string) => void;
+    spotlightParticipant: (id: string) => void;
+    muteParticipant: (id: string) => void;
+    removeParticipant: (id: string) => void;
   };
 }
 
@@ -55,6 +73,12 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
   const [currentUser, setCurrentUser] = useState<VideoParticipant | null>(null);
   const [isLocalVideoOn, setIsLocalVideoOn] = useState(false);
   const [isLocalAudioOn, setIsLocalAudioOn] = useState(false);
+
+  // Legacy compatibility state
+  const [viewMode, setViewMode] = useState('gallery');
+  const [spotlightedParticipant, setSpotlightedParticipant] = useState('');
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [highlightedLevel, setHighlightedLevel] = useState(null);
 
   // Refs for cleanup
   const serviceRef = useRef<IVideoService | null>(null);
@@ -270,6 +294,21 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
     };
   }, [videoService, connectionState, participants.length, isLocalVideoOn, isLocalAudioOn]);
 
+  // Legacy utility functions
+  const formatTime = useCallback((seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }, []);
+
+  const getCurrentUserLegacy = useCallback(() => {
+    return currentUser;
+  }, [currentUser]);
+
+  const getSpotlightedParticipant = useCallback(() => {
+    return participants.find(p => p.id === spotlightedParticipant) || null;
+  }, [participants, spotlightedParticipant]);
+
   // Legacy SDK compatibility object
   const legacySDK = {
     joinSession,
@@ -298,6 +337,27 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
         await videoService.stopAudio();
         setIsLocalAudioOn(false);
       }
+    },
+    setCoachMode: () => {
+      console.log('🎯 setCoachMode called (legacy compatibility)');
+      setViewMode('teach');
+    },
+    highlightLevel: (level: string) => {
+      console.log('🎯 highlightLevel called:', level);
+      setHighlightedLevel(level);
+    },
+    spotlightParticipant: (id: string) => {
+      console.log('🎯 spotlightParticipant called:', id);
+      setSpotlightedParticipant(id);
+      setViewMode('spotlight');
+    },
+    muteParticipant: (id: string) => {
+      console.log('🎯 muteParticipant called:', id);
+      // This would typically call videoService.muteParticipant if available
+    },
+    removeParticipant: (id: string) => {
+      console.log('🎯 removeParticipant called:', id);
+      // This would typically remove participant from the session
     }
   };
 
@@ -316,6 +376,20 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
     toggleAudio,
     switchToFallback,
     getServiceInfo,
+
+    // Legacy compatibility properties
+    classSession: { name: 'Fitness Session', type: 'workout' },
+    viewMode,
+    spotlightedParticipant,
+    elapsedTime,
+    exerciseTimer: { active: false, duration: 0 },
+    highlightedLevel,
+    setViewMode,
+    formatTime,
+    getCurrentUser: getCurrentUserLegacy,
+    getSpotlightedParticipant,
+    zoomSDK: videoService, // Pass video service as zoomSDK for compatibility
+
     sdk: legacySDK
   };
 }
