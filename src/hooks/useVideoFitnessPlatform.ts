@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { IVideoService, VideoParticipant, ConnectionState } from '../types/video-service';
-import { UserRole } from '../types/fitness-platform';
+import { UserRole, Participant } from '../types/fitness-platform';
 import { getVideoService, switchToFallbackService, getVideoServiceInfo } from '../services/videoServiceProvider';
 
 interface UseVideoFitnessPlatformReturn {
@@ -63,13 +63,32 @@ interface UseVideoFitnessPlatformReturn {
   };
 }
 
+// Helper function to convert VideoParticipant to Participant
+function convertToFitnessParticipant(videoParticipant: VideoParticipant): Participant {
+  return {
+    id: videoParticipant.id,
+    name: videoParticipant.name,
+    isVideoOn: videoParticipant.isVideoOn,
+    isAudioOn: videoParticipant.isAudioOn,
+    isHost: videoParticipant.isHost,
+    connectionQuality: 'good', // Default value
+    hasRaisedHand: false,
+    // Optional fitness platform fields
+    level: undefined,
+    variation: undefined,
+    repCount: undefined,
+    healthConsiderations: undefined,
+    medicalNotes: undefined
+  };
+}
+
 export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
   // State
   const [videoService, setVideoService] = useState<IVideoService | null>(null);
   const [connectionState, setConnectionState] = useState<ConnectionState>('Disconnected');
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [participants, setParticipants] = useState<VideoParticipant[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [currentUser, setCurrentUser] = useState<VideoParticipant | null>(null);
   const [isLocalVideoOn, setIsLocalVideoOn] = useState(false);
   const [isLocalAudioOn, setIsLocalAudioOn] = useState(false);
@@ -112,7 +131,11 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
 
         service.onParticipantJoined = (participant: VideoParticipant) => {
           console.log('👤 useVideoFitnessPlatform: Participant joined:', participant.name);
-          setParticipants(prev => [...prev.filter(p => p.id !== participant.id), participant]);
+
+          // Convert VideoParticipant to Participant format
+          const fitnessParticipant = convertToFitnessParticipant(participant);
+
+          setParticipants(prev => [...prev.filter(p => p.id !== participant.id), fitnessParticipant]);
         };
 
         service.onParticipantLeft = (participant: VideoParticipant) => {
@@ -208,7 +231,8 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
       setCurrentUser(user);
 
       if (user) {
-        setParticipants(prev => [...prev.filter(p => p.id !== user.id), user]);
+        const fitnessUser = convertToFitnessParticipant(user);
+        setParticipants(prev => [...prev.filter(p => p.id !== user.id), fitnessUser]);
       }
 
       // Track session
