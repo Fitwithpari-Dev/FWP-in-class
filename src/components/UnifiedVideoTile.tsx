@@ -134,7 +134,7 @@ export const UnifiedVideoTile: React.FC<UnifiedVideoTileProps> = ({
               {isLocal && <span className="text-green-400 ml-1">(You)</span>}
             </span>
             {participant.isHost && (
-              <Crown className="w-4 h-4 text-yellow-400" title="Host" />
+              <Crown className="w-4 h-4 text-yellow-400" />
             )}
           </div>
 
@@ -178,7 +178,7 @@ export const UnifiedVideoTile: React.FC<UnifiedVideoTileProps> = ({
 
       {/* Local video mirror effect for Zoom */}
       {isLocal && isVideoRendering && VIDEO_SERVICE === 'zoom' && (
-        <style jsx>{`
+        <style>{`
           .unified-video-tile video {
             transform: scaleX(-1); /* Mirror local video for Zoom */
           }

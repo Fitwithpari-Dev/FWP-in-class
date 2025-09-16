@@ -107,7 +107,7 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
           classSession={classSession}
           coachParticipant={coachParticipant}
           userRole="student"
-          studentLevel={currentUser?.level}
+          studentLevel={undefined}
         />
 
         {/* Control Bar */}
@@ -115,7 +115,7 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
           userRole="student"
           isLocalVideoOn={isLocalVideoOn}
           isLocalAudioOn={isLocalAudioOn}
-          hasRaisedHand={currentUser?.hasRaisedHand || false}
+          hasRaisedHand={false}
           viewMode={viewMode}
           onToggleVideo={handleToggleVideo}
           onToggleAudio={handleToggleAudio}
@@ -164,7 +164,15 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
         {/* Workout Mode View */}
         <WorkoutModeStudentView
           classSession={classSession}
-          currentUser={currentUser}
+          currentUser={currentUser ? {
+            id: currentUser.id,
+            name: currentUser.name,
+            isVideoOn: currentUser.isVideoOn,
+            isAudioOn: currentUser.isAudioOn,
+            isHost: currentUser.isHost,
+            connectionQuality: 'good' as const,
+            hasRaisedHand: false
+          } : null}
           coachParticipant={coachParticipant}
           exerciseTimer={exerciseTimer}
           formatTime={formatTime}
@@ -175,7 +183,7 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
           userRole="student"
           isLocalVideoOn={isLocalVideoOn}
           isLocalAudioOn={isLocalAudioOn}
-          hasRaisedHand={currentUser?.hasRaisedHand || false}
+          hasRaisedHand={false}
           viewMode={viewMode}
           onToggleVideo={handleToggleVideo}
           onToggleAudio={handleToggleAudio}
@@ -265,7 +273,7 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
         userRole="student"
         isLocalVideoOn={isLocalVideoOn}
         isLocalAudioOn={isLocalAudioOn}
-        hasRaisedHand={currentUser?.hasRaisedHand || false}
+        hasRaisedHand={false}
         viewMode={viewMode}
         onToggleVideo={handleToggleVideo}
         onToggleAudio={handleToggleAudio}

@@ -158,7 +158,7 @@ export const AgoraVideoTile: React.FC<AgoraVideoTileProps> = ({
               {isLocal && <span className="text-green-400 ml-1">(You)</span>}
             </span>
             {isHost && (
-              <Crown className="w-4 h-4 text-yellow-400" title="Host" />
+              <Crown className="w-4 h-4 text-yellow-400" />
             )}
           </div>
 
@@ -195,7 +195,7 @@ export const AgoraVideoTile: React.FC<AgoraVideoTileProps> = ({
 
       {/* Local video mirror effect */}
       {isLocal && isVideoPlaying && (
-        <style jsx>{`
+        <style>{`
           .video-container video {
             transform: scaleX(-1); /* Mirror local video */
           }

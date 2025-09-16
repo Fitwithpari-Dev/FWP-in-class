@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { IVideoService, VideoParticipant, ConnectionState } from '../types/video-service';
-import { UserRole, Participant } from '../types/fitness-platform';
+import { UserRole, Participant, ViewMode } from '../types/fitness-platform';
 import { getVideoService, switchToFallbackService, getVideoServiceInfo } from '../services/videoServiceProvider';
 
 interface UseVideoFitnessPlatformReturn {
@@ -16,7 +16,7 @@ interface UseVideoFitnessPlatformReturn {
   error: Error | null;
 
   // Participants
-  participants: VideoParticipant[];
+  participants: Participant[];
   currentUser: VideoParticipant | null;
 
   // Media states
@@ -35,12 +35,12 @@ interface UseVideoFitnessPlatformReturn {
 
   // Legacy compatibility properties (for existing components)
   classSession: any;
-  viewMode: string;
+  viewMode: ViewMode;
   spotlightedParticipant: string;
   elapsedTime: number;
   exerciseTimer: any;
   highlightedLevel: any;
-  setViewMode: (mode: string) => void;
+  setViewMode: (mode: ViewMode) => void;
   formatTime: (time: number) => string;
   getCurrentUser: () => VideoParticipant | null;
   getSpotlightedParticipant: () => VideoParticipant | null;
@@ -60,6 +60,8 @@ interface UseVideoFitnessPlatformReturn {
     spotlightParticipant: (id: string) => void;
     muteParticipant: (id: string) => void;
     removeParticipant: (id: string) => void;
+    raiseHand: () => void;
+    muteAll: () => void;
   };
 }
 
@@ -98,7 +100,7 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
   const [sessionStartTime, setSessionStartTime] = useState<Date>(new Date());
 
   // Legacy compatibility state
-  const [viewMode, setViewMode] = useState('gallery');
+  const [viewMode, setViewMode] = useState<ViewMode>('gallery');
   const [spotlightedParticipant, setSpotlightedParticipant] = useState('');
   const [elapsedTime, setElapsedTime] = useState(0);
   const [highlightedLevel, setHighlightedLevel] = useState(null);
@@ -375,8 +377,19 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
     return currentUser;
   }, [currentUser]);
 
-  const getSpotlightedParticipant = useCallback(() => {
-    return participants.find(p => p.id === spotlightedParticipant) || null;
+  const getSpotlightedParticipant = useCallback((): VideoParticipant | null => {
+    const participant = participants.find(p => p.id === spotlightedParticipant);
+    if (!participant) return null;
+
+    return {
+      id: participant.id,
+      name: participant.name,
+      isHost: participant.isHost,
+      isVideoOn: participant.isVideoOn,
+      isAudioOn: participant.isAudioOn,
+      role: 'student', // Default role since we don't have it in Participant
+      avatar: undefined
+    };
   }, [participants, spotlightedParticipant]);
 
   // Legacy SDK compatibility object
@@ -410,7 +423,7 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
     },
     setCoachMode: () => {
       console.log('🎯 setCoachMode called (legacy compatibility)');
-      setViewMode('teach');
+      setViewMode('gallery');
     },
     highlightLevel: (level: string) => {
       console.log('🎯 highlightLevel called:', level);
@@ -428,6 +441,14 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
     removeParticipant: (id: string) => {
       console.log('🎯 removeParticipant called:', id);
       // This would typically remove participant from the session
+    },
+    raiseHand: () => {
+      console.log('🎯 raiseHand called (legacy compatibility)');
+      // This would typically toggle raised hand state
+    },
+    muteAll: () => {
+      console.log('🎯 muteAll called (legacy compatibility)');
+      // This would typically mute all participants
     }
   };
 

@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import { ZoomSDKService } from '../services/zoomSDKService';
 import { Participant, StudentLevel } from '../types/fitness-platform';
 import { VideoCanvas } from './VideoCanvas';
-import { useFitnessPlatform } from '../context/FitnessPlatformContext';
+import { useFitnessPlatformContext } from '../context/FitnessPlatformContext';
 
 interface VideoGalleryProps {
   participants: Participant[];
@@ -23,7 +23,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
   const [currentPage, setCurrentPage] = useState(0);
   const [tilesPerPage, setTilesPerPage] = useState(25);
   const [tileSize, setTileSize] = useState({ width: 160, height: 90 });
-  const { currentUser, viewMode } = useFitnessPlatform();
+  const { currentUser, viewMode } = useFitnessPlatformContext();
 
   // Filter and sort participants
   const displayParticipants = useMemo(() => {

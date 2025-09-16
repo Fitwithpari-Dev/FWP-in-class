@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ZoomSDKService } from '../services/zoomSDKService';
 import { Participant } from '../types/fitness-platform';
-import { useFitnessPlatform } from '../context/FitnessPlatformContext';
+import { useFitnessPlatformContext } from '../context/FitnessPlatformContext';
 
 interface VideoCanvasProps {
   participant: Participant;
@@ -25,7 +25,7 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isRendering, setIsRendering] = useState(false);
   const [renderError, setRenderError] = useState<string | null>(null);
-  const { currentUser } = useFitnessPlatform();
+  const { currentUser } = useFitnessPlatformContext();
 
   // Start rendering video
   useEffect(() => {

@@ -76,7 +76,7 @@ export function CoachView({ onToggleView }: CoachViewProps) {
   };
 
   const handleCoachModeToggle = (mode: 'teach' | 'workout') => {
-    sdk.setCoachMode(mode);
+    sdk.setCoachMode();
   };
 
   const handleLevelHighlight = (level: 'beginner' | 'intermediate' | 'advanced' | null) => {
@@ -167,7 +167,7 @@ export function CoachView({ onToggleView }: CoachViewProps) {
         userRole="coach"
         isLocalVideoOn={isLocalVideoOn}
         isLocalAudioOn={isLocalAudioOn}
-        hasRaisedHand={currentUser?.hasRaisedHand || false}
+        hasRaisedHand={false}
         viewMode={viewMode}
         onToggleVideo={handleToggleVideo}
         onToggleAudio={handleToggleAudio}
