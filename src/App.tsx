@@ -3,6 +3,7 @@ import { useZoomFitnessPlatform } from './hooks/useZoomFitnessPlatform';
 import { CoachView } from './components/CoachView';
 import { StudentView } from './components/StudentView';
 import { SessionManager } from './components/SessionManager';
+import { AgoraDebugPanel } from './components/AgoraDebugPanel';
 import { UserRole } from './types/fitness-platform';
 import { checkBrowserSupport } from './utils/sessionValidator';
 
@@ -145,11 +146,16 @@ export default function App() {
                            hasJoinedSession;
 
   if (!hasJoinedSession || !currentRole || connectionFailed) {
-    return <SessionManager
-      onCreateSession={handleCreateSession}
-      onJoinSession={handleJoinSession}
-      isLoading={fitnessPlatform?.isConnecting}
-    />;
+    return (
+      <>
+        <SessionManager
+          onCreateSession={handleCreateSession}
+          onJoinSession={handleJoinSession}
+          isLoading={fitnessPlatform?.isConnecting}
+        />
+        <AgoraDebugPanel />
+      </>
+    );
   }
 
   // Show the appropriate view based on joined role
@@ -160,6 +166,7 @@ export default function App() {
       ) : (
         <CoachView onToggleView={toggleViewPerspective} />
       )}
+      <AgoraDebugPanel />
     </FitnessPlatformContext.Provider>
   );
 }

@@ -1,0 +1,349 @@
+import { useState, useEffect } from 'react';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Bug, Video, VideoOff, Mic, MicOff, Users } from 'lucide-react';
+import { agoraService } from '../services/agoraSDKService';
+import { AGORA_CONFIG, validateAgoraConfig, generateChannelName } from '../config/agora.config';
+import { AgoraVideoTile } from './AgoraVideoTile';
+
+export function AgoraDebugPanel() {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(false);
+  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const [connectionState, setConnectionState] = useState('DISCONNECTED');
+  const [remoteUsers, setRemoteUsers] = useState<any[]>([]);
+  const [localVideoTrack, setLocalVideoTrack] = useState<any>(null);
+  const [currentChannel, setCurrentChannel] = useState('');
+  const [currentUID, setCurrentUID] = useState<string>('');
+
+  // Only show in development or when needed for debugging
+  // if (process.env.NODE_ENV === 'production') {
+  //   return null;
+  // }
+
+  const handleInitializeAgora = async () => {
+    try {
+      console.log('🚀 DEBUG: Initializing Agora SDK...');
+
+      if (!validateAgoraConfig()) {
+        console.error('❌ Agora configuration invalid');
+        return;
+      }
+
+      await agoraService.initialize(AGORA_CONFIG.appId, {
+        onUserJoined: (user, mediaType) => {
+          console.log('👤 User joined:', user.uid, mediaType);
+          setRemoteUsers(prev => [...prev.filter(u => u.uid !== user.uid), user]);
+        },
+        onUserLeft: (user, reason) => {
+          console.log('👋 User left:', user.uid, reason);
+          setRemoteUsers(prev => prev.filter(u => u.uid !== user.uid));
+        },
+        onUserPublished: (user, mediaType) => {
+          console.log('📡 User published:', user.uid, mediaType);
+          setRemoteUsers(prev => prev.map(u => u.uid === user.uid ? user : u));
+        },
+        onUserUnpublished: (user, mediaType) => {
+          console.log('📴 User unpublished:', user.uid, mediaType);
+          setRemoteUsers(prev => prev.map(u => u.uid === user.uid ? user : u));
+        },
+        onConnectionStateChange: (curState, revState, reason) => {
+          console.log('🔗 Connection state:', curState);
+          setConnectionState(curState);
+          setIsConnected(curState === 'CONNECTED');
+        }
+      });
+
+      setIsInitialized(true);
+      console.log('✅ Agora SDK initialized successfully');
+
+    } catch (error) {
+      console.error('❌ Failed to initialize Agora SDK:', error);
+    }
+  };
+
+  const handleJoinChannel = async () => {
+    try {
+      console.log('🚪 DEBUG: Joining Agora channel...');
+
+      if (!isInitialized) {
+        await handleInitializeAgora();
+      }
+
+      const testChannel = generateChannelName('test-session-' + Date.now());
+      const uid = await agoraService.joinChannel(testChannel, null, null, 'host');
+
+      setCurrentChannel(testChannel);
+      setCurrentUID(String(uid));
+      setIsConnected(true);
+
+      console.log('✅ Joined channel:', testChannel, 'with UID:', uid);
+
+    } catch (error) {
+      console.error('❌ Failed to join channel:', error);
+    }
+  };
+
+  const handleLeaveChannel = async () => {
+    try {
+      console.log('🚪 DEBUG: Leaving Agora channel...');
+
+      await agoraService.leaveChannel();
+
+      setCurrentChannel('');
+      setCurrentUID('');
+      setIsConnected(false);
+      setRemoteUsers([]);
+      setLocalVideoTrack(null);
+      setIsVideoEnabled(false);
+      setIsAudioEnabled(false);
+
+      console.log('✅ Left channel successfully');
+
+    } catch (error) {
+      console.error('❌ Failed to leave channel:', error);
+    }
+  };
+
+  const handleToggleVideo = async () => {
+    try {
+      console.log('🎥 DEBUG: Toggling video...');
+
+      if (!isVideoEnabled) {
+        const track = await agoraService.startLocalVideo();
+        setLocalVideoTrack(track);
+        setIsVideoEnabled(true);
+        console.log('✅ Video started successfully');
+      } else {
+        await agoraService.stopLocalVideo();
+        setLocalVideoTrack(null);
+        setIsVideoEnabled(false);
+        console.log('✅ Video stopped successfully');
+      }
+
+    } catch (error) {
+      console.error('❌ Failed to toggle video:', error);
+    }
+  };
+
+  const handleToggleAudio = async () => {
+    try {
+      console.log('🎤 DEBUG: Toggling audio...');
+
+      if (!isAudioEnabled) {
+        await agoraService.startLocalAudio();
+        setIsAudioEnabled(true);
+        console.log('✅ Audio started successfully');
+      } else {
+        await agoraService.stopLocalAudio();
+        setIsAudioEnabled(false);
+        console.log('✅ Audio stopped successfully');
+      }
+
+    } catch (error) {
+      console.error('❌ Failed to toggle audio:', error);
+    }
+  };
+
+  const handleTestCameraFirst = async () => {
+    try {
+      console.log('🔥 DEBUG: Testing camera with Agora approach...');
+
+      // Step 1: Initialize Agora if needed
+      if (!isInitialized) {
+        await handleInitializeAgora();
+      }
+
+      // Step 2: Try to create video track directly (no channel needed)
+      console.log('📹 Creating video track without joining channel...');
+      const track = await agoraService.startLocalVideo();
+      setLocalVideoTrack(track);
+      setIsVideoEnabled(true);
+
+      console.log('🎉 SUCCESS: Agora video track created successfully!');
+      console.log('💡 This proves camera works with Agora SDK');
+
+    } catch (error) {
+      console.error('❌ Agora camera test failed:', error);
+    }
+  };
+
+  if (!isExpanded) {
+    return (
+      <div className="fixed bottom-4 left-4 z-50">
+        <Button
+          onClick={() => setIsExpanded(true)}
+          variant="outline"
+          size="sm"
+          className="bg-blue-600 border-blue-500 text-white hover:bg-blue-700"
+        >
+          <Bug className="w-4 h-4 mr-2" />
+          Agora Test
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed bottom-4 left-4 z-50 w-96">
+      <Card className="bg-blue-900 border-blue-600">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-blue-200 text-sm flex items-center">
+              <Bug className="w-4 h-4 mr-2" />
+              Agora SDK Test Panel
+            </CardTitle>
+            <Button
+              onClick={() => setIsExpanded(false)}
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-white h-6 w-6 p-0"
+            >
+              ×
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3 text-xs">
+          {/* Connection Status */}
+          <div className="space-y-2">
+            <h4 className="text-white font-medium">Connection Status</h4>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-blue-800 p-2 rounded">
+                <div className="text-blue-300">Initialized</div>
+                <Badge variant={isInitialized ? "default" : "secondary"}>
+                  {isInitialized ? 'YES' : 'NO'}
+                </Badge>
+              </div>
+              <div className="bg-blue-800 p-2 rounded">
+                <div className="text-blue-300">Connected</div>
+                <Badge variant={isConnected ? "default" : "secondary"}>
+                  {connectionState}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Media Status */}
+          <div className="space-y-2">
+            <h4 className="text-white font-medium">Media Status</h4>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-blue-800 p-2 rounded">
+                <div className="text-blue-300">Video</div>
+                <Badge variant={isVideoEnabled ? "default" : "secondary"}>
+                  {isVideoEnabled ? <Video className="w-3 h-3" /> : <VideoOff className="w-3 h-3" />}
+                </Badge>
+              </div>
+              <div className="bg-blue-800 p-2 rounded">
+                <div className="text-blue-300">Audio</div>
+                <Badge variant={isAudioEnabled ? "default" : "secondary"}>
+                  {isAudioEnabled ? <Mic className="w-3 h-3" /> : <MicOff className="w-3 h-3" />}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Test Controls */}
+          <div className="space-y-2">
+            <h4 className="text-white font-medium">Quick Tests</h4>
+            <div className="space-y-2">
+              <Button
+                onClick={handleTestCameraFirst}
+                variant="outline"
+                size="sm"
+                className="w-full border-green-600 text-green-300 hover:bg-green-700 text-xs h-8"
+              >
+                🚀 Test Camera with Agora
+              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  onClick={handleInitializeAgora}
+                  disabled={isInitialized}
+                  variant="outline"
+                  size="sm"
+                  className="border-blue-600 text-blue-300 hover:bg-blue-700 text-xs h-8"
+                >
+                  Initialize
+                </Button>
+                <Button
+                  onClick={isConnected ? handleLeaveChannel : handleJoinChannel}
+                  disabled={!isInitialized}
+                  variant="outline"
+                  size="sm"
+                  className="border-blue-600 text-blue-300 hover:bg-blue-700 text-xs h-8"
+                >
+                  {isConnected ? 'Leave' : 'Join'} Channel
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  onClick={handleToggleVideo}
+                  disabled={!isInitialized}
+                  variant="outline"
+                  size="sm"
+                  className="border-green-600 text-green-300 hover:bg-green-700 text-xs h-8"
+                >
+                  {isVideoEnabled ? 'Stop' : 'Start'} Video
+                </Button>
+                <Button
+                  onClick={handleToggleAudio}
+                  disabled={!isInitialized}
+                  variant="outline"
+                  size="sm"
+                  className="border-yellow-600 text-yellow-300 hover:bg-yellow-700 text-xs h-8"
+                >
+                  {isAudioEnabled ? 'Stop' : 'Start'} Audio
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Session Info */}
+          {currentChannel && (
+            <div className="space-y-1">
+              <h4 className="text-white font-medium">Session Info</h4>
+              <div className="bg-blue-800 p-2 rounded space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-blue-300">Channel:</span>
+                  <span className="text-blue-200 text-xs truncate">{currentChannel}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-blue-300">UID:</span>
+                  <span className="text-blue-200 text-xs">{currentUID}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-blue-300">Users:</span>
+                  <span className="text-blue-200 text-xs">{remoteUsers.length + 1}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Local Video Preview */}
+          {localVideoTrack && (
+            <div className="space-y-2">
+              <h4 className="text-white font-medium">Local Video Preview</h4>
+              <div className="w-full h-32">
+                <AgoraVideoTile
+                  localTrack={localVideoTrack}
+                  isLocal={true}
+                  displayName="You (Agora)"
+                  isHost={true}
+                  isMuted={!isAudioEnabled}
+                  isVideoOff={!isVideoEnabled}
+                  className="w-full h-full"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="text-xs text-blue-400 mt-2">
+            💡 Testing Agora SDK as backup to Zoom SDK
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
