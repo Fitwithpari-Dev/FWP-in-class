@@ -171,6 +171,91 @@ export function AgoraDebugPanel() {
     }
   };
 
+  const handleDetectDevices = async () => {
+    try {
+      console.log('🔍 AGORA DEBUG: Comprehensive device detection...');
+
+      // Test 1: Browser-level device detection
+      console.log('📱 Step 1: Browser-level device detection');
+      if (navigator.mediaDevices?.enumerateDevices) {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputs = devices.filter(device => device.kind === 'videoinput');
+        console.log('📹 Browser found devices:', devices.length, 'total');
+        console.log('📹 Browser found video inputs:', videoInputs.length);
+        videoInputs.forEach((device, index) => {
+          console.log(`📹 Browser Camera ${index + 1}:`, {
+            deviceId: device.deviceId,
+            label: device.label || 'No label (permission needed)',
+            groupId: device.groupId
+          });
+        });
+
+        if (videoInputs.length === 0) {
+          console.error('❌ BROWSER: No video devices detected!');
+          console.error('💡 This explains DEVICE_NOT_FOUND errors');
+        }
+      } else {
+        console.error('❌ Browser does not support device enumeration');
+      }
+
+      // Test 2: Direct getUserMedia test
+      console.log('📱 Step 2: Direct getUserMedia test');
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        console.log('✅ Browser getUserMedia SUCCESS:', {
+          tracks: stream.getTracks().length,
+          videoTracks: stream.getVideoTracks().length,
+          videoTrackLabel: stream.getVideoTracks()[0]?.label
+        });
+        stream.getTracks().forEach(track => track.stop());
+      } catch (userMediaError) {
+        console.error('❌ Browser getUserMedia FAILED:', userMediaError);
+        console.error('💡 This is why both Zoom and Agora fail with DEVICE_NOT_FOUND');
+      }
+
+      // Test 3: Agora AgoraRTC.getCameras() if available
+      console.log('📱 Step 3: Agora SDK device detection');
+      if (!isInitialized) {
+        await handleInitializeAgora();
+      }
+
+      // Try to access Agora's camera enumeration
+      try {
+        const AgoraRTC = (window as any).AgoraRTC;
+        if (AgoraRTC && AgoraRTC.getCameras) {
+          const agoraCameras = await AgoraRTC.getCameras();
+          console.log('📹 Agora SDK found cameras:', agoraCameras.length);
+          agoraCameras.forEach((camera: any, index: number) => {
+            console.log(`📹 Agora Camera ${index + 1}:`, {
+              deviceId: camera.deviceId,
+              label: camera.label,
+              groupId: camera.groupId
+            });
+          });
+        } else {
+          console.warn('⚠️ Agora AgoraRTC.getCameras not available');
+        }
+      } catch (agoraDeviceError) {
+        console.error('❌ Agora device detection failed:', agoraDeviceError);
+      }
+
+      // Test 4: Check browser and OS specific issues
+      console.log('📱 Step 4: Browser and environment analysis');
+      console.log('🖥️ Browser environment:', {
+        userAgent: navigator.userAgent,
+        isSecureContext: window.isSecureContext,
+        protocol: window.location.protocol,
+        host: window.location.host,
+        hasMediaDevices: !!navigator.mediaDevices,
+        hasGetUserMedia: !!navigator.mediaDevices?.getUserMedia,
+        hasEnumerateDevices: !!navigator.mediaDevices?.enumerateDevices
+      });
+
+    } catch (error) {
+      console.error('❌ Device detection test failed:', error);
+    }
+  };
+
   if (!isExpanded) {
     return (
       <div className="fixed bottom-4 left-4 z-50">
@@ -249,6 +334,14 @@ export function AgoraDebugPanel() {
           <div className="space-y-2">
             <h4 className="text-white font-medium">Quick Tests</h4>
             <div className="space-y-2">
+              <Button
+                onClick={handleDetectDevices}
+                variant="outline"
+                size="sm"
+                className="w-full border-purple-600 text-purple-300 hover:bg-purple-700 text-xs h-8"
+              >
+                🔍 Detect Camera Devices
+              </Button>
               <Button
                 onClick={handleTestCameraFirst}
                 variant="outline"
