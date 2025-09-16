@@ -44,7 +44,7 @@ export class AgoraSDKService {
 
       // Create Agora client
       this.client = AgoraRTC.createClient({
-        mode: 'live', // Live broadcasting mode (required for setClientRole)
+        mode: 'rtc', // RTC mode allows all participants to publish/subscribe
         codec: 'vp8' // Use VP8 codec for better compatibility
       });
 
@@ -194,9 +194,8 @@ export class AgoraSDKService {
         currentUID: this.currentUID
       });
 
-      // Set client role
-      console.log('👑 AgoraSDKService: Setting client role to:', role);
-      await this.client.setClientRole(role);
+      // In RTC mode, all users can publish/subscribe without role restrictions
+      console.log('👑 AgoraSDKService: Using RTC mode - all users can publish/subscribe');
 
       // Join the channel
       console.log('🚀 AgoraSDKService: Calling client.join with:', {

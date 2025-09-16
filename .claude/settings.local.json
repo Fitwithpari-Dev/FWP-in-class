@@ -54,7 +54,15 @@
       "Bash(set VITE_AGORA_APP_ID=39a27953242243799ea996e3f460a22a)",
       "Bash(start msedge --inprivate http://localhost:3004)",
       "Bash(start msedge --inprivate http://localhost:3005)",
-      "Bash(del test-agora-config.js)"
+      "Bash(del test-agora-config.js)",
+      "WebFetch(domain:webrtc.github.io)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.videosdk.live)",
+      "Bash(amplify status:*)",
+      "Bash(amplify env:*)",
+      "Bash(amplify pull:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []

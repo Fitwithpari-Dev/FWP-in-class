@@ -148,9 +148,10 @@ export class AgoraVideoService implements IVideoService {
       this.currentChannel = generateChannelName(sessionId);
       console.log('📺 AgoraVideoService: Generated channel name:', this.currentChannel);
 
-      // Map fitness platform roles to Agora roles
-      const agoraRole = userRole === 'coach' ? 'host' : 'audience';
-      console.log('📝 AgoraVideoService: Role mapping:', { userRole, agoraRole });
+      // In RTC mode, all users are effectively hosts and can publish/subscribe
+      // Role is passed for optimization purposes but doesn't restrict functionality
+      const agoraRole = userRole === 'coach' ? 'host' : 'host'; // Set all as host for visibility
+      console.log('📝 AgoraVideoService: Role mapping (RTC mode - all can publish):', { userRole, agoraRole });
 
       // Generate token using token service
       console.log('🔑 AgoraVideoService: Generating token...');
