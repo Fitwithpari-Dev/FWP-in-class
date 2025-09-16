@@ -386,6 +386,44 @@ export function VideoDebugPanel() {
                 Request Camera Permissions
               </Button>
               <Button
+                onClick={async () => {
+                  console.log('🔥 DEBUG: Testing camera warm-up approach...');
+
+                  try {
+                    // Step 1: Get camera access first with browser API
+                    console.log('📹 Getting camera access with getUserMedia...');
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    console.log('✅ Browser camera access successful');
+
+                    // Keep the stream for a moment to "warm up" the camera
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+
+                    // Step 2: Release browser camera
+                    console.log('🛑 Releasing browser camera...');
+                    stream.getTracks().forEach(track => track.stop());
+
+                    // Step 3: Wait a moment for camera to be released
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    // Step 4: Now try Zoom SDK
+                    console.log('🎯 Now trying Zoom SDK after camera warm-up...');
+                    if (zoomSDK) {
+                      await zoomSDK.startVideo();
+                      console.log('🎉 SUCCESS: Video started after camera warm-up!');
+                    }
+
+                  } catch (error) {
+                    console.error('❌ Camera warm-up failed:', error);
+                  }
+                }}
+                variant="outline"
+                size="sm"
+                className="border-green-600 text-green-300 hover:bg-green-700 text-xs h-8"
+              >
+                <Bug className="w-3 h-3 mr-1" />
+                Try Camera Warm-up
+              </Button>
+              <Button
                 onClick={handleNetworkTest}
                 variant="outline"
                 size="sm"
