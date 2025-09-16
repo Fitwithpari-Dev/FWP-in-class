@@ -1,16 +1,18 @@
 import { useState, useEffect, createContext, useContext } from 'react';
-import { useZoomFitnessPlatform } from './hooks/useZoomFitnessPlatform';
+import { useVideoFitnessPlatform } from './hooks/useVideoFitnessPlatform';
 import { CoachView } from './components/CoachView';
 import { StudentView } from './components/StudentView';
 import { SessionManager } from './components/SessionManager';
 import { AgoraDebugPanel } from './components/AgoraDebugPanel';
+import { VideoServiceIndicator } from './components/VideoServiceIndicator';
 import { UserRole } from './types/fitness-platform';
 import { checkBrowserSupport } from './utils/sessionValidator';
+import { VIDEO_SERVICE, SERVICE_NAMES } from './config/video.config';
 
 type ViewPerspective = 'coach' | 'student';
 
-// Create context to share fitness platform state
-const FitnessPlatformContext = createContext<ReturnType<typeof useZoomFitnessPlatform> | null>(null);
+// Create context to share fitness platform state with unified video service
+const FitnessPlatformContext = createContext<ReturnType<typeof useVideoFitnessPlatform> | null>(null);
 
 export const useFitnessPlatformContext = () => {
   const context = useContext(FitnessPlatformContext);
@@ -25,7 +27,7 @@ export default function App() {
   const [currentRole, setCurrentRole] = useState<UserRole | null>(null);
   const [userName, setUserName] = useState('');
   const [browserSupport, setBrowserSupport] = useState<any>(null);
-  const fitnessPlatform = useZoomFitnessPlatform();
+  const fitnessPlatform = useVideoFitnessPlatform();
 
   // Check browser compatibility on mount
   useEffect(() => {
@@ -133,11 +135,14 @@ export default function App() {
   console.log('🔧 DEBUG - App state:', {
     hasJoinedSession,
     currentRole,
+    videoService: VIDEO_SERVICE,
+    videoServiceName: SERVICE_NAMES[VIDEO_SERVICE],
     fitnessPlatformExists: !!fitnessPlatform,
     sdkExists: !!fitnessPlatform?.sdk,
     connectionState: fitnessPlatform?.connectionState,
     error: fitnessPlatform?.error,
-    isConnecting: fitnessPlatform?.isConnecting
+    isConnecting: fitnessPlatform?.isConnecting,
+    serviceInfo: fitnessPlatform?.getServiceInfo?.()
   });
 
   // Show role selection screen if user hasn't joined yet OR if connection failed
@@ -153,6 +158,7 @@ export default function App() {
           onJoinSession={handleJoinSession}
           isLoading={fitnessPlatform?.isConnecting}
         />
+        <VideoServiceIndicator />
         <AgoraDebugPanel />
       </>
     );
@@ -166,6 +172,7 @@ export default function App() {
       ) : (
         <CoachView onToggleView={toggleViewPerspective} />
       )}
+      <VideoServiceIndicator />
       <AgoraDebugPanel />
     </FitnessPlatformContext.Provider>
   );
