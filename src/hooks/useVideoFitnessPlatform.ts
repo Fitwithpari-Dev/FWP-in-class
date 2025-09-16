@@ -74,6 +74,10 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
   const [isLocalVideoOn, setIsLocalVideoOn] = useState(false);
   const [isLocalAudioOn, setIsLocalAudioOn] = useState(false);
 
+  // Session tracking state
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [sessionStartTime, setSessionStartTime] = useState<Date>(new Date());
+
   // Legacy compatibility state
   const [viewMode, setViewMode] = useState('gallery');
   const [spotlightedParticipant, setSpotlightedParticipant] = useState('');
@@ -207,6 +211,10 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
         setParticipants(prev => [...prev.filter(p => p.id !== user.id), user]);
       }
 
+      // Track session
+      setCurrentSessionId(sessionId);
+      setSessionStartTime(new Date());
+
       setIsConnecting(false);
 
       console.log('✅ useVideoFitnessPlatform: Joined session successfully');
@@ -231,6 +239,10 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
       setParticipants([]);
       setIsLocalVideoOn(false);
       setIsLocalAudioOn(false);
+
+      // Reset session tracking
+      setCurrentSessionId(null);
+      setSessionStartTime(new Date());
 
       console.log('✅ useVideoFitnessPlatform: Left session successfully');
     } catch (err) {
@@ -378,7 +390,13 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
     getServiceInfo,
 
     // Legacy compatibility properties
-    classSession: { name: 'Fitness Session', type: 'workout' },
+    classSession: {
+      id: currentSessionId || 'waiting-to-join',
+      name: currentSessionId ? `Session ${currentSessionId}` : 'Fitness Session',
+      type: 'workout',
+      startTime: sessionStartTime,
+      duration: 45
+    },
     viewMode,
     spotlightedParticipant,
     elapsedTime,
