@@ -424,6 +424,70 @@ export function VideoDebugPanel() {
                 Try Camera Warm-up
               </Button>
               <Button
+                onClick={async () => {
+                  console.log('🔍 DEBUG: Comprehensive camera detection test...');
+
+                  try {
+                    // Test 1: Check if media devices API exists
+                    console.log('📱 MediaDevices API available:', !!navigator.mediaDevices);
+                    console.log('🎥 getUserMedia available:', !!navigator.mediaDevices?.getUserMedia);
+
+                    // Test 2: Enumerate devices
+                    if (navigator.mediaDevices?.enumerateDevices) {
+                      const devices = await navigator.mediaDevices.enumerateDevices();
+                      const videoInputs = devices.filter(device => device.kind === 'videoinput');
+                      console.log('📹 All devices:', devices);
+                      console.log('📹 Video input devices found:', videoInputs.length);
+                      videoInputs.forEach((device, index) => {
+                        console.log(`📹 Camera ${index + 1}:`, {
+                          deviceId: device.deviceId,
+                          label: device.label,
+                          groupId: device.groupId
+                        });
+                      });
+
+                      if (videoInputs.length === 0) {
+                        console.error('❌ No video input devices detected by browser!');
+                        console.error('💡 This explains why Zoom SDK shows "Available cameras: 0"');
+                      }
+                    }
+
+                    // Test 3: Try constraints variation
+                    console.log('🔧 Testing different camera constraints...');
+                    const constraintsToTest = [
+                      { video: true },
+                      { video: { facingMode: 'user' } },
+                      { video: { width: 640, height: 480 } },
+                      { video: { deviceId: 'default' } }
+                    ];
+
+                    for (let i = 0; i < constraintsToTest.length; i++) {
+                      try {
+                        console.log(`🧪 Testing constraint ${i + 1}:`, constraintsToTest[i]);
+                        const stream = await navigator.mediaDevices.getUserMedia(constraintsToTest[i]);
+                        console.log(`✅ Constraint ${i + 1} SUCCESS:`, {
+                          tracks: stream.getTracks().length,
+                          videoTracks: stream.getVideoTracks().length
+                        });
+                        stream.getTracks().forEach(track => track.stop());
+                        break; // Success!
+                      } catch (error) {
+                        console.error(`❌ Constraint ${i + 1} failed:`, error);
+                      }
+                    }
+
+                  } catch (error) {
+                    console.error('❌ Camera detection test failed:', error);
+                  }
+                }}
+                variant="outline"
+                size="sm"
+                className="border-purple-600 text-purple-300 hover:bg-purple-700 text-xs h-8"
+              >
+                <Bug className="w-3 h-3 mr-1" />
+                Detect Cameras
+              </Button>
+              <Button
                 onClick={handleNetworkTest}
                 variant="outline"
                 size="sm"
