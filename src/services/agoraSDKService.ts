@@ -230,6 +230,50 @@ export class AgoraSDKService {
       this.currentUID = assignedUID;
 
       console.log('✅ AgoraSDKService: Successfully joined channel:', channel, 'with UID:', assignedUID);
+
+      // CRITICAL FIX: Subscribe to existing users' tracks (handles race condition)
+      console.log('🔄 AgoraSDKService: Checking for existing remote users...');
+      const existingUsers = this.client.remoteUsers;
+      console.log('🔍 Found existing remote users:', existingUsers.map(u => ({ uid: u.uid, video: !!u.videoTrack, audio: !!u.audioTrack })));
+
+      for (const existingUser of existingUsers) {
+        // Trigger user joined event for existing users (race condition fix)
+        console.log('👤 AgoraSDKService: Triggering join event for existing user:', existingUser.uid);
+        if (this.eventHandlers.onUserJoined) {
+          this.eventHandlers.onUserJoined(existingUser, 'audio');
+        }
+
+        if (existingUser.hasVideo && existingUser.videoTrack) {
+          console.log('📡 AgoraSDKService: Subscribing to existing user video:', existingUser.uid);
+          try {
+            await this.client.subscribe(existingUser, 'video');
+            console.log('✅ AgoraSDKService: Subscribed to existing user video:', existingUser.uid);
+
+            // Trigger published event for existing video
+            if (this.eventHandlers.onUserPublished) {
+              this.eventHandlers.onUserPublished(existingUser, 'video');
+            }
+          } catch (error) {
+            console.error('❌ AgoraSDKService: Failed to subscribe to existing user video:', existingUser.uid, error);
+          }
+        }
+
+        if (existingUser.hasAudio && existingUser.audioTrack) {
+          console.log('📡 AgoraSDKService: Subscribing to existing user audio:', existingUser.uid);
+          try {
+            await this.client.subscribe(existingUser, 'audio');
+            console.log('✅ AgoraSDKService: Subscribed to existing user audio:', existingUser.uid);
+
+            // Trigger published event for existing audio
+            if (this.eventHandlers.onUserPublished) {
+              this.eventHandlers.onUserPublished(existingUser, 'audio');
+            }
+          } catch (error) {
+            console.error('❌ AgoraSDKService: Failed to subscribe to existing user audio:', existingUser.uid, error);
+          }
+        }
+      }
+
       return assignedUID;
 
     } catch (error) {
