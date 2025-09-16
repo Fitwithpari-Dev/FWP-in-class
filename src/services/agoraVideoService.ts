@@ -24,6 +24,7 @@ export class AgoraVideoService implements IVideoService {
   private isAudioOn = false;
   private currentChannel = '';
   private localVideoTrack: any = null;
+  private participantNames: Map<string, string> = new Map(); // Track UID to name mapping
 
   // Event callbacks
   onParticipantJoined?: (participant: VideoParticipant) => void;
@@ -54,16 +55,20 @@ export class AgoraVideoService implements IVideoService {
         onUserJoined: (user, mediaType) => {
           console.log('👤 AgoraVideoService: User joined:', user.uid);
 
+          // Try to get participant name from current user data or use fallback
+          const participantName = this.getParticipantNameByUID(String(user.uid)) || `User ${user.uid}`;
+
           const participant: VideoParticipant = {
             id: String(user.uid),
-            name: `User ${user.uid}`,
-            isHost: false,
+            name: participantName,
+            isHost: false, // Will be updated when we know the role
             isVideoOn: !!user.videoTrack,
             isAudioOn: !!user.audioTrack,
-            role: 'student' // Default, will be updated
+            role: 'student' // Default, will be updated based on session context
           };
 
           this.participants.set(participant.id, participant);
+          console.log('👤 AgoraVideoService: Added participant:', participantName);
           this.onParticipantJoined?.(participant);
         },
 
@@ -80,15 +85,29 @@ export class AgoraVideoService implements IVideoService {
         onUserPublished: (user, mediaType) => {
           console.log('📡 AgoraVideoService: User published:', user.uid, mediaType);
 
-          const participant = this.participants.get(String(user.uid));
-          if (participant) {
-            if (mediaType === 'video') {
-              participant.isVideoOn = true;
-              this.onVideoStateChanged?.(participant.id, true);
-            } else if (mediaType === 'audio') {
-              participant.isAudioOn = true;
-              this.onAudioStateChanged?.(participant.id, true);
-            }
+          // Ensure participant exists
+          let participant = this.participants.get(String(user.uid));
+          if (!participant) {
+            // Create participant if doesn't exist yet
+            const participantName = this.getParticipantNameByUID(String(user.uid)) || `User ${user.uid}`;
+            participant = {
+              id: String(user.uid),
+              name: participantName,
+              isHost: false,
+              isVideoOn: false,
+              isAudioOn: false,
+              role: 'student'
+            };
+            this.participants.set(participant.id, participant);
+            this.onParticipantJoined?.(participant);
+          }
+
+          if (mediaType === 'video') {
+            participant.isVideoOn = true;
+            this.onVideoStateChanged?.(participant.id, true);
+          } else if (mediaType === 'audio') {
+            participant.isAudioOn = true;
+            this.onAudioStateChanged?.(participant.id, true);
           }
         },
 
@@ -186,6 +205,9 @@ export class AgoraVideoService implements IVideoService {
         role: userRole
       };
 
+      // Store the current user's name for reference
+      this.participantNames.set(String(uid), userName);
+
       // Add to participants
       this.participants.set(this.currentUser.id, this.currentUser);
 
@@ -231,6 +253,7 @@ export class AgoraVideoService implements IVideoService {
 
       // Clean up state
       this.participants.clear();
+      this.participantNames.clear();
       this.currentUser = null;
       this.currentChannel = '';
       this.isVideoOn = false;
@@ -452,6 +475,24 @@ export class AgoraVideoService implements IVideoService {
       // Implementation would stop video rendering
     } catch (error) {
       console.error('❌ AgoraVideoService: Failed to stop video rendering:', error);
+    }
+  }
+
+  // Helper method to get participant name by UID
+  private getParticipantNameByUID(uid: string): string | undefined {
+    return this.participantNames.get(uid);
+  }
+
+  // Method to set participant name for external UIDs (when other users join)
+  public setParticipantName(uid: string, name: string): void {
+    this.participantNames.set(uid, name);
+
+    // Update existing participant if they exist
+    const participant = this.participants.get(uid);
+    if (participant) {
+      participant.name = name;
+      this.participants.set(uid, participant);
+      console.log('👤 AgoraVideoService: Updated participant name:', { uid, name });
     }
   }
 }
