@@ -183,6 +183,25 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
           setIsConnecting(false);
 
           console.log('✅ useVideoFitnessPlatform: Video service initialized:', service.serviceName);
+
+          // CRITICAL FIX: Start periodic participant state synchronization
+          const syncInterval = setInterval(() => {
+            if (service && service.getConnectionState() === 'Connected') {
+              console.log('🔄 useVideoFitnessPlatform: Syncing participant state...');
+
+              // Get synchronized participants from service
+              const syncedParticipants = service.getParticipants();
+              const fitnessParticipants = syncedParticipants.map(convertToFitnessParticipant);
+
+              setParticipants(fitnessParticipants);
+
+              console.log('✅ useVideoFitnessPlatform: Participant state synced. Count:', fitnessParticipants.length);
+            }
+          }, 2000); // Sync every 2 seconds
+
+          // Store interval for cleanup
+          serviceRef.current = service;
+          (serviceRef.current as any).syncInterval = syncInterval;
         }
 
       } catch (err) {
@@ -207,6 +226,13 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
     return () => {
       if (serviceRef.current) {
         console.log('🧹 useVideoFitnessPlatform: Cleaning up video service...');
+
+        // Clear sync interval
+        if ((serviceRef.current as any).syncInterval) {
+          clearInterval((serviceRef.current as any).syncInterval);
+          console.log('🧹 useVideoFitnessPlatform: Cleared sync interval');
+        }
+
         serviceRef.current.destroy().catch(console.error);
       }
     };
@@ -238,6 +264,14 @@ export function useVideoFitnessPlatform(): UseVideoFitnessPlatformReturn {
       // Track session
       setCurrentSessionId(sessionId);
       setSessionStartTime(new Date());
+
+      // Immediately sync participant state after joining
+      if (videoService.getParticipants) {
+        const syncedParticipants = videoService.getParticipants();
+        const fitnessParticipants = syncedParticipants.map(convertToFitnessParticipant);
+        setParticipants(fitnessParticipants);
+        console.log('🔄 useVideoFitnessPlatform: Initial participant sync after join. Count:', fitnessParticipants.length);
+      }
 
       setIsConnecting(false);
 

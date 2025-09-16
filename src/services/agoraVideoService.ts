@@ -25,6 +25,7 @@ export class AgoraVideoService implements IVideoService {
   private currentChannel = '';
   private localVideoTrack: any = null;
   private participantNames: Map<string, string> = new Map(); // Track UID to name mapping
+  private participantRoles: Map<string, UserRole> = new Map(); // Track UID to role mapping
 
   // Event callbacks
   onParticipantJoined?: (participant: VideoParticipant) => void;
@@ -205,8 +206,9 @@ export class AgoraVideoService implements IVideoService {
         role: userRole
       };
 
-      // Store the current user's name for reference
+      // Store the current user's name and role for reference
       this.participantNames.set(String(uid), userName);
+      this.participantRoles.set(String(uid), userRole);
 
       // Add to participants
       this.participants.set(this.currentUser.id, this.currentUser);
@@ -531,5 +533,49 @@ export class AgoraVideoService implements IVideoService {
       this.participants.set(uid, participant);
       console.log('👤 AgoraVideoService: Updated participant name:', { uid, name });
     }
+  }
+
+  // CRITICAL FIX: Synchronize participant state with Agora's actual remote users
+  private synchronizeParticipantState(): void {
+    console.log('🔄 AgoraVideoService: Synchronizing participant state with Agora remote users...');
+
+    const remoteUsers = agoraService.getRemoteUsers();
+    const expectedParticipants = new Map<string, VideoParticipant>();
+
+    // Add current user first
+    if (this.currentUser) {
+      expectedParticipants.set(this.currentUser.id, { ...this.currentUser });
+    }
+
+    // Add all remote users
+    for (const remoteUser of remoteUsers) {
+      const uid = String(remoteUser.uid);
+      const name = this.participantNames.get(uid) || `User ${uid}`;
+      const role = this.participantRoles.get(uid) || 'student';
+
+      const participant: VideoParticipant = {
+        id: uid,
+        name: name,
+        isHost: role === 'coach',
+        isVideoOn: !!remoteUser.videoTrack && remoteUser.videoTrack.enabled,
+        isAudioOn: !!remoteUser.audioTrack && remoteUser.audioTrack.enabled,
+        role: role
+      };
+
+      expectedParticipants.set(uid, participant);
+    }
+
+    // Replace participants map with synchronized state
+    this.participants = expectedParticipants;
+
+    console.log('✅ AgoraVideoService: Participant state synchronized. Current participants:',
+      Array.from(this.participants.values()).map(p => ({ id: p.id, name: p.name, video: p.isVideoOn, audio: p.isAudioOn }))
+    );
+  }
+
+  // Override getParticipants to always return synchronized state
+  getParticipants(): VideoParticipant[] {
+    this.synchronizeParticipantState();
+    return Array.from(this.participants.values());
   }
 }
