@@ -132,7 +132,7 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
         />
 
         {/* Video Debug Panel - Only show in development */}
-        {process.env.NODE_ENV === 'development' && <VideoDebugPanel />}
+        <VideoDebugPanel />
       </div>
     );
   }
@@ -192,7 +192,7 @@ export function StudentView({ onToggleView, isCoachViewing = false }: StudentVie
         />
 
         {/* Video Debug Panel - Only show in development */}
-        {process.env.NODE_ENV === 'development' && <VideoDebugPanel />}
+        <VideoDebugPanel />
       </div>
     );
   }

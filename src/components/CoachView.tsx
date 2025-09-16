@@ -185,7 +185,7 @@ export function CoachView({ onToggleView }: CoachViewProps) {
       />
 
       {/* Video Debug Panel - Only show in development */}
-      {process.env.NODE_ENV === 'development' && <VideoDebugPanel />}
+      <VideoDebugPanel />
     </div>
   );
 }
