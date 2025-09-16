@@ -22,6 +22,7 @@ export class AgoraVideoService implements IVideoService {
   private isVideoOn = false;
   private isAudioOn = false;
   private currentChannel = '';
+  private localVideoTrack: any = null;
 
   // Event callbacks
   onParticipantJoined?: (participant: VideoParticipant) => void;
@@ -224,7 +225,7 @@ export class AgoraVideoService implements IVideoService {
     try {
       console.log('🎥 AgoraVideoService: Starting video...');
 
-      await agoraService.startLocalVideo();
+      this.localVideoTrack = await agoraService.startLocalVideo();
       this.isVideoOn = true;
 
       // Update current user state
@@ -250,6 +251,7 @@ export class AgoraVideoService implements IVideoService {
       console.log('🛑 AgoraVideoService: Stopping video...');
 
       await agoraService.stopLocalVideo();
+      this.localVideoTrack = null;
       this.isVideoOn = false;
 
       // Update current user state
@@ -337,9 +339,24 @@ export class AgoraVideoService implements IVideoService {
         throw new Error(`Participant ${participantId} not found`);
       }
 
-      // For Agora, we'll use the AgoraVideoTile component
-      // This is a placeholder - actual implementation would render the video track
-      console.log('📹 AgoraVideoService: Video rendering delegated to AgoraVideoTile component');
+      // For local video (current user)
+      if (this.currentUser && participantId === this.currentUser.id && this.localVideoTrack) {
+        console.log('📹 AgoraVideoService: Rendering local video track');
+        this.localVideoTrack.play(element);
+        return;
+      }
+
+      // For remote video
+      const remoteUsers = agoraService.getRemoteUsers();
+      const remoteUser = remoteUsers.find(user => String(user.uid) === participantId);
+
+      if (remoteUser && remoteUser.videoTrack) {
+        console.log('📹 AgoraVideoService: Rendering remote video track for user:', remoteUser.uid);
+        remoteUser.videoTrack.play(element);
+        return;
+      }
+
+      console.warn('⚠️ AgoraVideoService: No video track found for participant:', participantId);
     } catch (error) {
       console.error('❌ AgoraVideoService: Failed to render video:', error);
       throw new VideoServiceError(
@@ -349,6 +366,16 @@ export class AgoraVideoService implements IVideoService {
         error
       );
     }
+  }
+
+  // Expose local video track for components
+  getLocalVideoTrack() {
+    return this.localVideoTrack;
+  }
+
+  // Expose remote users for components
+  getRemoteUsers() {
+    return agoraService.getRemoteUsers();
   }
 
   async stopRenderingVideo(participantId: string): Promise<void> {

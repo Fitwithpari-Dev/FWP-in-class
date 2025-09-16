@@ -1,8 +1,10 @@
 import { Participant, UserRole } from '../types/fitness-platform';
+import { VideoParticipant } from '../types/video-service';
 import { Badge } from './ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { useRef, useEffect } from 'react';
 import { useFitnessPlatformContext } from '../App';
+import { UnifiedVideoTile } from './UnifiedVideoTile';
 import {
   Mic,
   MicOff,
@@ -38,8 +40,18 @@ export function ParticipantTile({
   onMute,
   onRemove
 }: ParticipantTileProps) {
-  const { zoomSDK } = useFitnessPlatformContext();
+  const { currentUser } = useFitnessPlatformContext();
   const videoElementRef = useRef<HTMLVideoElement>(null);
+
+  // Convert Participant to VideoParticipant for unified video service
+  const videoParticipant: VideoParticipant = {
+    id: String(participant.id),
+    name: participant.name,
+    isHost: participant.isHost,
+    isVideoOn: participant.isVideoOn,
+    isAudioOn: participant.isAudioOn,
+    role: participant.isHost ? 'coach' : 'student'
+  };
 
   // Effect to handle video rendering with enhanced retry logic
   useEffect(() => {
@@ -184,43 +196,12 @@ export function ParticipantTile({
     <div className={`relative bg-fitness-gray rounded-lg overflow-hidden border-2 ${
       isSpotlighted ? 'border-fitness-green' : 'border-gray-700'
     } ${className.includes('!w-') || className.includes('!h-') ? '' : getSizeClasses()} ${className}`}>
-      {/* Video/Avatar Area */}
-      <div className="w-full h-full bg-gray-800 flex items-center justify-center relative">
-        {participant.isVideoOn ? (
-          <>
-            <video
-              ref={videoElementRef}
-              className="w-full h-full object-cover"
-              style={{ display: 'block' }}
-              autoPlay
-              muted
-              playsInline
-            />
-            {/* Fallback if video fails to render */}
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800"
-                 style={{ zIndex: -1 }}>
-              <div className={`${
-                size === 'small' ? 'text-lg sm:text-2xl' :
-                size === 'medium' ? 'text-2xl sm:text-4xl' :
-                'text-4xl sm:text-6xl'
-              } text-white font-bold`}>
-                {participant.name.charAt(0)}
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="flex flex-col items-center gap-1 sm:gap-2 text-gray-400">
-            <VideoOff className={`${
-              size === 'small' ? 'w-4 h-4 sm:w-6 sm:h-6' :
-              size === 'medium' ? 'w-6 h-6 sm:w-8 sm:h-8' :
-              'w-8 h-8 sm:w-12 sm:h-12'
-            }`} />
-            {size !== 'small' && (
-              <span className="text-xs sm:text-sm text-center px-1">{participant.name}</span>
-            )}
-          </div>
-        )}
-      </div>
+      {/* Unified Video Tile - Works with Both Zoom and Agora */}
+      <UnifiedVideoTile
+        participant={videoParticipant}
+        isLocal={currentUser?.id === String(participant.id)}
+        className="w-full h-full"
+      />
 
       {/* Top Status Bar */}
       <div className="absolute top-1 sm:top-2 left-1 sm:left-2 right-1 sm:right-2 flex justify-between items-center">
