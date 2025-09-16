@@ -447,14 +447,205 @@ AGORA_APP_CERTIFICATE=xxx      # Server-only
 3. **CDN Integration**: Static assets served via AWS CloudFront
 4. **Database Integration**: Future support for persistent session data
 
+## WebRTC Best Practices (Google web.dev Standards)
+
+### Core WebRTC Implementation Principles
+
+#### 1. MediaStream API Best Practices
+```typescript
+// Following Google's recommendations for device handling
+const getUserMediaConstraints = {
+  video: {
+    width: { min: 640, ideal: 1280, max: 1920 },
+    height: { min: 480, ideal: 720, max: 1080 },
+    frameRate: { ideal: 30, max: 60 }
+  },
+  audio: {
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: true
+  }
+};
+
+// Proper error handling for device access
+try {
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  // Handle stream
+} catch (error) {
+  // Handle permission denied, device not found, etc.
+  handleMediaError(error);
+}
+```
+
+#### 2. RTCPeerConnection Management
+Our Agora SDK abstracts RTCPeerConnection, but provides these WebRTC features:
+- **Packet Loss Concealment**: Automatic recovery from network issues
+- **Echo Cancellation**: Built-in audio processing
+- **Bandwidth Adaptivity**: Dynamic quality adjustment
+- **Dynamic Jitter Buffering**: Smooth playback despite network variations
+
+#### 3. ICE Framework Implementation
+```typescript
+// Network traversal handled by Agora's infrastructure
+// Equivalent to Google's ICE recommendations:
+const iceServers = [
+  { urls: 'stun:stun.agora.io:3478' },        // STUN for NAT traversal
+  { urls: 'turn:turn.agora.io:3478', ... }    // TURN for firewall bypass
+];
+```
+
+#### 4. Signaling Architecture (Token Server)
+Following Google's signaling server pattern:
+```typescript
+// Session Discovery & Coordination
+POST /rtc-token
+{
+  "channelName": "fitness-session-123",
+  "uid": "user-456",
+  "role": "host|audience",
+  "expirationTimeInSeconds": 3600
+}
+
+// Response includes WebRTC connection credentials
+{
+  "token": "jwt-token-for-webrtc-auth",
+  "channelName": "fitness-session-123",
+  "uid": 789
+}
+```
+
+### Performance Optimization (Google Standards)
+
+#### 1. Adaptive Bitrate Streaming
+```typescript
+// Network-aware quality adjustment
+const adaptVideoQuality = (networkStats: NetworkQualityStats) => {
+  if (networkStats.uplink >= 4) { // Poor network
+    videoTrack.setEncoderConfiguration({
+      width: 480, height: 360,
+      frameRate: 15, bitrateMax: 500  // Reduce for stability
+    });
+  } else if (networkStats.uplink <= 2) { // Good network
+    videoTrack.setEncoderConfiguration({
+      width: 1280, height: 720,
+      frameRate: 30, bitrateMax: 2500  // Increase for quality
+    });
+  }
+};
+```
+
+#### 2. Browser Compatibility (adapter.js pattern)
+Our Agora SDK handles cross-browser compatibility internally, equivalent to:
+```javascript
+// What Agora SDK does internally (following Google's adapter.js pattern)
+import adapter from 'webrtc-adapter';
+
+// Normalizes browser differences for:
+// - getUserMedia API variations
+// - RTCPeerConnection implementation differences
+// - ICE candidate handling
+// - MediaStream track management
+```
+
+#### 3. Resource Management
+```typescript
+// Following Google's cleanup recommendations
+const cleanupWebRTCResources = async () => {
+  // Stop all tracks
+  localStream?.getTracks().forEach(track => track.stop());
+
+  // Close peer connections
+  await peerConnection?.close();
+
+  // Clear event handlers
+  peerConnection = null;
+  localStream = null;
+};
+```
+
+### Security Implementation (Google Standards)
+
+#### 1. Mandatory Encryption
+- ✅ All WebRTC communication encrypted by default (DTLS-SRTP)
+- ✅ Agora handles encryption keys automatically
+- ✅ No plaintext media transmission possible
+
+#### 2. Permission Management
+```typescript
+// Explicit user consent following Google guidelines
+const requestMediaPermissions = async () => {
+  try {
+    // Request permissions explicitly
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    });
+
+    // Show user what's being shared
+    showLocalPreview(stream);
+
+    return stream;
+  } catch (error) {
+    if (error.name === 'NotAllowedError') {
+      showPermissionDeniedError();
+    } else if (error.name === 'NotFoundError') {
+      showDeviceNotFoundError();
+    }
+    throw error;
+  }
+};
+```
+
+#### 3. Sandboxed Execution
+- ✅ All WebRTC APIs run in browser security sandbox
+- ✅ No direct system access
+- ✅ Origin-based security model
+
+### Fitness Platform Specific Optimizations
+
+#### 1. Multi-Participant Scaling (SFU Pattern)
+Google recommends SFU for multi-party calls:
+```
+Coach ────┐
+          │
+Student A ├─── Agora SFU ───── Optimized Distribution
+          │      (Handles)       - Bandwidth optimization
+Student B ─┘                    - CPU offloading from clients
+                                 - Adaptive quality per participant
+```
+
+#### 2. Fitness-Specific Media Handling
+```typescript
+// Optimized for fitness use cases
+const fitnessVideoConstraints = {
+  video: {
+    width: { ideal: 1280 },      // Good for form checking
+    height: { ideal: 720 },
+    frameRate: { ideal: 30 },    // Smooth movement tracking
+    facingMode: 'user'           // Front camera for demonstrations
+  },
+  audio: {
+    echoCancellation: true,      // Critical for instruction clarity
+    noiseSuppression: true,      // Filter background noise
+    autoGainControl: true        // Consistent voice levels
+  }
+};
+```
+
 ## Future Architecture Improvements
 
 ### Planned Enhancements
-1. **WebSocket Signaling**: Custom signaling server for enhanced control
+1. **Enhanced Signaling**: Custom WebSocket signaling for fitness-specific features
 2. **Database Integration**: Persistent user and session management
-3. **Recording Service**: Cloud-based session recording
-4. **Analytics Platform**: Real-time session analytics
-5. **Mobile SDK Integration**: React Native support
+3. **Recording Service**: Cloud-based session recording with fitness analytics
+4. **Real-time Analytics**: Performance metrics and participant engagement
+5. **Mobile SDK Integration**: React Native support for mobile fitness apps
+
+### WebRTC Evolution Strategy
+```
+Current: Agora SFU + Token Server
+Future: Custom WebRTC + Agora Hybrid + Analytics + Recording
+```
 
 ### Microservices Evolution
 ```
