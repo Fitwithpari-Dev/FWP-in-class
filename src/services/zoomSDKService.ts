@@ -348,6 +348,23 @@ export class ZoomSDKService {
         }
       }
 
+      // CRITICAL: Check if camera needs to be opened first
+      console.log('🎬 Checking camera status before starting video...');
+      try {
+        // Try to get camera capabilities to ensure it's accessible
+        const cameras = await this.stream.getCameraList();
+        console.log('📹 Available cameras:', cameras?.length || 0);
+
+        if (cameras && cameras.length > 0) {
+          console.log('🔧 Setting default camera...');
+          await this.stream.switchCamera(cameras[0].deviceId);
+          console.log('✅ Camera set successfully');
+        }
+      } catch (cameraError) {
+        console.warn('⚠️ Camera setup warning:', cameraError);
+        // Continue anyway
+      }
+
       console.log('🎬 Calling stream.startVideo()...');
       await this.stream.startVideo();
       console.log('✅ stream.startVideo() completed');

@@ -112,6 +112,25 @@ export function VideoDebugPanel() {
       // Wait a moment
       await new Promise(resolve => setTimeout(resolve, 1000));
 
+      // NEW: Initialize camera explicitly first
+      console.log('🔧 Debug: Initializing camera before starting video...');
+      try {
+        // Test if we can access the stream and camera list
+        const stream = (zoomSDK as any).stream;
+        if (stream && stream.getCameraList) {
+          const cameras = await stream.getCameraList();
+          console.log('📹 Debug: Available cameras:', cameras);
+
+          if (cameras && cameras.length > 0) {
+            console.log('🎯 Debug: Setting camera to:', cameras[0]);
+            await stream.switchCamera(cameras[0].deviceId);
+            console.log('✅ Debug: Camera initialized successfully');
+          }
+        }
+      } catch (cameraInitError) {
+        console.warn('⚠️ Debug: Camera initialization warning:', cameraInitError);
+      }
+
       // Then start video with detailed logging
       console.log('🎬 Debug: Starting video stream with enhanced logging...');
       await zoomSDK.startVideo();
@@ -129,8 +148,19 @@ export function VideoDebugPanel() {
       console.error('❌ Debug: Force start error details:', {
         errorType: error?.constructor?.name,
         errorMessage: error instanceof Error ? error.message : String(error),
-        hasZoomSDK: !!zoomSDK
+        hasZoomSDK: !!zoomSDK,
+        errorObject: error
       });
+
+      // Try to extract more detailed error information
+      if (typeof error === 'object' && error !== null) {
+        console.error('🔍 Debug: Error object analysis:', {
+          type: (error as any).type,
+          reason: (error as any).reason,
+          code: (error as any).code,
+          message: (error as any).message
+        });
+      }
     }
   };
 
