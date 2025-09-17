@@ -273,6 +273,9 @@
                 this.participants.set(this.currentParticipant.id, this.currentParticipant);
                 this.updateParticipantStats();
                 console.log(`✅ Joined as ${participantName} (${this.userRole})`);
+
+                // ✅ PRODUCTION: Check for existing videos after joining
+                await this.checkExistingVideos();
             }
 
             setupEventHandlers() {
@@ -286,14 +289,10 @@
                     this.handleUserRemoved(payload);
                 });
 
-                this.client.on('video-on', (payload) => {
-                    console.log('📹 Video enabled:', payload);
-                    this.handleVideoStateChange(payload, true);
-                });
-
-                this.client.on('video-off', (payload) => {
-                    console.log('📹 Video disabled:', payload);
-                    this.handleVideoStateChange(payload, false);
+                // ✅ PRODUCTION FIX: Use correct Zoom SDK event for video state changes
+                this.client.on('peer-video-state-change', (payload) => {
+                    console.log('📹 Video state changed:', payload);
+                    this.handlePeerVideoStateChange(payload);
                 });
 
                 this.client.on('audio-on', (payload) => {
@@ -346,23 +345,118 @@
                 this.updateVideoPagination();
             }
 
-            handleVideoStateChange(payload, enabled) {
-                const users = Array.isArray(payload) ? payload : [payload];
-                for (const user of users) {
-                    if (user && user.userId) {
-                        const userId = user.userId.toString();
-                        const participant = this.participants.get(userId);
-                        if (participant) {
-                            participant.videoEnabled = enabled;
-                            this.participants.set(userId, participant);
-                            if (participant.isCurrentUser) {
-                                this.updateVideoToggleButton(enabled);
+            async handlePeerVideoStateChange(payload) {
+                console.log('🔍 Processing peer video state change:', {
+                    userId: payload.userId,
+                    action: payload.action
+                });
+
+                const userId = payload.userId.toString();
+                const participant = this.participants.get(userId);
+
+                if (!participant) {
+                    console.warn(`⚠️ Participant ${userId} not found for video state change`);
+                    return;
+                }
+
+                if (payload.action === 'Start') {
+                    console.log(`📹 Video started for ${participant.name}, calling attachVideo immediately`);
+                    participant.videoEnabled = true;
+                    this.participants.set(userId, participant);
+
+                    // ✅ PRODUCTION: Attach video immediately when stream is available
+                    try {
+                        console.log(`📡 Calling stream.attachVideo(${payload.userId}, 2) immediately`);
+                        const videoElement = await this.stream.attachVideo(payload.userId, 2);
+
+                        if (videoElement && videoElement instanceof HTMLVideoElement) {
+                            // Configure the video element
+                            videoElement.autoplay = true;
+                            videoElement.playsInline = true;
+                            videoElement.style.width = '100%';
+                            videoElement.style.height = '100%';
+                            videoElement.style.objectFit = 'cover';
+
+                            // Mute self-view to prevent echo
+                            if (userId === this.currentParticipant.id) {
+                                videoElement.muted = true;
+                            }
+
+                            this.videoElements.set(userId, videoElement);
+                            console.log(`✅ Video attached successfully for ${participant.name}`);
+
+                            // Refresh the video grid to show the new video
+                            await this.updateVideoPagination();
+                        } else {
+                            console.error(`❌ attachVideo returned invalid element for ${userId}:`, videoElement);
+                        }
+                    } catch (error) {
+                        console.error(`❌ Failed to attach video for ${participant.name}:`, error);
+                    }
+
+                } else if (payload.action === 'Stop') {
+                    console.log(`📹 Video stopped for ${participant.name}`);
+                    participant.videoEnabled = false;
+                    this.participants.set(userId, participant);
+
+                    // Clean up video element
+                    this.cleanupVideoElement(userId);
+                    await this.updateVideoPagination();
+                }
+
+                if (participant.isCurrentUser) {
+                    this.updateVideoToggleButton(participant.videoEnabled);
+                }
+
+                this.updateParticipantStats();
+            }
+
+            async checkExistingVideos() {
+                console.log('🔍 Checking for existing videos after joining session...');
+
+                try {
+                    // ✅ PRODUCTION: Check all users for existing video streams
+                    const allUsers = this.client.getAllUser();
+                    console.log(`📊 Found ${allUsers.length} total users in session`);
+
+                    for (const user of allUsers) {
+                        if (user.bVideoOn && user.userId !== this.currentParticipant.id) {
+                            console.log(`📹 Found existing video for user ${user.userId} (${user.displayName})`);
+
+                            const userId = user.userId.toString();
+                            const participant = this.participants.get(userId);
+
+                            if (participant) {
+                                participant.videoEnabled = true;
+                                this.participants.set(userId, participant);
+
+                                // Attach existing video stream
+                                try {
+                                    const videoElement = await this.stream.attachVideo(user.userId, 2);
+                                    if (videoElement && videoElement instanceof HTMLVideoElement) {
+                                        // Configure the video element
+                                        videoElement.autoplay = true;
+                                        videoElement.playsInline = true;
+                                        videoElement.style.width = '100%';
+                                        videoElement.style.height = '100%';
+                                        videoElement.style.objectFit = 'cover';
+
+                                        this.videoElements.set(userId, videoElement);
+                                        console.log(`✅ Attached existing video for ${participant.name}`);
+                                    }
+                                } catch (error) {
+                                    console.error(`❌ Failed to attach existing video for user ${user.userId}:`, error);
+                                }
                             }
                         }
                     }
+
+                    // Refresh the UI to show attached videos
+                    await this.updateVideoPagination();
+                    this.updateParticipantStats();
+                } catch (error) {
+                    console.error('❌ Error checking existing videos:', error);
                 }
-                this.updateParticipantStats();
-                this.updateVideoPagination();
             }
 
             handleAudioStateChange(payload, enabled) {
@@ -411,70 +505,25 @@
                 }
             }
 
-            async createVideoElement(participantId) {
-                console.log(`🎥 Creating video element for participant ${participantId} (type: ${typeof participantId})`);
+            getVideoElement(participantId) {
+                console.log(`🎥 Getting video element for participant ${participantId}`);
 
-                try {
-                    const userId = parseInt(participantId);
-                    console.log(`🔍 Converting participantId "${participantId}" to userId ${userId}`);
+                // ✅ PRODUCTION: Return existing video element that was attached via events
+                const existingVideoElement = this.videoElements.get(participantId);
+                if (existingVideoElement) {
+                    console.log(`✅ Found existing video element for participant ${participantId}`);
+                    return existingVideoElement;
+                }
 
-                    // Check if participant exists and has video enabled
-                    const participant = this.participants.get(participantId);
-                    if (!participant) {
-                        throw new Error(`Participant ${participantId} not found in participants map`);
-                    }
-
-                    if (!participant.videoEnabled) {
-                        console.warn(`⚠️ Participant ${participantId} has video disabled`);
-                        return null;
-                    }
-
-                    console.log(`📡 Calling stream.attachVideo(${userId}, 2) for participant ${participant.name}`);
-
-                    // V2 PATTERN: Zoom SDK creates and provides the video element
-                    const videoElement = await this.stream.attachVideo(userId, 2); // 360p quality
-
-                    console.log(`📺 attachVideo result:`, {
-                        videoElement,
-                        type: typeof videoElement,
-                        tagName: videoElement ? videoElement.tagName : 'null',
-                        isVideoElement: videoElement instanceof HTMLVideoElement
-                    });
-
-                    if (!videoElement) {
-                        throw new Error(`attachVideo returned null for userId ${userId}`);
-                    }
-
-                    if (!(videoElement instanceof HTMLVideoElement)) {
-                        throw new Error(`attachVideo returned invalid element type: ${typeof videoElement}`);
-                    }
-
-                    // Configure the Zoom-provided element
-                    videoElement.autoplay = true;
-                    videoElement.playsInline = true;
-                    videoElement.style.width = '100%';
-                    videoElement.style.height = '100%';
-                    videoElement.style.objectFit = 'cover';
-
-                    // Mute self-view to prevent echo
-                    if (participantId === this.currentParticipant.id) {
-                        videoElement.muted = true;
-                        console.log(`🔇 Muted self-view for participant ${participantId}`);
-                    }
-
-                    this.videoElements.set(participantId, videoElement);
-                    console.log(`✅ Video element created successfully for participant ${participantId}`);
-                    return videoElement;
-                } catch (error) {
-                    console.error(`❌ Failed to create video element for participant ${participantId}:`, {
-                        error: error.message,
-                        stack: error.stack,
-                        participantId,
-                        participantType: typeof participantId,
-                        parsedUserId: parseInt(participantId)
-                    });
+                // Check if participant has video enabled
+                const participant = this.participants.get(participantId);
+                if (!participant || !participant.videoEnabled) {
+                    console.log(`⚠️ No video available for participant ${participantId} (enabled: ${participant?.videoEnabled})`);
                     return null;
                 }
+
+                console.log(`❌ Video element should exist for ${participantId} but not found in videoElements map`);
+                return null;
             }
 
             cleanupVideoElement(participantId) {
@@ -522,7 +571,7 @@
                 tile.setAttribute('data-participant-id', participant.id);
 
                 if (participant.videoEnabled) {
-                    const videoElement = await this.createVideoElement(participant.id);
+                    const videoElement = this.getVideoElement(participant.id);
                     if (videoElement) {
                         tile.appendChild(videoElement);
                         this.visibleParticipants.add(participant.id);
