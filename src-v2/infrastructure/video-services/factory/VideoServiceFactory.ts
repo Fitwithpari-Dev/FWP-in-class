@@ -119,9 +119,9 @@ export class VideoServiceFactory implements IVideoServiceFactory {
         const hasZoomKey = this.hasEnvironmentVariable('VITE_ZOOM_SDK_KEY');
         const hasZoomSecret = this.hasEnvironmentVariable('VITE_ZOOM_SDK_SECRET');
 
-        // For production, require both key and secret
-        // For development, only require the key (token service handles authentication)
-        available = isDevelopment ? hasZoomKey : (hasZoomKey && hasZoomSecret);
+        // For production, only require the key (token service handles authentication via Lambda)
+        // This matches V1 behavior where Lambda generates tokens
+        available = hasZoomKey;
 
         console.log(`[VideoServiceFactory] Zoom availability check:`, {
           hasKey: hasZoomKey,

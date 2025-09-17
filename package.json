@@ -51,7 +51,10 @@
             "react-hook-form": "^7.55.0",
             "react-resizable-panels": "^2.1.7",
             "react-router-dom": "^6.21.1",
+            "react-window": "^2.1.0",
+            "react-window-infinite-loader": "^2.0.0",
             "recharts": "^2.15.2",
+            "rxjs": "^7.8.2",
             "sonner": "^2.0.3",
             "tailwind-merge": "^2.2.0",
             "tailwindcss-animate": "^1.0.7",
@@ -65,6 +68,7 @@
             "@types/node": "^20.10.0",
             "@types/react": "^18.2.45",
             "@types/react-dom": "^18.2.18",
+            "@types/react-window": "^1.8.8",
             "@typescript-eslint/eslint-plugin": "^6.15.0",
             "@typescript-eslint/parser": "^6.15.0",
             "@vitejs/plugin-react-swc": "^3.10.2",
@@ -82,10 +86,14 @@
       },
       "scripts": {
             "dev": "vite",
+            "dev:v2": "vite --config vite.v2.config.ts",
             "build": "vite build",
+            "build:v2": "vite build --config vite.v2.config.ts",
             "build:check": "tsc && vite build",
+            "build:check:v2": "tsc --noEmit && vite build --config vite.v2.config.ts",
             "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
             "preview": "vite preview",
+            "preview:v2": "vite preview --config vite.v2.config.ts",
             "type-check": "tsc --noEmit",
             "supabase:start": "supabase start",
             "supabase:stop": "supabase stop",
@@ -93,6 +101,7 @@
             "supabase:generate-types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts",
             "supabase:push": "supabase db push",
             "supabase:pull": "supabase db pull",
-            "test:build": "npm run build && npm run preview"
+            "test:build": "npm run build && npm run preview",
+            "test:build:v2": "npm run build:v2 && npm run preview:v2"
       }
 }

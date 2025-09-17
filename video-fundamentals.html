@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Conferencing Fundamentals</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .video-container {
+            background: #000;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        video {
+            width: 100%;
+            height: 300px;
+            background: #333;
+            border-radius: 4px;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .primary { background: #007bff; color: white; }
+        .danger { background: #dc3545; color: white; }
+        .success { background: #28a745; color: white; }
+        .info { background: #17a2b8; color: white; }
+        .log {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        h1, h2 { color: #333; }
+        .step {
+            background: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎥 Video Conferencing Fundamentals</h1>
+
+        <div class="step">
+            <h2>Step 1: Basic Media Capture</h2>
+            <p>First fundamental: Get access to camera and microphone</p>
+            <button class="primary" onclick="startLocalVideo()">Start Local Video</button>
+            <button class="danger" onclick="stopLocalVideo()">Stop Local Video</button>
+        </div>
+
+        <div class="video-grid">
+            <div class="video-container">
+                <h3>Local Video (Your Camera)</h3>
+                <video id="localVideo" autoplay muted playsinline></video>
+            </div>
+            <div class="video-container">
+                <h3>Remote Video (Other Person)</h3>
+                <video id="remoteVideo" autoplay playsinline></video>
+            </div>
+        </div>
+
+        <div class="step">
+            <h2>Step 2: WebRTC Connection</h2>
+            <p>Second fundamental: Create peer connection for video calling</p>
+            <button class="success" onclick="createConnection()">Create Connection</button>
+            <button class="info" onclick="createOffer()">Create Offer</button>
+            <button class="info" onclick="createAnswer()">Create Answer</button>
+        </div>
+
+        <div class="step">
+            <h2>Step 3: Signaling (Manual for Learning)</h2>
+            <p>Third fundamental: Exchange connection information</p>
+            <textarea id="offerArea" placeholder="Paste offer here..." rows="3" style="width: 45%; margin-right: 10px;"></textarea>
+            <textarea id="answerArea" placeholder="Paste answer here..." rows="3" style="width: 45%;"></textarea>
+            <br><br>
+            <button class="primary" onclick="setRemoteOffer()">Set Remote Offer</button>
+            <button class="primary" onclick="setRemoteAnswer()">Set Remote Answer</button>
+        </div>
+
+        <div class="controls">
+            <button class="danger" onclick="hangUp()">Hang Up</button>
+            <button onclick="toggleAudio()" id="audioBtn">🎤 Mute</button>
+            <button onclick="toggleVideo()" id="videoBtn">📹 Stop Video</button>
+        </div>
+
+        <h2>Debug Log</h2>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script type="text/javascript">
+        // Global variables - Real WebRTC fundamentals
+        let localStream = null;
+        let remoteStream = null;
+        let peerConnection = null;
+        let audioEnabled = true;
+        let videoEnabled = true;
+
+        // WebRTC configuration
+        const config = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }
+            ]
+        };
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        // Step 1: Basic Media Capture
+        async function startLocalVideo() {
+            try {
+                log('🎥 Starting local video...');
+
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 640, height: 480 },
+                    audio: true
+                });
+
+                document.getElementById('localVideo').srcObject = localStream;
+                log('✅ Local video started successfully');
+
+                // If we have a peer connection, add the stream
+                if (peerConnection) {
+                    localStream.getTracks().forEach(track => {
+                        peerConnection.addTrack(track, localStream);
+                    });
+                }
+            } catch (error) {
+                log('❌ Error starting video: ' + error.message);
+            }
+        }
+
+        function stopLocalVideo() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+                document.getElementById('localVideo').srcObject = null;
+                log('🛑 Local video stopped');
+            }
+        }
+
+        // Step 2: WebRTC Connection
+        async function createConnection() {
+            try {
+                log('🔗 Creating peer connection...');
+
+                peerConnection = new RTCPeerConnection(config);
+
+                // Handle incoming stream from remote peer
+                peerConnection.ontrack = (event) => {
+                    log('📺 Received remote stream');
+                    remoteStream = event.streams[0];
+                    document.getElementById('remoteVideo').srcObject = remoteStream;
+                };
+
+                // Handle ICE candidates
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        log('🧊 ICE candidate: ' + event.candidate.candidate.substring(0, 50) + '...');
+                    }
+                };
+
+                // Connection state changes
+                peerConnection.onconnectionstatechange = () => {
+                    log('🔄 Connection state: ' + peerConnection.connectionState);
+                };
+
+                // Add local stream if available
+                if (localStream) {
+                    localStream.getTracks().forEach(track => {
+                        peerConnection.addTrack(track, localStream);
+                    });
+                }
+
+                log('✅ Peer connection created');
+            } catch (error) {
+                log('❌ Error creating connection: ' + error.message);
+            }
+        }
+
+        // Step 3: Signaling
+        async function createOffer() {
+            if (!peerConnection) {
+                log('❌ No peer connection. Create connection first.');
+                return;
+            }
+
+            try {
+                log('📝 Creating offer...');
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+
+                document.getElementById('offerArea').value = JSON.stringify(offer);
+                log('✅ Offer created. Copy and send to remote peer.');
+            } catch (error) {
+                log('❌ Error creating offer: ' + error.message);
+            }
+        }
+
+        async function setRemoteOffer() {
+            if (!peerConnection) {
+                log('❌ No peer connection. Create connection first.');
+                return;
+            }
+
+            try {
+                const offerText = document.getElementById('offerArea').value;
+                const offer = JSON.parse(offerText);
+
+                log('📥 Setting remote offer...');
+                await peerConnection.setRemoteDescription(offer);
+                log('✅ Remote offer set');
+            } catch (error) {
+                log('❌ Error setting remote offer: ' + error.message);
+            }
+        }
+
+        async function createAnswer() {
+            if (!peerConnection) {
+                log('❌ No peer connection. Create connection first.');
+                return;
+            }
+
+            try {
+                log('📝 Creating answer...');
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+
+                document.getElementById('answerArea').value = JSON.stringify(answer);
+                log('✅ Answer created. Copy and send to remote peer.');
+            } catch (error) {
+                log('❌ Error creating answer: ' + error.message);
+            }
+        }
+
+        async function setRemoteAnswer() {
+            if (!peerConnection) {
+                log('❌ No peer connection. Create connection first.');
+                return;
+            }
+
+            try {
+                const answerText = document.getElementById('answerArea').value;
+                const answer = JSON.parse(answerText);
+
+                log('📥 Setting remote answer...');
+                await peerConnection.setRemoteDescription(answer);
+                log('✅ Remote answer set. Connection should be established!');
+            } catch (error) {
+                log('❌ Error setting remote answer: ' + error.message);
+            }
+        }
+
+        // Media controls
+        function toggleAudio() {
+            if (localStream) {
+                audioEnabled = !audioEnabled;
+                localStream.getAudioTracks()[0].enabled = audioEnabled;
+                document.getElementById('audioBtn').textContent = audioEnabled ? '🎤 Mute' : '🔇 Unmute';
+                log(audioEnabled ? '🎤 Audio enabled' : '🔇 Audio muted');
+            }
+        }
+
+        function toggleVideo() {
+            if (localStream) {
+                videoEnabled = !videoEnabled;
+                localStream.getVideoTracks()[0].enabled = videoEnabled;
+                document.getElementById('videoBtn').textContent = videoEnabled ? '📹 Stop Video' : '📹 Start Video';
+                log(videoEnabled ? '📹 Video enabled' : '📹 Video disabled');
+            }
+        }
+
+        function hangUp() {
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            if (remoteStream) {
+                remoteStream = null;
+            }
+
+            document.getElementById('localVideo').srcObject = null;
+            document.getElementById('remoteVideo').srcObject = null;
+            document.getElementById('offerArea').value = '';
+            document.getElementById('answerArea').value = '';
+
+            log('📞 Call ended');
+        }
+
+        // Initialize
+        log('🚀 Video conferencing fundamentals ready');
+        log('👉 Step 1: Click "Start Local Video" to begin');
+    </script>
+</body>
+</html>

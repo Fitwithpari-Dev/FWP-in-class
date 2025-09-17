@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple P2P Video Chat - WebRTC Learning</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .video-container {
+            background: #000;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        video {
+            width: 100%;
+            height: 300px;
+            background: #333;
+            border-radius: 4px;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            margin: 0 10px;
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .primary { background: #007bff; color: white; }
+        .success { background: #28a745; color: white; }
+        .danger { background: #dc3545; color: white; }
+        .warning { background: #ffc107; color: #000; }
+        button:disabled { background: #666; cursor: not-allowed; }
+        .log {
+            background: #2d2d2d;
+            border: 1px solid #444;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .status {
+            background: #2d2d2d;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        .connection-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .offer-answer {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #1a1a1a;
+            color: white;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+        .room-setup {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .room-setup input {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background: #1a1a1a;
+            color: white;
+        }
+        h1, h2, h3 { color: #fff; margin-top: 0; }
+        .instruction {
+            background: #1e3a5f;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎥 Simple P2P Video Chat</h1>
+        <p><strong>This demonstrates a working video call using WebRTC fundamentals</strong></p>
+
+        <div class="room-setup">
+            <h3>Room Setup</h3>
+            <input type="text" id="roomId" placeholder="Enter room ID (e.g., my-room-123)" value="test-room">
+            <input type="text" id="userName" placeholder="Your name" value="User-${Math.floor(Math.random()*1000)}">
+            <button class="primary" onclick="initializeCall()">🚀 Initialize Video Call</button>
+        </div>
+
+        <div class="instruction">
+            <strong>📋 How to test:</strong><br>
+            1. Open this page in two browser tabs<br>
+            2. Use the same room ID in both tabs<br>
+            3. One person clicks "Create Offer", copies the offer<br>
+            4. Other person pastes the offer and clicks "Create Answer"<br>
+            5. First person pastes the answer to complete connection
+        </div>
+
+        <div class="status" id="status">
+            Click "Initialize Video Call" to start
+        </div>
+
+        <div class="video-grid">
+            <div class="video-container">
+                <h3>📹 Your Video</h3>
+                <video id="localVideo" autoplay muted playsinline></video>
+                <div style="margin-top: 10px;">
+                    <button onclick="toggleVideo()" id="videoBtn">📹 Turn Off Video</button>
+                    <button onclick="toggleAudio()" id="audioBtn">🎤 Mute</button>
+                </div>
+            </div>
+            <div class="video-container">
+                <h3>📺 Remote Video</h3>
+                <video id="remoteVideo" autoplay playsinline></video>
+                <p style="color: #ccc; margin-top: 10px;">Other person's video will appear here</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="success" onclick="createOffer()" id="offerBtn" disabled>📝 Create Offer</button>
+            <button class="primary" onclick="createAnswer()" id="answerBtn" disabled>📄 Create Answer</button>
+            <button class="warning" onclick="applyOfferAnswer()" id="applyBtn" disabled>📥 Apply Remote Data</button>
+            <button class="danger" onclick="hangUp()">📞 Hang Up</button>
+        </div>
+
+        <div class="connection-info">
+            <div class="offer-answer">
+                <h3>📝 Offer/Answer Exchange</h3>
+                <textarea id="connectionData" placeholder="Paste offer or answer here, then click 'Apply Remote Data'"></textarea>
+                <div style="margin-top: 10px;">
+                    <button onclick="copyToClipboard()" class="primary">📋 Copy to Clipboard</button>
+                    <button onclick="clearData()" class="warning">🗑️ Clear</button>
+                </div>
+            </div>
+            <div class="offer-answer">
+                <h3>📊 Connection Status</h3>
+                <div id="connectionStats" style="font-family: monospace; font-size: 12px; color: #ccc;">
+                    Not connected
+                </div>
+            </div>
+        </div>
+
+        <h2>📋 Debug Log</h2>
+        <div class="log" id="logArea">
+            <strong>🚀 Ready for P2P video chat learning!</strong><br>
+            Enter a room ID and click "Initialize Video Call" to begin.<br><br>
+        </div>
+    </div>
+
+    <script>
+        // Global variables for WebRTC
+        let localStream = null;
+        let remoteStream = null;
+        let peerConnection = null;
+        let isVideoEnabled = true;
+        let isAudioEnabled = true;
+        let currentRoom = null;
+        let currentUser = null;
+
+        // STUN servers for NAT traversal
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('logArea');
+            const time = new Date().toLocaleTimeString();
+            const emoji = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : '📝';
+            log.innerHTML += `[${time}] ${emoji} ${message}<br>`;
+            log.scrollTop = log.scrollHeight;
+            console.log(`[${time}] ${message}`);
+        }
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.borderLeftColor = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#007bff';
+        }
+
+        async function initializeCall() {
+            const roomId = document.getElementById('roomId').value.trim();
+            const userName = document.getElementById('userName').value.trim();
+
+            if (!roomId || !userName) {
+                addLog('Please enter both room ID and your name', 'error');
+                return;
+            }
+
+            currentRoom = roomId;
+            currentUser = userName;
+
+            addLog(`Initializing call for ${userName} in room: ${roomId}`);
+            updateStatus('Initializing video call...');
+
+            try {
+                // Get user media first
+                addLog('Requesting camera and microphone access...');
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 640, height: 480 },
+                    audio: true
+                });
+
+                document.getElementById('localVideo').srcObject = localStream;
+                addLog('Camera and microphone access granted', 'success');
+
+                // Create peer connection
+                createPeerConnection();
+
+                // Enable buttons
+                document.getElementById('offerBtn').disabled = false;
+                document.getElementById('answerBtn').disabled = false;
+                document.getElementById('applyBtn').disabled = false;
+
+                updateStatus(`Ready for video call in room: ${roomId}`, 'success');
+                addLog('Video call initialized successfully! You can now create or receive offers.', 'success');
+
+            } catch (error) {
+                addLog(`Failed to initialize: ${error.message}`, 'error');
+                updateStatus('Failed to initialize video call', 'error');
+            }
+        }
+
+        function createPeerConnection() {
+            addLog('Creating peer connection...');
+
+            peerConnection = new RTCPeerConnection(rtcConfig);
+
+            // Add local stream to peer connection
+            if (localStream) {
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+                addLog('Local stream added to peer connection');
+            }
+
+            // Handle incoming remote stream
+            peerConnection.ontrack = (event) => {
+                addLog('Received remote stream!', 'success');
+                remoteStream = event.streams[0];
+                document.getElementById('remoteVideo').srcObject = remoteStream;
+                updateConnectionStats();
+            };
+
+            // Handle ICE candidates
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    addLog(`ICE candidate found: ${event.candidate.candidate.substring(0, 50)}...`);
+                }
+            };
+
+            // Handle connection state changes
+            peerConnection.onconnectionstatechange = () => {
+                const state = peerConnection.connectionState;
+                addLog(`Connection state: ${state}`);
+                updateConnectionStats();
+
+                if (state === 'connected') {
+                    updateStatus('Video call connected!', 'success');
+                    addLog('🎉 Video call successfully established!', 'success');
+                } else if (state === 'failed') {
+                    updateStatus('Connection failed', 'error');
+                    addLog('Connection failed - try creating a new offer/answer', 'error');
+                }
+            };
+
+            addLog('Peer connection created successfully', 'success');
+        }
+
+        async function createOffer() {
+            if (!peerConnection) {
+                addLog('No peer connection - initialize call first!', 'error');
+                return;
+            }
+
+            try {
+                addLog('Creating offer...');
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+
+                const offerData = {
+                    type: 'offer',
+                    room: currentRoom,
+                    user: currentUser,
+                    data: offer
+                };
+
+                document.getElementById('connectionData').value = JSON.stringify(offerData, null, 2);
+                addLog('Offer created! Copy the text and send to the other person.', 'success');
+                updateStatus('Offer created - share with other person');
+
+            } catch (error) {
+                addLog(`Failed to create offer: ${error.message}`, 'error');
+            }
+        }
+
+        async function createAnswer() {
+            if (!peerConnection) {
+                addLog('No peer connection - initialize call first!', 'error');
+                return;
+            }
+
+            const connectionData = document.getElementById('connectionData').value;
+            if (!connectionData) {
+                addLog('Please paste the offer first!', 'error');
+                return;
+            }
+
+            try {
+                addLog('Processing offer and creating answer...');
+                const receivedData = JSON.parse(connectionData);
+
+                if (receivedData.type !== 'offer') {
+                    addLog('This is not an offer! Please paste an offer to create an answer.', 'error');
+                    return;
+                }
+
+                // Set remote description from the offer
+                await peerConnection.setRemoteDescription(receivedData.data);
+                addLog('Remote offer set successfully');
+
+                // Create answer
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+
+                const answerData = {
+                    type: 'answer',
+                    room: currentRoom,
+                    user: currentUser,
+                    data: answer
+                };
+
+                document.getElementById('connectionData').value = JSON.stringify(answerData, null, 2);
+                addLog('Answer created! Copy this and send back to the first person.', 'success');
+                updateStatus('Answer created - send back to other person');
+
+            } catch (error) {
+                addLog(`Failed to create answer: ${error.message}`, 'error');
+            }
+        }
+
+        async function applyOfferAnswer() {
+            if (!peerConnection) {
+                addLog('No peer connection - initialize call first!', 'error');
+                return;
+            }
+
+            const connectionData = document.getElementById('connectionData').value;
+            if (!connectionData) {
+                addLog('Please paste the offer or answer first!', 'error');
+                return;
+            }
+
+            try {
+                const receivedData = JSON.parse(connectionData);
+                addLog(`Processing ${receivedData.type}...`);
+
+                if (receivedData.type === 'offer') {
+                    // This is an offer - set as remote description
+                    await peerConnection.setRemoteDescription(receivedData.data);
+                    addLog('Offer applied successfully. Now create an answer.', 'success');
+                    updateStatus('Offer received - create answer');
+
+                } else if (receivedData.type === 'answer') {
+                    // This is an answer - set as remote description
+                    await peerConnection.setRemoteDescription(receivedData.data);
+                    addLog('Answer applied successfully. Connection should establish now!', 'success');
+                    updateStatus('Answer applied - establishing connection...');
+
+                } else {
+                    addLog('Unknown data type. Please paste a valid offer or answer.', 'error');
+                }
+
+            } catch (error) {
+                addLog(`Failed to apply data: ${error.message}`, 'error');
+            }
+        }
+
+        function toggleVideo() {
+            if (!localStream) return;
+
+            isVideoEnabled = !isVideoEnabled;
+            const videoTrack = localStream.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.enabled = isVideoEnabled;
+                document.getElementById('videoBtn').textContent = isVideoEnabled ? '📹 Turn Off Video' : '📹 Turn On Video';
+                addLog(`Video ${isVideoEnabled ? 'enabled' : 'disabled'}`);
+            }
+        }
+
+        function toggleAudio() {
+            if (!localStream) return;
+
+            isAudioEnabled = !isAudioEnabled;
+            const audioTrack = localStream.getAudioTracks()[0];
+            if (audioTrack) {
+                audioTrack.enabled = isAudioEnabled;
+                document.getElementById('audioBtn').textContent = isAudioEnabled ? '🎤 Mute' : '🎤 Unmute';
+                addLog(`Audio ${isAudioEnabled ? 'enabled' : 'muted'}`);
+            }
+        }
+
+        function hangUp() {
+            addLog('Hanging up call...');
+
+            // Close peer connection
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+
+            // Stop local stream
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+
+            // Clear videos
+            document.getElementById('localVideo').srcObject = null;
+            document.getElementById('remoteVideo').srcObject = null;
+
+            // Reset UI
+            document.getElementById('connectionData').value = '';
+            document.getElementById('offerBtn').disabled = true;
+            document.getElementById('answerBtn').disabled = true;
+            document.getElementById('applyBtn').disabled = true;
+            document.getElementById('videoBtn').textContent = '📹 Turn Off Video';
+            document.getElementById('audioBtn').textContent = '🎤 Mute';
+
+            updateStatus('Call ended');
+            addLog('Call ended - all resources cleaned up', 'success');
+            updateConnectionStats();
+        }
+
+        function copyToClipboard() {
+            const data = document.getElementById('connectionData').value;
+            if (data) {
+                navigator.clipboard.writeText(data).then(() => {
+                    addLog('Copied to clipboard!', 'success');
+                }).catch(() => {
+                    addLog('Failed to copy - please copy manually', 'warning');
+                });
+            }
+        }
+
+        function clearData() {
+            document.getElementById('connectionData').value = '';
+            addLog('Connection data cleared');
+        }
+
+        function updateConnectionStats() {
+            const statsDiv = document.getElementById('connectionStats');
+
+            if (!peerConnection) {
+                statsDiv.innerHTML = 'Not connected';
+                return;
+            }
+
+            const state = peerConnection.connectionState;
+            const iceState = peerConnection.iceConnectionState;
+            const signalingState = peerConnection.signalingState;
+
+            statsDiv.innerHTML = `
+                Connection: ${state}<br>
+                ICE: ${iceState}<br>
+                Signaling: ${signalingState}<br>
+                Local tracks: ${localStream ? localStream.getTracks().length : 0}<br>
+                Remote tracks: ${remoteStream ? remoteStream.getTracks().length : 0}
+            `;
+        }
+
+        // Auto-generate random user name
+        document.getElementById('userName').value = `User-${Math.floor(Math.random() * 1000)}`;
+
+        // Educational info
+        addLog('📚 LEARNING: This P2P video chat demonstrates:');
+        addLog('1️⃣ Real getUserMedia() for camera/microphone access');
+        addLog('2️⃣ RTCPeerConnection for direct browser-to-browser communication');
+        addLog('3️⃣ Manual signaling with offer/answer exchange');
+        addLog('🔍 This is what Zoom SDK automates with .join() calls');
+        addLog('');
+        addLog('Ready to start! Enter room details and click "Initialize Video Call"');
+    </script>
+</body>
+</html>

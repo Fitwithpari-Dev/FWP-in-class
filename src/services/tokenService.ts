@@ -12,7 +12,7 @@ import { ZOOM_CONFIG } from '../config/zoom.config';
 
 interface TokenPayload {
   app_key: string;
-  tpc: string;
+  topic: string;  // CRITICAL: Changed from 'tpc' to 'topic'
   role_type: number;
   user_identity: string;
   session_key: string;
@@ -80,7 +80,7 @@ export class TokenService {
     const payload: TokenPayload = {
       app_key: ZOOM_CONFIG.sdkKey,
       version: 1,
-      tpc: sessionName,
+      topic: sessionName,  // CRITICAL: Changed from 'tpc' to 'topic'
       role_type: role,
       user_identity: userIdentity,
       session_key: sessionKey,
@@ -181,36 +181,25 @@ export class TokenService {
   }
 
   /**
-   * Generate deterministic timestamp for session coordination
-   * All participants in the same session will get the same base timestamp
+   * Generate proper timestamp for JWT token
+   * CRITICAL: Must use current time in SECONDS (not milliseconds)
    */
   private getSessionTimestamp(sessionName: string): number {
-    // Create a deterministic timestamp based on session name
-    // This ensures all participants joining the same session get the same token timestamp
-    let hash = 0;
-    for (let i = 0; i < sessionName.length; i++) {
-      const char = sessionName.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
+    // CRITICAL FIX: Use current time in SECONDS (not milliseconds)
+    const nowInSeconds = Math.floor(Date.now() / 1000);
 
-    // Use the current hour as base time to avoid expired tokens
-    const currentHour = Math.floor(Date.now() / (60 * 60 * 1000)) * 60 * 60;
-
-    // Add hash-based offset (max 30 minutes) to create session-specific timestamp
-    const hashOffset = Math.abs(hash) % (30 * 60); // 0-30 minutes in seconds
-    const sessionTimestamp = currentHour + hashOffset;
-
-    console.log('🕐 Session timestamp coordination:', {
+    console.log('🕐 JWT Token timestamp generation:', {
       sessionName,
-      hash,
-      currentHour: new Date(currentHour * 1000).toISOString(),
-      hashOffset: `${hashOffset}s`,
-      sessionTimestamp: new Date(sessionTimestamp * 1000).toISOString(),
-      reason: 'All participants in this session will use this exact timestamp'
+      nowInSeconds,
+      nowDate: new Date(nowInSeconds * 1000).toISOString(),
+      iatWillBe: nowInSeconds - 30,
+      iatDate: new Date((nowInSeconds - 30) * 1000).toISOString(),
+      expWillBe: nowInSeconds - 30 + (60 * 60 * 2),
+      expDate: new Date((nowInSeconds - 30 + (60 * 60 * 2)) * 1000).toISOString(),
+      reason: 'Using current time to ensure valid JWT timestamps'
     });
 
-    return sessionTimestamp;
+    return nowInSeconds;
   }
 
   /**
@@ -250,7 +239,7 @@ export class TokenService {
 
       const payload = JSON.parse(atob(parts[1]));
       return {
-        sessionName: payload.tpc,
+        sessionName: payload.topic || payload.tpc,  // Support both for backward compatibility
         userIdentity: payload.user_identity,
         role: payload.role_type,
       };

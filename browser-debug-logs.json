@@ -1,0 +1,1002 @@
+[
+  {
+    "timestamp": "2025-09-17T01:37:55.073Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Creating Zoom Video SDK client..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.087Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.089Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Initializing client..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.091Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.126Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[App] Session configuration: {\"urlParams\":{\"session\":\"fix-test-session\",\"name\":null,\"role\":null,\"service\":null},\"sessionConfig\":{\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoServiceType\":\"zoom\"},\"isInSession\":true,\"currentUrl\":\"http://localhost:3008/?session=fix-test-session\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.129Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.128Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] Video service config: {\"type\":\"zoom\",\"hasAppId\":true,\"hasAppSecret\":true,\"env\":{\"zoom_key\":true,\"zoom_secret\":true,\"agora_id\":true}}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.132Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.128Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoServiceFactory] Environment check for VITE_ZOOM_SDK_KEY: {\"viteValue\":\"present\",\"processValue\":\"missing\",\"globalValue\":\"missing\",\"hasValue\":true,\"viteEnvKeys\":[\"BASE_URL\",\"DEV\",\"MODE\",\"PROD\",\"SSR\",\"VITE_AGORA_APP_ID\",\"VITE_USER_NODE_ENV\",\"VITE_ZOOM_SDK_KEY\",\"VITE_ZOOM_SDK_SECRET\",\"VITE_ZOOM_TOKEN_ENDPOINT\"]}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.137Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.129Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoServiceFactory] Environment check for VITE_ZOOM_SDK_SECRET: {\"viteValue\":\"present\",\"processValue\":\"missing\",\"globalValue\":\"missing\",\"hasValue\":true,\"viteEnvKeys\":[\"BASE_URL\",\"DEV\",\"MODE\",\"PROD\",\"SSR\",\"VITE_AGORA_APP_ID\",\"VITE_USER_NODE_ENV\",\"VITE_ZOOM_SDK_KEY\",\"VITE_ZOOM_SDK_SECRET\",\"VITE_ZOOM_TOKEN_ENDPOINT\"]}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.140Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.130Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoServiceFactory] Zoom availability check: {\"hasKey\":true,\"hasSecret\":true,\"isDevelopment\":true,\"available\":true,\"keyValue\":\"present\",\"secretValue\":\"present\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.143Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.131Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Creating Zoom Video SDK client..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.147Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.135Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[App] Session configuration: {\"urlParams\":{\"session\":\"fix-test-session\",\"name\":null,\"role\":null,\"service\":null},\"sessionConfig\":{\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoServiceType\":\"zoom\"},\"isInSession\":true,\"currentUrl\":\"http://localhost:3008/?session=fix-test-session\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.151Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.132Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Initializing client..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.154Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.378Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Getting media stream..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.381Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.384Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] ✅ Initialized successfully"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.386Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.392Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] Parameter validation: {\"sessionIdType\":\"string\",\"sessionIdValue\":\"fix-test-session\",\"sessionIdLength\":16,\"trimmedValue\":\"fix-test-session\",\"trimmedLength\":16,\"hasSpecialChars\":false,\"participantNameType\":\"string\",\"participantNameValue\":\"Test User\",\"participantRoleType\":\"string\",\"participantRoleValue\":\"student\",\"videoServiceType\":\"zoom\",\"hasVideoService\":true,\"hasJoinSession\":true}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.395Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.393Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] Attempting to join session: {\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoServiceType\":\"zoom\",\"hasVideoService\":true}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.398Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.394Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] SessionId created successfully: {\"value\":\"fix-test-session\",\"type\":\"string\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.401Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.395Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] Prepared join request: {\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoEnabled\":false,\"audioEnabled\":false}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.405Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.397Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomTokenService] Generated session name: {\"originalSessionId\":\"fix-test-session\",\"prefix\":\"fitwithpari\",\"generatedName\":\"fitwithpari_fix-test-session\",\"truncatedName\":\"fitwithpari_fix-test-session\",\"isValid\":true}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.409Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.398Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Generated sessionName: {\"sessionName\":\"fitwithpari_fix-test-session\",\"originalSessionId\":\"fix-test-session\",\"isValidFormat\":true}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.413Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.400Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomTokenService] Requesting token with payload: {\"sessionName\":\"fitwithpari_fix-test-session\",\"role\":0,\"userIdentity\":\"Test User\",\"sessionKey\":\"fitness-session\",\"expirationSeconds\":3600,\"endpoint\":\"https://oorxo2zdkjrmmbzdfhaktk5ipa0phjlp.lambda-url.ap-south-1.on.aws\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.417Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.456Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Getting media stream..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.459Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.457Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] ✅ Initialized successfully"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.463Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.462Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] Parameter validation: {\"sessionIdType\":\"string\",\"sessionIdValue\":\"fix-test-session\",\"sessionIdLength\":16,\"trimmedValue\":\"fix-test-session\",\"trimmedLength\":16,\"hasSpecialChars\":false,\"participantNameType\":\"string\",\"participantNameValue\":\"Test User\",\"participantRoleType\":\"string\",\"participantRoleValue\":\"student\",\"videoServiceType\":\"zoom\",\"hasVideoService\":true,\"hasJoinSession\":true}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.466Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.463Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] Attempting to join session: {\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoServiceType\":\"zoom\",\"hasVideoService\":true}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.470Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.464Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] SessionId created successfully: {\"value\":\"fix-test-session\",\"type\":\"string\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.474Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.465Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] Prepared join request: {\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoEnabled\":false,\"audioEnabled\":false}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.477Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.467Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomTokenService] Generated session name: {\"originalSessionId\":\"fix-test-session\",\"prefix\":\"fitwithpari\",\"generatedName\":\"fitwithpari_fix-test-session\",\"truncatedName\":\"fitwithpari_fix-test-session\",\"isValid\":true}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.481Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.468Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Generated sessionName: {\"sessionName\":\"fitwithpari_fix-test-session\",\"originalSessionId\":\"fix-test-session\",\"isValidFormat\":true}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.484Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:55.469Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomTokenService] Requesting token with payload: {\"sessionName\":\"fitwithpari_fix-test-session\",\"role\":0,\"userIdentity\":\"Test User\",\"sessionKey\":\"fitness-session\",\"expirationSeconds\":3600,\"endpoint\":\"https://oorxo2zdkjrmmbzdfhaktk5ipa0phjlp.lambda-url.ap-south-1.on.aws\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:55.488Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:56.012Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomTokenService] Token generated successfully"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:56.015Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:56.013Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Joining session: {\"sessionName\":\"fitwithpari_fix-test-session\",\"participantName\":\"Test User\",\"role\":\"student\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:56.018Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:56.015Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] 📋 JWT Token Payload: {\"topic\":\"fitwithpari_fix-test-session\",\"role_type\":0,\"user_identity\":\"Test User\",\"app_key\":\"present\",\"iatDate\":\"2025-09-17T01:37:21.000Z\",\"expDate\":\"2025-09-17T03:37:21.000Z\",\"isExpired\":false,\"timeSinceIssued\":35}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:56.022Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:56.016Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Calling client.join with parameters: {\"sessionName\":\"fitwithpari_fix-test-session\",\"tokenPrefix\":\"eyJhbGciOiJIUzI1NiIs...\",\"participantName\":\"Test User\",\"userId\":3646,\"hasClient\":true,\"hasStream\":true,\"tokenLength\":357}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:56.025Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:56.017Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] 🚀 Joining session with Zoom SDK..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:56.029Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:56.030Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomTokenService] Token generated successfully"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:56.033Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:56.032Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Joining session: {\"sessionName\":\"fitwithpari_fix-test-session\",\"participantName\":\"Test User\",\"role\":\"student\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:56.037Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:56.033Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] 📋 JWT Token Payload: {\"topic\":\"fitwithpari_fix-test-session\",\"role_type\":0,\"user_identity\":\"Test User\",\"app_key\":\"present\",\"iatDate\":\"2025-09-17T01:37:21.000Z\",\"expDate\":\"2025-09-17T03:37:21.000Z\",\"isExpired\":false,\"timeSinceIssued\":35}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:56.041Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:56.034Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Calling client.join with parameters: {\"sessionName\":\"fitwithpari_fix-test-session\",\"tokenPrefix\":\"eyJhbGciOiJIUzI1NiIs...\",\"participantName\":\"Test User\",\"userId\":9575,\"hasClient\":true,\"hasStream\":true,\"tokenLength\":357}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:56.044Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:37:56.035Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] 🚀 Joining session with Zoom SDK..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:37:56.048Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.132Z",
+    "type": "Console WARN",
+    "details": {
+      "message": "[ZoomVideoService] Invalid user-added payload - missing userId: [{\"isAllowIndividualRecording\":false,\"subsessionId\":\"\",\"userIdentity\":\"Test User\",\"displayName\":\"Test User\",\"userId\":16778240,\"isHost\":false,\"isPhoneUser\":false,\"userGuid\":\"D688F85B-1DD7-7C3C-B133-006C1036E114\",\"audio\":\"\",\"muted\":false,\"isVideoConnect\":true,\"bVideoOn\":false}]"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.140Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.136Z",
+    "type": "Console WARN",
+    "details": {
+      "message": "[ZoomVideoService] Invalid user-removed payload - missing userId: []"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.143Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.134Z",
+    "type": "Console WARN",
+    "details": {
+      "message": "[ZoomVideoService] Invalid user-added payload - missing userId: [{\"isAllowIndividualRecording\":false,\"subsessionId\":\"\",\"userIdentity\":\"Test User\",\"displayName\":\"Test User\",\"userId\":16778240,\"isHost\":false,\"isPhoneUser\":false,\"userGuid\":\"D688F85B-1DD7-7C3C-B133-006C1036E114\",\"audio\":\"\",\"muted\":false,\"isVideoConnect\":true,\"bVideoOn\":false}]"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.147Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.137Z",
+    "type": "Console WARN",
+    "details": {
+      "message": "[ZoomVideoService] Invalid user-removed payload - missing userId: []"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.151Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.139Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Successfully joined session"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.155Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.143Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[ZoomVideoService] Session join failed: {\"error\":{},\"errorMessage\":\"Invalid participant ID: 16778240\",\"errorStack\":\"Error: Invalid participant ID: 16778240\\n    at new ParticipantId (http://localhost:3008/core/domain/value-objects/ParticipantId.ts:42:19)\\n    at ParticipantId.create (http://localhost:3008/core/domain/value-objects/ParticipantId.ts:19:16)\\n    at ZoomVideoService.joinSession (http://localhost:3008/infrastructure/video-services/zoom/ZoomVideoService.ts?t=1758072848483:160:72)\\n    at async http://localhost:3008/presentation/react/hooks/useVideoSession.ts?t=1758072501835:198:28\\n    at async join (http://localhost:3008/presentation/react/components/VideoSession/VideoSession.tsx?t=1758072848483:183:21)\",\"sessionName\":\"fitwithpari_fix-test-session\",\"participantName\":\"Test User\",\"userId\":3646}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.161Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.144Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Successfully joined session"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.165Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.146Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[ZoomVideoService] Session join failed: {\"error\":{},\"errorMessage\":\"Invalid participant ID: 16778240\",\"errorStack\":\"Error: Invalid participant ID: 16778240\\n    at new ParticipantId (http://localhost:3008/core/domain/value-objects/ParticipantId.ts:42:19)\\n    at ParticipantId.create (http://localhost:3008/core/domain/value-objects/ParticipantId.ts:19:16)\\n    at ZoomVideoService.joinSession (http://localhost:3008/infrastructure/video-services/zoom/ZoomVideoService.ts?t=1758072848483:160:72)\\n    at async http://localhost:3008/presentation/react/hooks/useVideoSession.ts?t=1758072501835:198:28\\n    at async join (http://localhost:3008/presentation/react/components/VideoSession/VideoSession.tsx?t=1758072848483:183:21)\",\"sessionName\":\"fitwithpari_fix-test-session\",\"participantName\":\"Test User\",\"userId\":9575}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.169Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.147Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[useVideoSession] Join failed: {\"result\":{\"success\":false,\"participant\":null,\"sessionInfo\":{\"participantCount\":0,\"isRecording\":false,\"sessionStartTime\":\"2025-09-17T01:38:00.144Z\"},\"error\":\"Invalid participant ID: 16778240\"},\"error\":\"Invalid participant ID: 16778240\",\"hasParticipant\":false,\"sessionInfo\":{\"participantCount\":0,\"isRecording\":false,\"sessionStartTime\":\"2025-09-17T01:38:00.144Z\"}}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.173Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.149Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[useVideoSession] 🚨 Join session error - detailed context: {\"error\":{},\"errorMessage\":\"Invalid participant ID: 16778240\",\"errorStack\":\"Error: Invalid participant ID: 16778240\\n    at http://localhost:3008/presentation/react/hooks/useVideoSession.ts?t=1758072501835:207:23\\n    at async join (http://localhost:3008/presentation/react/components/VideoSession/VideoSession.tsx?t=1758072848483:183:21)\",\"errorName\":\"Error\",\"originalError\":{},\"requestData\":{\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoEnabled\":false,\"audioEnabled\":false},\"videoServiceInfo\":{\"isInitialized\":true,\"serviceName\":\"zoom\",\"capabilities\":{\"maxParticipants\":1000,\"supportsScreenShare\":true,\"supportsRecording\":true,\"supportsChat\":true,\"supportsBreakoutRooms\":false,\"supportsSelectiveStreaming\":true,\"supportsLiveStreaming\":true,\"supportedVideoQualities\":[\"low\",\"medium\",\"high\",\"ultra\"],\"supportedStreamTypes\":[\"camera\",\"screen\",\"audio-only\"]}},\"currentState\":{\"hasSession\":false,\"hasCurrentParticipant\":false,\"isConnected\":false,\"isLoading\":true,\"error\":{}},\"timestamp\":\"2025-09-17T01:38:00.149Z\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.177Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.150Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[useVideoSession] Join failed: {\"result\":{\"success\":false,\"participant\":null,\"sessionInfo\":{\"participantCount\":0,\"isRecording\":false,\"sessionStartTime\":\"2025-09-17T01:38:00.147Z\"},\"error\":\"Invalid participant ID: 16778240\"},\"error\":\"Invalid participant ID: 16778240\",\"hasParticipant\":false,\"sessionInfo\":{\"participantCount\":0,\"isRecording\":false,\"sessionStartTime\":\"2025-09-17T01:38:00.147Z\"}}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.181Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.152Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[useVideoSession] 🚨 Join session error - detailed context: {\"error\":{},\"errorMessage\":\"Invalid participant ID: 16778240\",\"errorStack\":\"Error: Invalid participant ID: 16778240\\n    at http://localhost:3008/presentation/react/hooks/useVideoSession.ts?t=1758072501835:207:23\\n    at async join (http://localhost:3008/presentation/react/components/VideoSession/VideoSession.tsx?t=1758072848483:183:21)\",\"errorName\":\"Error\",\"originalError\":{},\"requestData\":{\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoEnabled\":false,\"audioEnabled\":false},\"videoServiceInfo\":{\"isInitialized\":true,\"serviceName\":\"zoom\",\"capabilities\":{\"maxParticipants\":1000,\"supportsScreenShare\":true,\"supportsRecording\":true,\"supportsChat\":true,\"supportsBreakoutRooms\":false,\"supportsSelectiveStreaming\":true,\"supportsLiveStreaming\":true,\"supportedVideoQualities\":[\"low\",\"medium\",\"high\",\"ultra\"],\"supportedStreamTypes\":[\"camera\",\"screen\",\"audio-only\"]}},\"currentState\":{\"hasSession\":false,\"hasCurrentParticipant\":false,\"isConnected\":false,\"isLoading\":false,\"error\":{}},\"timestamp\":\"2025-09-17T01:38:00.152Z\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.184Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.179Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[VideoSession] 🚨 Detailed join error: {\"error\":{},\"errorMessage\":\"Invalid participant ID: 16778240\",\"errorStack\":\"Error: Invalid participant ID: 16778240\\n    at http://localhost:3008/presentation/react/hooks/useVideoSession.ts?t=1758072501835:207:23\\n    at async join (http://localhost:3008/presentation/react/components/VideoSession/VideoSession.tsx?t=1758072848483:183:21)\",\"errorName\":\"Error\",\"errorToString\":\"Error: Invalid participant ID: 16778240\",\"errorType\":\"object\",\"isErrorObject\":true,\"originalError\":{},\"sessionId\":\"fix-test-session\",\"sessionIdType\":\"string\",\"sessionIdValue\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantNameType\":\"string\",\"participantRole\":\"student\",\"participantRoleType\":\"string\",\"videoServiceType\":\"zoom\",\"hasVideoService\":true,\"hasJoinSession\":true,\"videoServiceState\":true,\"isConnectedState\":false,\"currentTimestamp\":\"2025-09-17T01:38:00.179Z\",\"isSessionNameError\":false,\"containsUndefined\":false,\"sessionNameContext\":{\"errorContainsSessionName\":false,\"errorStringified\":\"{}\"}}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.189Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:38:00.181Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[App] Video session error: Invalid participant ID: 16778240"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:38:00.193Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:42:50.664Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[VideoSession] 🚨 Detailed join error: {\"error\":{},\"errorMessage\":\"Invalid participant ID: 16778240\",\"errorStack\":\"Error: Invalid participant ID: 16778240\\n    at http://localhost:3008/presentation/react/hooks/useVideoSession.ts?t=1758072501835:207:23\\n    at async join (http://localhost:3008/presentation/react/components/VideoSession/VideoSession.tsx?t=1758072848483:183:21)\",\"errorName\":\"Error\",\"errorToString\":\"Error: Invalid participant ID: 16778240\",\"errorType\":\"object\",\"isErrorObject\":true,\"originalError\":{},\"sessionId\":\"fix-test-session\",\"sessionIdType\":\"string\",\"sessionIdValue\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantNameType\":\"string\",\"participantRole\":\"student\",\"participantRoleType\":\"string\",\"videoServiceType\":\"zoom\",\"hasVideoService\":true,\"hasJoinSession\":true,\"videoServiceState\":true,\"isConnectedState\":false,\"currentTimestamp\":\"2025-09-17T01:42:50.663Z\",\"isSessionNameError\":false,\"containsUndefined\":false,\"sessionNameContext\":{\"errorContainsSessionName\":false,\"errorStringified\":\"{}\"}}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:42:50.678Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:42:50.666Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[App] Video session error: Invalid participant ID: 16778240"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:42:50.683Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:42:51.819Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "handleRendererTypeInProps() final rendererType=3 gpuBlacklist=null"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:42:51.823Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:42:51.840Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "VP9?: true AMD?: false AMDdecodecheck: true isenbaleHD:true enable720p?: true capacityfor720: false"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:42:51.843Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.412Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "🤖 Autonomous Debug System Active - Claude can now see errors automatically!"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.420Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.721Z",
+    "type": "Console INFO",
+    "details": {
+      "message": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.725Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.843Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] Video service config: {\"type\":\"zoom\",\"hasAppId\":true,\"hasAppSecret\":true,\"env\":{\"zoom_key\":true,\"zoom_secret\":true,\"agora_id\":true}}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.847Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.846Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoServiceFactory] Environment check for VITE_ZOOM_SDK_KEY: {\"viteValue\":\"present\",\"processValue\":\"missing\",\"globalValue\":\"missing\",\"hasValue\":true,\"viteEnvKeys\":[\"BASE_URL\",\"DEV\",\"MODE\",\"PROD\",\"SSR\",\"VITE_AGORA_APP_ID\",\"VITE_USER_NODE_ENV\",\"VITE_ZOOM_SDK_KEY\",\"VITE_ZOOM_SDK_SECRET\",\"VITE_ZOOM_TOKEN_ENDPOINT\"]}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.852Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.849Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoServiceFactory] Environment check for VITE_ZOOM_SDK_SECRET: {\"viteValue\":\"present\",\"processValue\":\"missing\",\"globalValue\":\"missing\",\"hasValue\":true,\"viteEnvKeys\":[\"BASE_URL\",\"DEV\",\"MODE\",\"PROD\",\"SSR\",\"VITE_AGORA_APP_ID\",\"VITE_USER_NODE_ENV\",\"VITE_ZOOM_SDK_KEY\",\"VITE_ZOOM_SDK_SECRET\",\"VITE_ZOOM_TOKEN_ENDPOINT\"]}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.858Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.852Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoServiceFactory] Zoom availability check: {\"hasKey\":true,\"hasSecret\":true,\"isDevelopment\":true,\"available\":true,\"keyValue\":\"present\",\"secretValue\":\"present\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.863Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.857Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Creating Zoom Video SDK client..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.870Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.875Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Initializing client..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.881Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.916Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[App] Session configuration: {\"urlParams\":{\"session\":\"fix-test-session\",\"name\":null,\"role\":null,\"service\":null},\"sessionConfig\":{\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoServiceType\":\"zoom\"},\"isInSession\":true,\"currentUrl\":\"http://localhost:3008/?session=fix-test-session\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.920Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.919Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] Video service config: {\"type\":\"zoom\",\"hasAppId\":true,\"hasAppSecret\":true,\"env\":{\"zoom_key\":true,\"zoom_secret\":true,\"agora_id\":true}}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.924Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.922Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoServiceFactory] Environment check for VITE_ZOOM_SDK_KEY: {\"viteValue\":\"present\",\"processValue\":\"missing\",\"globalValue\":\"missing\",\"hasValue\":true,\"viteEnvKeys\":[\"BASE_URL\",\"DEV\",\"MODE\",\"PROD\",\"SSR\",\"VITE_AGORA_APP_ID\",\"VITE_USER_NODE_ENV\",\"VITE_ZOOM_SDK_KEY\",\"VITE_ZOOM_SDK_SECRET\",\"VITE_ZOOM_TOKEN_ENDPOINT\"]}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.930Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.925Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoServiceFactory] Environment check for VITE_ZOOM_SDK_SECRET: {\"viteValue\":\"present\",\"processValue\":\"missing\",\"globalValue\":\"missing\",\"hasValue\":true,\"viteEnvKeys\":[\"BASE_URL\",\"DEV\",\"MODE\",\"PROD\",\"SSR\",\"VITE_AGORA_APP_ID\",\"VITE_USER_NODE_ENV\",\"VITE_ZOOM_SDK_KEY\",\"VITE_ZOOM_SDK_SECRET\",\"VITE_ZOOM_TOKEN_ENDPOINT\"]}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.935Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.927Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoServiceFactory] Zoom availability check: {\"hasKey\":true,\"hasSecret\":true,\"isDevelopment\":true,\"available\":true,\"keyValue\":\"present\",\"secretValue\":\"present\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.940Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.935Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Initializing client..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.945Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.932Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Creating Zoom Video SDK client..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.950Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:00.941Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[App] Session configuration: {\"urlParams\":{\"session\":\"fix-test-session\",\"name\":null,\"role\":null,\"service\":null},\"sessionConfig\":{\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoServiceType\":\"zoom\"},\"isInSession\":true,\"currentUrl\":\"http://localhost:3008/?session=fix-test-session\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:00.955Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.120Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Getting media stream..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.124Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.124Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] ✅ Initialized successfully"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.128Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.266Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Getting media stream..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.270Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.268Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] ✅ Initialized successfully"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.275Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.321Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] Parameter validation: {\"sessionIdType\":\"string\",\"sessionIdValue\":\"fix-test-session\",\"sessionIdLength\":16,\"trimmedValue\":\"fix-test-session\",\"trimmedLength\":16,\"hasSpecialChars\":false,\"participantNameType\":\"string\",\"participantNameValue\":\"Test User\",\"participantRoleType\":\"string\",\"participantRoleValue\":\"student\",\"videoServiceType\":\"zoom\",\"hasVideoService\":true,\"hasJoinSession\":true}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.326Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.324Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] Attempting to join session: {\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoServiceType\":\"zoom\",\"hasVideoService\":true}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.330Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.327Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] SessionId created successfully: {\"value\":\"fix-test-session\",\"type\":\"string\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.336Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.329Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[VideoSession] Prepared join request: {\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoEnabled\":false,\"audioEnabled\":false}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.340Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.334Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomTokenService] Generated session name: {\"originalSessionId\":\"fix-test-session\",\"prefix\":\"fitwithpari\",\"generatedName\":\"fitwithpari_fix-test-session\",\"truncatedName\":\"fitwithpari_fix-test-session\",\"isValid\":true}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.346Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.337Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Generated sessionName: {\"sessionName\":\"fitwithpari_fix-test-session\",\"originalSessionId\":\"fix-test-session\",\"isValidFormat\":true}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.353Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.340Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomTokenService] Requesting token with payload: {\"sessionName\":\"fitwithpari_fix-test-session\",\"role\":0,\"userIdentity\":\"Test User\",\"sessionKey\":\"fitness-session\",\"expirationSeconds\":3600,\"endpoint\":\"https://oorxo2zdkjrmmbzdfhaktk5ipa0phjlp.lambda-url.ap-south-1.on.aws\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.358Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.702Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomTokenService] Token generated successfully"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.706Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.704Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Joining session: {\"sessionName\":\"fitwithpari_fix-test-session\",\"participantName\":\"Test User\",\"role\":\"student\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.713Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.707Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] 📋 JWT Token Payload: {\"topic\":\"fitwithpari_fix-test-session\",\"role_type\":0,\"user_identity\":\"Test User\",\"app_key\":\"present\",\"iatDate\":\"2025-09-17T01:42:26.000Z\",\"expDate\":\"2025-09-17T03:42:26.000Z\",\"isExpired\":false,\"timeSinceIssued\":35}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.718Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.709Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Calling client.join with parameters: {\"sessionName\":\"fitwithpari_fix-test-session\",\"tokenPrefix\":\"eyJhbGciOiJIUzI1NiIs...\",\"participantName\":\"Test User\",\"userId\":4733,\"hasClient\":true,\"hasStream\":true,\"tokenLength\":357}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.728Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:01.711Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] 🚀 Joining session with Zoom SDK..."
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:01.733Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:05.468Z",
+    "type": "Console WARN",
+    "details": {
+      "message": "[ZoomVideoService] Invalid user-added payload - missing userId: [{\"isAllowIndividualRecording\":false,\"subsessionId\":\"\",\"userIdentity\":\"Test User\",\"displayName\":\"Test User\",\"userId\":16778240,\"isHost\":false,\"isPhoneUser\":false,\"userGuid\":\"D2FE1A23-95F6-0AA5-9DDD-1628EEA5AE56\",\"audio\":\"\",\"muted\":false,\"isVideoConnect\":true,\"bVideoOn\":false}]"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:05.475Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:05.473Z",
+    "type": "Console WARN",
+    "details": {
+      "message": "[ZoomVideoService] Invalid user-added payload - missing userId: [{\"isAllowIndividualRecording\":false,\"subsessionId\":\"\",\"userIdentity\":\"Test User\",\"displayName\":\"Test User\",\"userId\":16778240,\"isHost\":false,\"isPhoneUser\":false,\"userGuid\":\"D2FE1A23-95F6-0AA5-9DDD-1628EEA5AE56\",\"audio\":\"\",\"muted\":false,\"isVideoConnect\":true,\"bVideoOn\":false}]"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:05.479Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:05.478Z",
+    "type": "Console WARN",
+    "details": {
+      "message": "[ZoomVideoService] Invalid user-removed payload - missing userId: []"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:05.484Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:05.482Z",
+    "type": "Console WARN",
+    "details": {
+      "message": "[ZoomVideoService] Invalid user-removed payload - missing userId: []"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:05.488Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:05.484Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "[ZoomVideoService] Successfully joined session"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:05.492Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:05.489Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[ZoomVideoService] Session join failed: {\"error\":{},\"errorMessage\":\"Invalid participant ID: 16778240\",\"errorStack\":\"Error: Invalid participant ID: 16778240\\n    at new ParticipantId (http://localhost:3008/core/domain/value-objects/ParticipantId.ts:42:19)\\n    at ParticipantId.create (http://localhost:3008/core/domain/value-objects/ParticipantId.ts:19:16)\\n    at ZoomVideoService.joinSession (http://localhost:3008/infrastructure/video-services/zoom/ZoomVideoService.ts?t=1758072848483:160:72)\\n    at async http://localhost:3008/presentation/react/hooks/useVideoSession.ts?t=1758072501835:198:28\\n    at async join (http://localhost:3008/presentation/react/components/VideoSession/VideoSession.tsx?t=1758072848483:183:21)\",\"sessionName\":\"fitwithpari_fix-test-session\",\"participantName\":\"Test User\",\"userId\":4733}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:05.496Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:05.491Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[useVideoSession] Join failed: {\"result\":{\"success\":false,\"participant\":null,\"sessionInfo\":{\"participantCount\":0,\"isRecording\":false,\"sessionStartTime\":\"2025-09-17T01:43:05.491Z\"},\"error\":\"Invalid participant ID: 16778240\"},\"error\":\"Invalid participant ID: 16778240\",\"hasParticipant\":false,\"sessionInfo\":{\"participantCount\":0,\"isRecording\":false,\"sessionStartTime\":\"2025-09-17T01:43:05.491Z\"}}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:05.501Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:05.494Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[useVideoSession] 🚨 Join session error - detailed context: {\"error\":{},\"errorMessage\":\"Invalid participant ID: 16778240\",\"errorStack\":\"Error: Invalid participant ID: 16778240\\n    at http://localhost:3008/presentation/react/hooks/useVideoSession.ts?t=1758072501835:207:23\\n    at async join (http://localhost:3008/presentation/react/components/VideoSession/VideoSession.tsx?t=1758072848483:183:21)\",\"errorName\":\"Error\",\"originalError\":{},\"requestData\":{\"sessionId\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantRole\":\"student\",\"videoEnabled\":false,\"audioEnabled\":false},\"videoServiceInfo\":{\"isInitialized\":true,\"serviceName\":\"zoom\",\"capabilities\":{\"maxParticipants\":1000,\"supportsScreenShare\":true,\"supportsRecording\":true,\"supportsChat\":true,\"supportsBreakoutRooms\":false,\"supportsSelectiveStreaming\":true,\"supportsLiveStreaming\":true,\"supportedVideoQualities\":[\"low\",\"medium\",\"high\",\"ultra\"],\"supportedStreamTypes\":[\"camera\",\"screen\",\"audio-only\"]}},\"currentState\":{\"hasSession\":false,\"hasCurrentParticipant\":false,\"isConnected\":false,\"isLoading\":false,\"error\":{}},\"timestamp\":\"2025-09-17T01:43:05.494Z\"}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:05.505Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:05.524Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[VideoSession] 🚨 Detailed join error: {\"error\":{},\"errorMessage\":\"Invalid participant ID: 16778240\",\"errorStack\":\"Error: Invalid participant ID: 16778240\\n    at http://localhost:3008/presentation/react/hooks/useVideoSession.ts?t=1758072501835:207:23\\n    at async join (http://localhost:3008/presentation/react/components/VideoSession/VideoSession.tsx?t=1758072848483:183:21)\",\"errorName\":\"Error\",\"errorToString\":\"Error: Invalid participant ID: 16778240\",\"errorType\":\"object\",\"isErrorObject\":true,\"originalError\":{},\"sessionId\":\"fix-test-session\",\"sessionIdType\":\"string\",\"sessionIdValue\":\"fix-test-session\",\"participantName\":\"Test User\",\"participantNameType\":\"string\",\"participantRole\":\"student\",\"participantRoleType\":\"string\",\"videoServiceType\":\"zoom\",\"hasVideoService\":true,\"hasJoinSession\":true,\"videoServiceState\":true,\"isConnectedState\":false,\"currentTimestamp\":\"2025-09-17T01:43:05.523Z\",\"isSessionNameError\":false,\"containsUndefined\":false,\"sessionNameContext\":{\"errorContainsSessionName\":false,\"errorStringified\":\"{}\"}}"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:05.529Z"
+  },
+  {
+    "timestamp": "2025-09-17T01:43:05.528Z",
+    "type": "Console ERROR",
+    "details": {
+      "message": "[App] Video session error: Invalid participant ID: 16778240"
+    },
+    "url": "http://localhost:3008/?session=fix-test-session",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+    "receivedAt": "2025-09-17T01:43:05.533Z"
+  },
+  {
+    "timestamp": "2025-09-17T02:45:20.140Z",
+    "type": "Console LOG",
+    "details": {
+      "message": "🤖 Autonomous Debug System Active - Claude can now see errors automatically!"
+    },
+    "url": "http://localhost:3007/",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+    "receivedAt": "2025-09-17T02:45:20.179Z"
+  },
+  {
+    "timestamp": "2025-09-17T02:45:21.561Z",
+    "type": "Console INFO",
+    "details": {
+      "message": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+    },
+    "url": "http://localhost:3007/",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+    "receivedAt": "2025-09-17T02:45:21.565Z"
+  }
+]

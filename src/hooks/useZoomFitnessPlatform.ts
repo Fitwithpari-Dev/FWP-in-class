@@ -10,7 +10,8 @@ import {
 } from '../types/fitness-platform';
 import { ZoomSDKService } from '../services/zoomSDKService';
 import { generateSessionToken, ZOOM_CONFIG } from '../config/zoom.config';
-import { ConnectionState } from '@zoom/videosdk';
+import { ConnectionState as ZoomConnectionState } from '@zoom/videosdk';
+import { ConnectionState } from '../types/video-service';
 import {
   validateSessionConfig,
   checkBrowserSupport,
@@ -18,6 +19,22 @@ import {
 } from '../utils/sessionValidator';
 import { PerformanceMonitor } from '../utils/performanceMonitor';
 import { simpleSessionManager } from '../services/SimpleSessionManager';
+
+// Utility function to map Zoom connection states to our unified type
+function mapZoomConnectionState(zoomState: ZoomConnectionState): ConnectionState {
+  switch (zoomState) {
+    case ZoomConnectionState.Connected:
+      return 'Connected';
+    case ZoomConnectionState.Reconnecting:
+      return 'Connecting';
+    case ZoomConnectionState.Closed:
+      return 'Closed';
+    case ZoomConnectionState.Fail:
+      return 'Failed';
+    default:
+      return 'Disconnected';
+  }
+}
 
 export function useZoomFitnessPlatform() {
   // SDK instance
@@ -184,11 +201,12 @@ export function useZoomFitnessPlatform() {
             }
           },
 
-          onConnectionChange: (state) => {
-            setConnectionState(state);
-            if (state === 'Closed' || state === 'Failed') {
-              handleConnectionFailure(state);
-            } else if (state === 'Connected') {
+          onConnectionChange: (zoomState) => {
+            const mappedState = mapZoomConnectionState(zoomState);
+            setConnectionState(mappedState);
+            if (mappedState === 'Closed' || mappedState === 'Failed') {
+              handleConnectionFailure(mappedState);
+            } else if (mappedState === 'Connected') {
               // Reset retry count on successful connection
               setSessionRetryCount(0);
               setLastSessionError(null);
@@ -389,15 +407,18 @@ export function useZoomFitnessPlatform() {
       setError(null);
       let isRetryingAsHost = false;
 
+      // Sanitize user inputs and determine session parameters outside try block for error handling access
+      const sanitizedUserName = sanitizeUserInput(userName);
+      const isHost = role === 'coach';
+      // CRITICAL FIX: Support predetermined session IDs from URL
+      // Priority: URL params > sessionName > default fallback
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionFromUrl = urlParams.get('session') || urlParams.get('class');
+      const sessionTopic = sessionFromUrl || sessionName || 'test123';
+      const topic = sessionTopic; // For compatibility with error handling
+      const sessionDisplayName = sessionTopic;
+
       try {
-        // Sanitize user inputs
-        const sanitizedUserName = sanitizeUserInput(userName);
-        const isHost = role === 'coach';
-        // CRITICAL FIX: Support predetermined session IDs from URL
-        // Priority: URL params > sessionName > default fallback
-        const urlParams = new URLSearchParams(window.location.search);
-        const sessionFromUrl = urlParams.get('session') || urlParams.get('class');
-        const sessionTopic = sessionFromUrl || sessionName || 'test123';
 
         console.log('🔧 Predetermined session support:', {
           sessionFromUrl,
@@ -493,7 +514,7 @@ export function useZoomFitnessPlatform() {
         await zoomSDK.current.joinSession(topic, token, sanitizedUserName, isHost);
 
         // Set connection state immediately after successful join
-        setConnectionState('Connected' as ConnectionState);
+        setConnectionState('Connected');
         console.log('✅ Successfully joined Zoom session!');
 
         // Get session info
@@ -623,7 +644,7 @@ export function useZoomFitnessPlatform() {
                   await zoomSDK.current!.joinSession(sessionTopic, retryToken, sanitizedUserName, true);
 
                   // Set connection state immediately after successful join
-                  setConnectionState('Connected' as ConnectionState);
+                  setConnectionState('Connected');
                   console.log('✅ Successfully joined Zoom session on retry!');
 
                   // Success - update session state

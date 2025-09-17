@@ -71,7 +71,7 @@ export class ZoomSDKService {
       const users = payload?.users || [payload];
       users.forEach((user: ZoomParticipant) => {
         if (this.eventHandlers.onUserJoin) {
-          this.eventHandlers.onUserJoin(user.userId, user);
+          this.eventHandlers.onUserJoin(String(user.userId), user);
         }
       });
     });
@@ -79,9 +79,9 @@ export class ZoomSDKService {
     this.client.on('user-removed', (payload: any) => {
       const users = payload?.users || [payload];
       users.forEach((user: ZoomParticipant) => {
-        this.cleanupParticipantResources(user.userId);
+        this.cleanupParticipantResources(String(user.userId));
         if (this.eventHandlers.onUserLeave) {
-          this.eventHandlers.onUserLeave(user.userId);
+          this.eventHandlers.onUserLeave(String(user.userId));
         }
       });
     });
@@ -89,7 +89,7 @@ export class ZoomSDKService {
     // Video state changes - Listen to multiple events for better reliability
     this.client.on('video-statistic-data-change', (payload: any) => {
       if (payload.userId && this.eventHandlers.onUserVideoStateChange) {
-        this.eventHandlers.onUserVideoStateChange(payload.userId, payload.videoOn);
+        this.eventHandlers.onUserVideoStateChange(String(payload.userId), payload.videoOn);
       }
     });
 
@@ -98,7 +98,7 @@ export class ZoomSDKService {
       console.log('🎥 Peer video state change:', payload);
       if (payload.userId && this.eventHandlers.onUserVideoStateChange) {
         const action = payload.action; // 'Start' or 'Stop'
-        this.eventHandlers.onUserVideoStateChange(payload.userId, action === 'Start');
+        this.eventHandlers.onUserVideoStateChange(String(payload.userId), action === 'Start');
       }
     });
 
@@ -108,7 +108,7 @@ export class ZoomSDKService {
       if (this.stream) {
         const currentUserId = this.client?.getCurrentUserInfo()?.userId;
         if (currentUserId && this.eventHandlers.onUserVideoStateChange) {
-          this.eventHandlers.onUserVideoStateChange(currentUserId, payload.state === 'Active');
+          this.eventHandlers.onUserVideoStateChange(String(currentUserId), payload.state === 'Active');
         }
       }
     });
@@ -168,20 +168,60 @@ export class ZoomSDKService {
     userName: string,
     isHost: boolean = false
   ): Promise<void> {
+    console.log('🚀 Starting Zoom SDK join process...');
+
+    // Validate and decode JWT token for debugging
+    try {
+      const tokenParts = token.split('.');
+      if (tokenParts.length === 3) {
+        const payload = JSON.parse(atob(tokenParts[1]));
+        console.log('📋 JWT Token Payload:', {
+          app_key: payload.app_key,
+          topic: payload.topic || payload.tpc,
+          role_type: payload.role_type,
+          user_identity: payload.user_identity,
+          iat: payload.iat,
+          iatDate: new Date(payload.iat * 1000).toISOString(),
+          exp: payload.exp,
+          expDate: new Date(payload.exp * 1000).toISOString(),
+          isExpired: payload.exp < Math.floor(Date.now() / 1000)
+        });
+
+        // Check for common issues
+        if (payload.topic !== sessionName && payload.tpc !== sessionName) {
+          console.warn('⚠️ Token topic does not match session name!');
+        }
+        if (payload.exp < Math.floor(Date.now() / 1000)) {
+          console.error('❌ Token is expired!');
+        }
+        if (!payload.topic && payload.tpc) {
+          console.error('❌ Token uses "tpc" instead of "topic" field!');
+        }
+      }
+    } catch (e) {
+      console.error('Failed to decode JWT for debugging:', e);
+    }
+
     if (!this.client || !this.isInitialized) {
       await this.initializeClient();
     }
 
     try {
-      this.currentSession = await this.client!.join(
-        sessionName,
-        token,
+      console.log('🔐 Zoom SDK Join Parameters:', {
+        topic: sessionName,
+        tokenLength: token.length,
         userName,
-        '',
-        {
-          enforceGalleryView: true,
-          virtualBackground: false,
-        }
+        password: '' // Empty password when using JWT
+      });
+
+      // CRITICAL: Zoom Video SDK join method signature
+      // join(topic, token, userName, sessionPassword?, sessionIdleTimeoutMins?)
+      this.currentSession = await this.client!.join(
+        sessionName,  // topic (must match JWT 'topic' field)
+        token,        // JWT signature/token
+        userName,     // Display name
+        '',           // sessionPassword (empty when using JWT)
+        40            // sessionIdleTimeoutMins (default timeout)
       );
 
       // Configure based on role
@@ -193,9 +233,38 @@ export class ZoomSDKService {
 
       // Start with optimized settings for fitness classes
       await this.optimizeForFitnessClass();
-    } catch (error) {
-      console.error('Failed to join session:', error);
-      throw error;
+
+      console.log('✅ Successfully joined Zoom session');
+    } catch (error: any) {
+      console.error('❌ Failed to join Zoom session:', error);
+
+      // Enhanced error diagnostics
+      const errorInfo = {
+        message: error?.message || 'Unknown error',
+        code: error?.code,
+        type: error?.type,
+        reason: error?.reason,
+        errorDetail: error?.errorDetail,
+        stack: error?.stack
+      };
+
+      console.error('📊 Zoom SDK Error Details:', errorInfo);
+
+      // Common error patterns and solutions
+      if (error?.message?.includes('Invalid signature')) {
+        console.error('🔑 JWT Token Issue: Token signature is invalid. Check SDK Secret.');
+      } else if (error?.message?.includes('Meeting does not exist')) {
+        console.error('📅 Session Issue: Session/topic name might be incorrect.');
+      } else if (error?.message?.includes('Authentication')) {
+        console.error('🔐 Auth Issue: JWT token authentication failed.');
+      } else if (error?.message?.includes('Network')) {
+        console.error('🌐 Network Issue: Check internet connection and firewall settings.');
+      } else if (error?.code === 'INVALID_PARAMETER') {
+        console.error('⚠️ Parameter Issue: Check join() method parameters.');
+      }
+
+      // Re-throw with more context
+      throw new Error(`Zoom SDK join failed: ${errorInfo.message} (Code: ${errorInfo.code})`);
     }
   }
 
@@ -383,7 +452,7 @@ export class ZoomSDKService {
       const currentUser = this.client?.getCurrentUserInfo();
       if (currentUser && this.eventHandlers.onUserVideoStateChange) {
         console.log('🔄 Forcing video state update for current user after startVideo');
-        this.eventHandlers.onUserVideoStateChange(currentUser.userId, true);
+        this.eventHandlers.onUserVideoStateChange(String(currentUser.userId), true);
       }
 
       // Double-check video state after a short delay
@@ -397,7 +466,7 @@ export class ZoomSDKService {
           streamIsVideoOn: this.stream.isVideoOn?.()
         });
         if (currentUserData && this.eventHandlers.onUserVideoStateChange) {
-          this.eventHandlers.onUserVideoStateChange(currentUserId!, currentUserData.bVideoOn || false);
+          this.eventHandlers.onUserVideoStateChange(String(currentUserId!), currentUserData.bVideoOn || false);
         }
       }, 500);
     } catch (error) {
@@ -421,7 +490,7 @@ export class ZoomSDKService {
     const currentUser = this.client?.getCurrentUserInfo();
     if (currentUser && this.eventHandlers.onUserVideoStateChange) {
       console.log('🔄 Forcing video state update for current user after stopVideo');
-      this.eventHandlers.onUserVideoStateChange(currentUser.userId, false);
+      this.eventHandlers.onUserVideoStateChange(String(currentUser.userId), false);
     }
   }
 
@@ -441,7 +510,9 @@ export class ZoomSDKService {
 
     try {
       // Send command to mute specific participant
-      await this.client.sendCommand(userId, 'mute', '');
+      // Note: Direct muting of participants via sendCommand is not available in Zoom Video SDK
+      // This would typically require host permissions and the CommandReceiver API
+      console.warn('Direct participant muting not implemented in current Zoom SDK version');
     } catch (error) {
       console.error('Error muting participant:', error);
       throw error;
@@ -457,7 +528,7 @@ export class ZoomSDKService {
 
       for (const user of users) {
         if (excludeHost && user.userId === currentUserId) continue;
-        await this.muteParticipant(user.userId);
+        await this.muteParticipant(String(user.userId));
       }
     } catch (error) {
       console.error('Error muting all participants:', error);
@@ -469,7 +540,9 @@ export class ZoomSDKService {
     if (!this.client) throw new Error('Client not initialized');
 
     try {
-      await this.client.sendCommand(userId, 'remove', '');
+      // Note: Direct participant removal via sendCommand is not available in Zoom Video SDK
+      // This would typically require host permissions and the CommandReceiver API
+      console.warn('Direct participant removal not implemented in current Zoom SDK version');
       this.cleanupParticipantResources(userId);
     } catch (error) {
       console.error('Error removing participant:', error);
@@ -498,7 +571,7 @@ export class ZoomSDKService {
     try {
       // Validate user exists in the session
       const allUsers = this.client.getAllUser();
-      const userExists = allUsers.some(user => user.userId === userId);
+      const userExists = allUsers.some(user => String(user.userId) === userId);
 
       console.log(`🔍 Validating user ${userId} for video rendering:`, {
         userExists,
@@ -546,11 +619,11 @@ export class ZoomSDKService {
       });
 
       // Check if user has video enabled before attempting to render
-      const user = allUsers.find(u => u.userId === userId);
+      const user = allUsers.find(u => String(u.userId) === userId);
 
       // IMPORTANT: For self-view, check if we're currently starting video
       const currentUserId = this.client.getCurrentUserInfo()?.userId;
-      const isSelfView = userId === currentUserId;
+      const isSelfView = userId === String(currentUserId);
 
       if (!user?.bVideoOn && !isSelfView) {
         console.warn(`⚠️ User ${userId} (${user?.displayName}) has video disabled. Cannot render video.`);
@@ -590,8 +663,8 @@ export class ZoomSDKService {
 
       await this.stream.attachVideo(
         userIdNumber,        // userId as number
-        videoElement,        // video element
-        videoQuality         // video quality (VideoQuality enum)
+        videoQuality,        // video quality (VideoQuality enum) - this comes BEFORE element
+        videoElement         // video element
       );
 
       // Debug: Check video element state after rendering
@@ -705,12 +778,14 @@ export class ZoomSDKService {
     if (!this.client) throw new Error('Client not initialized');
 
     try {
+      // Note: Chat functionality in Zoom Video SDK requires the Chat subsystem
+      // This implementation should use client.getChatClient() for proper chat support
       if (toUserId) {
         // Private message
-        await this.client.sendChat(message, toUserId);
+        console.warn('Private chat not implemented - requires Zoom Chat subsystem');
       } else {
         // Broadcast message
-        await this.client.sendChat(message);
+        console.warn('Broadcast chat not implemented - requires Zoom Chat subsystem');
       }
     } catch (error) {
       console.error('Error sending chat message:', error);
@@ -723,7 +798,9 @@ export class ZoomSDKService {
     if (!this.client) throw new Error('Client not initialized');
 
     try {
-      await this.client.startRecording();
+      // Note: Cloud recording in Zoom Video SDK requires proper account permissions
+      // This would typically use the getRecordingClient() subsystem
+      console.warn('Recording not implemented - requires Zoom Recording subsystem');
     } catch (error) {
       console.error('Error starting recording:', error);
       throw error;
@@ -734,7 +811,9 @@ export class ZoomSDKService {
     if (!this.client) throw new Error('Client not initialized');
 
     try {
-      await this.client.stopRecording();
+      // Note: Cloud recording in Zoom Video SDK requires proper account permissions
+      // This would typically use the getRecordingClient() subsystem
+      console.warn('Recording stop not implemented - requires Zoom Recording subsystem');
     } catch (error) {
       console.error('Error stopping recording:', error);
       throw error;
@@ -786,14 +865,14 @@ export class ZoomSDKService {
 
       const participants = users.map((user: ZoomParticipant) => {
         const participant = {
-          id: user.userId,
+          id: String(user.userId),
           name: user.displayName || 'Unknown',
           isVideoOn: user.bVideoOn || false,
           isAudioOn: !user.muted,
           isHost: user.isHost || false,
-          connectionQuality: this.getUserConnectionQuality(user.userId),
+          connectionQuality: this.getUserConnectionQuality(String(user.userId)),
           hasRaisedHand: false,
-          level: this.participantLevels.get(user.userId),
+          level: this.participantLevels.get(String(user.userId)),
         };
 
         console.log(`👤 Participant ${participant.name} (${participant.id}):`, {

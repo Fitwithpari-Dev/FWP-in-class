@@ -1,6 +1,35 @@
 # FitWithPari - Live Fitness Platform with Multi-Video SDK Support
 
-## Project Overview
+## 🚀 V2 CLEAN ARCHITECTURE (PRIMARY REFERENCE)
+
+**⚠️ IMPORTANT: Use V2 Implementation as Primary Reference**
+
+The project has been redesigned with **Clean Architecture** principles for scalability to 1000+ participants. All new development should reference the V2 implementation:
+
+### V2 Documentation (Primary Source)
+- **📁 Location**: `src-v2/` folder
+- **📖 Documentation**: `src-v2/docs/` folder
+- **🏗️ Architecture Guide**: [`src-v2/docs/CLEAN_ARCHITECTURE_DESIGN.md`](src-v2/docs/CLEAN_ARCHITECTURE_DESIGN.md)
+- **👥 UX/UI Stories**: [`src-v2/docs/UX_UI_USER_STORIES.md`](src-v2/docs/UX_UI_USER_STORIES.md)
+- **🎨 Figma Mapping**: [`src-v2/docs/FIGMA_DESIGN_MAPPING.md`](src-v2/docs/FIGMA_DESIGN_MAPPING.md)
+- **📊 Experience Flow**: [`src-v2/docs/IN_CLASS_EXPERIENCE_FLOW.md`](src-v2/docs/IN_CLASS_EXPERIENCE_FLOW.md)
+- **📚 Implementation README**: [`src-v2/README.md`](src-v2/README.md)
+
+### V2 Key Features
+- ✅ Clean Architecture with Domain-Driven Design
+- ✅ Modular Video Service Factory (Zoom + Agora + WebRTC)
+- ✅ Scalable to 1000+ participants with virtual scrolling
+- ✅ TypeScript strict typing with immutable domain entities
+- ✅ Comprehensive test coverage
+- ✅ Fitness platform UX/UI optimized for coach/student experience
+
+**🔄 Migration Status**: V1 (below) is maintained for reference. All new development uses V2 architecture.
+
+---
+
+## V1 Legacy Implementation (Reference Only)
+
+### Project Overview
 A real-time fitness platform built with React + TypeScript + Vite, featuring modular video service architecture with support for both Zoom Video SDK and Agora Interactive Live Streaming. Uses Supabase for backend services and deployed on AWS Amplify.
 
 **IMPORTANT**: This is a production fitness platform using real video SDK integrations with a unified service provider architecture for easy switching between video platforms.

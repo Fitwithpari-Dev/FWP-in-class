@@ -26,7 +26,7 @@ export const App: React.FC = () => {
     sessionId: urlParams.session || 'demo-session-' + Date.now(),
     participantName: urlParams.name || 'Test User',
     participantRole: (urlParams.role || 'student') as 'coach' | 'student',
-    videoServiceType: (urlParams.service || 'agora') as VideoServiceType
+    videoServiceType: (urlParams.service || 'zoom') as VideoServiceType
   });
 
   // Log session configuration for debugging

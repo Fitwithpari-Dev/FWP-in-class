@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Production Multi-Device Testing - FitWithPari</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-panel {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .url-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .url-card.coach {
+            border-left-color: #28a745;
+            background: #f8fff8;
+        }
+        .url-card.student {
+            border-left-color: #ffc107;
+            background: #fffdf0;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .test-button:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        .test-button.coach {
+            background: #28a745;
+        }
+        .test-button.coach:hover {
+            background: #1e7e34;
+        }
+        .test-button.student {
+            background: #ffc107;
+            color: #333;
+        }
+        .test-button.student:hover {
+            background: #e0a800;
+        }
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .qr-placeholder {
+            background: white;
+            height: 120px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 FitWithPari V2 - Production Multi-Device Testing</h1>
+        <p><strong>Domain:</strong> classes.tribe.fit | <strong>Architecture:</strong> V2 Clean Architecture | <strong>Video SDKs:</strong> Zoom + Agora</p>
+
+        <div class="instructions">
+            <h2>📱 Multi-Device Testing Strategy</h2>
+            <p><strong>Goal:</strong> Test real video calling with multiple devices accessing the same Zoom session simultaneously</p>
+            <ul>
+                <li>🔒 <strong>One camera per device:</strong> Each device needs its own camera (no sharing possible)</li>
+                <li>🌐 <strong>Same session ID:</strong> All participants join identical session for interaction</li>
+                <li>📱 <strong>Different devices:</strong> Laptop (coach) + Mobile phones/tablets (students)</li>
+                <li>🎯 <strong>Production validation:</strong> Real-world network performance and WebRTC connectivity</li>
+            </ul>
+        </div>
+
+        <div class="test-panel">
+            <h2>🎯 Primary Test Session: "Morning Yoga Flow 2025"</h2>
+            <p><strong>Session ID:</strong> morning-yoga-flow-2025 | <strong>Video Service:</strong> Zoom SDK</p>
+
+            <div class="url-card coach">
+                <h3>👨‍🏫 Coach Access (Laptop/Desktop)</h3>
+                <strong>URL:</strong><br>
+                <code>https://classes.tribe.fit/?session=morning-yoga-flow-2025&service=zoom&name=Coach-Sarah&role=coach</code>
+                <br><br>
+                <a href="https://classes.tribe.fit/?session=morning-yoga-flow-2025&service=zoom&name=Coach-Sarah&role=coach"
+                   target="_blank" class="test-button coach">🎥 Open Coach View</a>
+            </div>
+
+            <div class="url-card student">
+                <h3>👩‍🎓 Student 1 (Mobile Device)</h3>
+                <strong>URL:</strong><br>
+                <code>https://classes.tribe.fit/?session=morning-yoga-flow-2025&service=zoom&name=Student-Alex&role=student</code>
+                <br><br>
+                <a href="https://classes.tribe.fit/?session=morning-yoga-flow-2025&service=zoom&name=Student-Alex&role=student"
+                   target="_blank" class="test-button student">📱 Open Student 1</a>
+                <div class="qr-placeholder">QR Code for Mobile - Scan with phone camera</div>
+            </div>
+
+            <div class="url-card student">
+                <h3>👨‍🎓 Student 2 (Tablet/Second Device)</h3>
+                <strong>URL:</strong><br>
+                <code>https://classes.tribe.fit/?session=morning-yoga-flow-2025&service=zoom&name=Student-Maria&role=student</code>
+                <br><br>
+                <a href="https://classes.tribe.fit/?session=morning-yoga-flow-2025&service=zoom&name=Student-Maria&role=student"
+                   target="_blank" class="test-button student">💻 Open Student 2</a>
+                <div class="qr-placeholder">QR Code for Tablet - Scan with device camera</div>
+            </div>
+        </div>
+
+        <div class="test-panel">
+            <h2>🧪 Alternative Test Sessions</h2>
+
+            <div class="device-grid">
+                <div>
+                    <h3>💪 HIIT Cardio Blast</h3>
+                    <div class="url-card">
+                        <a href="https://classes.tribe.fit/?session=hiit-cardio-blast-2025&service=zoom&name=Coach-Mike&role=coach"
+                           target="_blank" class="test-button coach">Coach Mike</a>
+                        <a href="https://classes.tribe.fit/?session=hiit-cardio-blast-2025&service=zoom&name=Student-Emma&role=student"
+                           target="_blank" class="test-button student">Student Emma</a>
+                        <a href="https://classes.tribe.fit/?session=hiit-cardio-blast-2025&service=zoom&name=Student-David&role=student"
+                           target="_blank" class="test-button student">Student David</a>
+                    </div>
+                </div>
+
+                <div>
+                    <h3>🏋️ Strength Training</h3>
+                    <div class="url-card">
+                        <a href="https://classes.tribe.fit/?session=strength-training-2025&service=zoom&name=Coach-Lisa&role=coach"
+                           target="_blank" class="test-button coach">Coach Lisa</a>
+                        <a href="https://classes.tribe.fit/?session=strength-training-2025&service=zoom&name=Student-Chris&role=student"
+                           target="_blank" class="test-button student">Student Chris</a>
+                        <a href="https://classes.tribe.fit/?session=strength-training-2025&service=zoom&name=Student-Sofia&role=student"
+                           target="_blank" class="test-button student">Student Sofia</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-panel">
+            <h2>✅ Production Validation Checklist</h2>
+
+            <h3>📋 Technical Validation</h3>
+            <ul>
+                <li>□ V2 Clean Architecture loads successfully</li>
+                <li>□ Environment variables configured correctly</li>
+                <li>□ Zoom SDK initialization working</li>
+                <li>□ JWT token generation via Lambda</li>
+                <li>□ Session joining with predetermined session IDs</li>
+            </ul>
+
+            <h3>🎥 Multi-Device Video Testing</h3>
+            <ul>
+                <li>□ Coach video stream visible to students</li>
+                <li>□ Student video streams visible to coach</li>
+                <li>□ Multiple students see each other</li>
+                <li>□ Audio/video controls synchronize</li>
+                <li>□ Participant count accurate across devices</li>
+                <li>□ Network performance acceptable</li>
+            </ul>
+
+            <h3>🌐 Cross-Platform Compatibility</h3>
+            <ul>
+                <li>□ iOS Safari mobile browser</li>
+                <li>□ Android Chrome mobile browser</li>
+                <li>□ Windows laptop browsers</li>
+                <li>□ Mac desktop browsers</li>
+                <li>□ Tablet browsers (iPad/Android)</li>
+            </ul>
+
+            <h3>🔧 Service Provider Testing</h3>
+            <ul>
+                <li>□ Zoom SDK sessions working</li>
+                <li>□ Service switching capability</li>
+                <li>□ Fallback mechanisms functional</li>
+                <li>□ Configuration consistency</li>
+            </ul>
+        </div>
+
+        <div class="test-panel">
+            <h2>🚨 Known Limitations & Expectations</h2>
+            <ul>
+                <li><strong>Camera Access:</strong> Each device needs its own camera - browsers don't share camera access</li>
+                <li><strong>Session Isolation:</strong> Predetermined session IDs ensure participants join same room</li>
+                <li><strong>Network Dependencies:</strong> Real-world WiFi/cellular performance will vary</li>
+                <li><strong>HTTPS Required:</strong> Video calling only works on secure connections</li>
+                <li><strong>Permissions Required:</strong> Users must grant camera/microphone access</li>
+            </ul>
+        </div>
+
+        <div class="instructions">
+            <h2>📱 How to Test</h2>
+            <ol>
+                <li><strong>Open Coach URL</strong> on laptop/desktop computer</li>
+                <li><strong>Share Student URLs</strong> with mobile devices (copy/paste or QR scan)</li>
+                <li><strong>Grant Permissions</strong> on each device for camera/microphone</li>
+                <li><strong>Verify Session Joining</strong> - all participants should see each other</li>
+                <li><strong>Test Controls</strong> - video/audio mute, participant management</li>
+                <li><strong>Monitor Performance</strong> - video quality, connection stability</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        console.log('🚀 Production Multi-Device Testing Tool Loaded');
+        console.log('📡 Domain: classes.tribe.fit');
+        console.log('🎯 Architecture: V2 Clean Architecture with Zoom + Agora SDKs');
+        console.log('📱 Ready for real multi-device video session testing');
+
+        // Auto-detect if we're on mobile and suggest appropriate URLs
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile) {
+            console.log('📱 Mobile device detected - use Student URLs for testing');
+        } else {
+            console.log('💻 Desktop detected - use Coach URL for host testing');
+        }
+    </script>
+</body>
+</html>

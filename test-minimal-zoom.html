@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Zoom SDK Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .status {
+            background: #2d2d2d;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #ff4444;
+        }
+        .success {
+            border-left-color: #44ff44;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Minimal Zoom SDK Test</h1>
+
+    <div class="status" id="status">Ready to test...</div>
+
+    <button onclick="testStep1()">1. Test Environment Variables</button>
+    <button onclick="testStep2()" id="step2" disabled>2. Load Zoom SDK</button>
+    <button onclick="testStep3()" id="step3" disabled>3. Create Client</button>
+    <button onclick="testStep4()" id="step4" disabled>4. Initialize Client</button>
+    <button onclick="testStep5()" id="step5" disabled>5. Generate Token</button>
+    <button onclick="testStep6()" id="step6" disabled>6. Join Session</button>
+
+    <script type="module">
+        let ZoomVideo;
+        let client;
+        let stream;
+
+        window.log = (message, isError = false) => {
+            const status = document.getElementById('status');
+            const timestamp = new Date().toLocaleTimeString();
+            status.innerHTML += `<br>[${timestamp}] ${message}`;
+            status.className = `status ${isError ? 'error' : 'success'}`;
+            console.log(`[${timestamp}] ${message}`);
+        };
+
+        window.testStep1 = () => {
+            log("🔍 Testing environment variables...");
+
+            // These should be defined by Vite's define config
+            const hasZoomKey = typeof import.meta.env.VITE_ZOOM_SDK_KEY === 'string' && import.meta.env.VITE_ZOOM_SDK_KEY.length > 0;
+            const hasZoomSecret = typeof import.meta.env.VITE_ZOOM_SDK_SECRET === 'string' && import.meta.env.VITE_ZOOM_SDK_SECRET.length > 0;
+            const hasTokenEndpoint = typeof import.meta.env.VITE_ZOOM_TOKEN_ENDPOINT === 'string' && import.meta.env.VITE_ZOOM_TOKEN_ENDPOINT.length > 0;
+
+            log(`ZOOM_SDK_KEY: ${hasZoomKey ? '✅ SET' : '❌ NOT SET'}`);
+            log(`ZOOM_SDK_SECRET: ${hasZoomSecret ? '✅ SET' : '❌ NOT SET'}`);
+            log(`ZOOM_TOKEN_ENDPOINT: ${hasTokenEndpoint ? '✅ SET' : '❌ NOT SET'}`);
+
+            if (hasZoomKey && hasZoomSecret && hasTokenEndpoint) {
+                log("✅ Environment variables OK");
+                document.getElementById('step2').disabled = false;
+            } else {
+                log("❌ Missing environment variables", true);
+            }
+        };
+
+        window.testStep2 = async () => {
+            try {
+                log("📦 Loading Zoom SDK...");
+                ZoomVideo = (await import('@zoom/videosdk')).default;
+
+                if (ZoomVideo && typeof ZoomVideo.createClient === 'function') {
+                    log("✅ Zoom SDK loaded successfully");
+                    document.getElementById('step3').disabled = false;
+                } else {
+                    log("❌ Zoom SDK invalid", true);
+                }
+            } catch (error) {
+                log(`❌ Failed to load Zoom SDK: ${error.message}`, true);
+            }
+        };
+
+        window.testStep3 = () => {
+            try {
+                log("🏗️ Creating Zoom client...");
+                client = ZoomVideo.createClient();
+
+                if (client && typeof client.init === 'function') {
+                    log("✅ Zoom client created successfully");
+                    document.getElementById('step4').disabled = false;
+                } else {
+                    log("❌ Failed to create client", true);
+                }
+            } catch (error) {
+                log(`❌ Client creation error: ${error.message}`, true);
+            }
+        };
+
+        window.testStep4 = async () => {
+            try {
+                log("⚡ Initializing client...");
+                await client.init('en-US', 'Global', {
+                    patchJsMedia: true
+                });
+
+                stream = client.getMediaStream();
+
+                if (stream) {
+                    log("✅ Client initialized successfully");
+                    document.getElementById('step5').disabled = false;
+                } else {
+                    log("❌ Failed to get media stream", true);
+                }
+            } catch (error) {
+                log(`❌ Initialization error: ${error.message}`, true);
+            }
+        };
+
+        window.testStep5 = async () => {
+            try {
+                log("🔑 Generating JWT token...");
+
+                const payload = {
+                    sessionName: 'minimal-test-' + Date.now(),
+                    role: 1, // host
+                    userIdentity: 'test-user-' + Date.now(),
+                    sessionKey: 'test-key'
+                };
+
+                const response = await fetch(`${import.meta.env.VITE_ZOOM_TOKEN_ENDPOINT}/token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    window.testToken = data.token;
+                    window.testSessionName = payload.sessionName;
+                    log("✅ Token generated successfully");
+                    document.getElementById('step6').disabled = false;
+                } else {
+                    log(`❌ Token generation failed: ${response.status}`, true);
+                }
+            } catch (error) {
+                log(`❌ Token error: ${error.message}`, true);
+            }
+        };
+
+        window.testStep6 = async () => {
+            try {
+                log("🚀 Joining session...");
+
+                await client.join(
+                    window.testSessionName,
+                    window.testToken,
+                    'test-user',
+                    ''
+                );
+
+                log("🎉 SUCCESS! Session joined successfully!");
+                log("🎯 Zoom SDK is working correctly!");
+
+            } catch (error) {
+                log(`❌ Join error: ${error.message}`, true);
+                log(`Error details: ${JSON.stringify(error)}`);
+            }
+        };
+
+        // Auto-start first test
+        window.testStep1();
+    </script>
+</body>
+</html>

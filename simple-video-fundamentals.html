@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Conferencing Fundamentals - Simple</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .video-container {
+            background: #000;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        video {
+            width: 100%;
+            height: 300px;
+            background: #333;
+            border-radius: 4px;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .primary { background: #007bff; color: white; }
+        .danger { background: #dc3545; color: white; }
+        .success { background: #28a745; color: white; }
+        .info { background: #17a2b8; color: white; }
+        .log {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        h1, h2 { color: #333; }
+        .step {
+            background: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        textarea {
+            width: 45%;
+            margin-right: 10px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎥 Video Conferencing Fundamentals</h1>
+        <p><strong>This shows the 3 core building blocks that Zoom SDK handles for you</strong></p>
+
+        <div class="step">
+            <h2>Step 1: Get Camera Access</h2>
+            <p>Every video app starts here - accessing the user's camera and microphone</p>
+            <button class="primary" onclick="startVideo()">📹 Start My Camera</button>
+            <button class="danger" onclick="stopVideo()">⏹️ Stop Camera</button>
+        </div>
+
+        <div class="video-grid">
+            <div class="video-container">
+                <h3>📹 Your Camera</h3>
+                <video id="localVideo" autoplay muted playsinline></video>
+            </div>
+            <div class="video-container">
+                <h3>📺 Remote Person</h3>
+                <video id="remoteVideo" autoplay playsinline></video>
+                <p style="color: #ccc; text-align: center;">Will show other person's video when connected</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <h2>Step 2: Create Connection</h2>
+            <p>WebRTC peer connection - this is what connects two browsers for video calling</p>
+            <button class="success" onclick="createPeerConnection()">🔗 Create Connection</button>
+            <button class="info" onclick="makeOffer()">📝 Make Offer</button>
+        </div>
+
+        <div class="step">
+            <h2>Step 3: Exchange Connection Info</h2>
+            <p>This is what Zoom SDK's authentication and "join session" does automatically</p>
+            <div style="margin: 15px 0;">
+                <textarea id="localOffer" rows="3" placeholder="Your offer will appear here - copy this to send to another person"></textarea>
+                <textarea id="remoteAnswer" rows="3" placeholder="Paste the other person's answer here"></textarea>
+            </div>
+            <button class="primary" onclick="useRemoteAnswer()">📥 Use Remote Answer</button>
+        </div>
+
+        <div class="controls">
+            <button class="danger" onclick="hangUp()">📞 Hang Up</button>
+            <button onclick="toggleMute()" id="muteBtn">🎤 Mute</button>
+        </div>
+
+        <h2>📋 What's Happening (Debug Log)</h2>
+        <div class="log" id="logArea">
+            <strong>🚀 Ready to learn video conferencing fundamentals!</strong><br>
+            👉 Click "Start My Camera" to begin<br><br>
+        </div>
+    </div>
+
+    <script>
+        // These are the fundamental pieces every video app needs
+        var localStream = null;
+        var peerConnection = null;
+        var isMuted = false;
+
+        // STUN server helps with network connectivity
+        var rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }
+            ]
+        };
+
+        function addLog(message) {
+            var log = document.getElementById('logArea');
+            var time = new Date().toLocaleTimeString();
+            log.innerHTML += '[' + time + '] ' + message + '<br>';
+            log.scrollTop = log.scrollHeight;
+            console.log(message);
+        }
+
+        // Step 1: Get camera access
+        function startVideo() {
+            addLog('🎥 Requesting camera and microphone access...');
+
+            navigator.mediaDevices.getUserMedia({
+                video: { width: 640, height: 480 },
+                audio: true
+            })
+            .then(function(stream) {
+                localStream = stream;
+                document.getElementById('localVideo').srcObject = stream;
+                addLog('✅ Camera started! You should see yourself in the video.');
+
+                // If we already have a peer connection, add our video to it
+                if (peerConnection) {
+                    stream.getTracks().forEach(function(track) {
+                        peerConnection.addTrack(track, stream);
+                    });
+                }
+            })
+            .catch(function(error) {
+                addLog('❌ Error accessing camera: ' + error.message);
+                addLog('💡 Make sure to allow camera/microphone permission');
+            });
+        }
+
+        function stopVideo() {
+            if (localStream) {
+                localStream.getTracks().forEach(function(track) {
+                    track.stop();
+                });
+                localStream = null;
+                document.getElementById('localVideo').srcObject = null;
+                addLog('⏹️ Camera stopped');
+            }
+        }
+
+        // Step 2: Create peer connection
+        function createPeerConnection() {
+            addLog('🔗 Creating peer connection...');
+
+            peerConnection = new RTCPeerConnection(rtcConfig);
+
+            // This fires when we receive video from the other person
+            peerConnection.ontrack = function(event) {
+                addLog('📺 Received video from remote person!');
+                document.getElementById('remoteVideo').srcObject = event.streams[0];
+            };
+
+            // This helps with network connectivity
+            peerConnection.onicecandidate = function(event) {
+                if (event.candidate) {
+                    addLog('🧊 ICE candidate found (network path)');
+                }
+            };
+
+            peerConnection.onconnectionstatechange = function() {
+                addLog('🔄 Connection state: ' + peerConnection.connectionState);
+            };
+
+            // Add our video stream if we have one
+            if (localStream) {
+                localStream.getTracks().forEach(function(track) {
+                    peerConnection.addTrack(track, localStream);
+                });
+                addLog('📹 Added local video to connection');
+            }
+
+            addLog('✅ Peer connection created');
+        }
+
+        // Step 3: Make an offer (start the handshake)
+        function makeOffer() {
+            if (!peerConnection) {
+                addLog('❌ Create a peer connection first!');
+                return;
+            }
+
+            addLog('📝 Creating offer...');
+
+            peerConnection.createOffer()
+                .then(function(offer) {
+                    return peerConnection.setLocalDescription(offer);
+                })
+                .then(function() {
+                    var offerText = JSON.stringify(peerConnection.localDescription);
+                    document.getElementById('localOffer').value = offerText;
+                    addLog('✅ Offer created! Copy the text above and send it to another person.');
+                    addLog('💡 They need to open this same page and paste your offer.');
+                })
+                .catch(function(error) {
+                    addLog('❌ Error creating offer: ' + error.message);
+                });
+        }
+
+        function useRemoteAnswer() {
+            if (!peerConnection) {
+                addLog('❌ Create a peer connection first!');
+                return;
+            }
+
+            var answerText = document.getElementById('remoteAnswer').value;
+            if (!answerText) {
+                addLog('❌ Paste the remote answer first!');
+                return;
+            }
+
+            try {
+                var answer = JSON.parse(answerText);
+                peerConnection.setRemoteDescription(answer)
+                    .then(function() {
+                        addLog('✅ Remote answer set! Connection should establish now.');
+                        addLog('🎉 If successful, you should see the other person\'s video!');
+                    })
+                    .catch(function(error) {
+                        addLog('❌ Error setting remote answer: ' + error.message);
+                    });
+            } catch (error) {
+                addLog('❌ Invalid answer format: ' + error.message);
+            }
+        }
+
+        function toggleMute() {
+            if (localStream) {
+                var audioTrack = localStream.getAudioTracks()[0];
+                if (audioTrack) {
+                    isMuted = !isMuted;
+                    audioTrack.enabled = !isMuted;
+                    document.getElementById('muteBtn').textContent = isMuted ? '🔇 Unmute' : '🎤 Mute';
+                    addLog(isMuted ? '🔇 Microphone muted' : '🎤 Microphone unmuted');
+                }
+            }
+        }
+
+        function hangUp() {
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+                addLog('📞 Peer connection closed');
+            }
+
+            stopVideo();
+
+            document.getElementById('remoteVideo').srcObject = null;
+            document.getElementById('localOffer').value = '';
+            document.getElementById('remoteAnswer').value = '';
+
+            addLog('🏁 Call ended - everything cleaned up');
+        }
+
+        // Educational info
+        addLog('📚 LEARNING: This shows the 3 steps Zoom SDK does automatically:');
+        addLog('1️⃣ Get camera/mic access (getUserMedia)');
+        addLog('2️⃣ Create peer connection (RTCPeerConnection)');
+        addLog('3️⃣ Handle signaling (offers/answers/ICE candidates)');
+        addLog('🔍 Zoom SDK replaces step 3 with .join() and authentication');
+    </script>
+</body>
+</html>

@@ -12,7 +12,9 @@ export const VIDEO_CONFIG = {
   primary: VIDEO_SERVICE,
 
   // Fallback service (opposite of primary)
-  fallback: VIDEO_SERVICE === 'zoom' ? 'agora' : 'zoom',
+  get fallback(): VideoServiceProvider {
+    return VIDEO_SERVICE === 'zoom' ? 'agora' : 'zoom';
+  },
 
   // Service-specific settings
   zoom: {
