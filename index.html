@@ -412,16 +412,41 @@
             }
 
             async createVideoElement(participantId) {
-                console.log(`🎥 Creating video element for participant ${participantId}`);
+                console.log(`🎥 Creating video element for participant ${participantId} (type: ${typeof participantId})`);
 
                 try {
                     const userId = parseInt(participantId);
+                    console.log(`🔍 Converting participantId "${participantId}" to userId ${userId}`);
+
+                    // Check if participant exists and has video enabled
+                    const participant = this.participants.get(participantId);
+                    if (!participant) {
+                        throw new Error(`Participant ${participantId} not found in participants map`);
+                    }
+
+                    if (!participant.videoEnabled) {
+                        console.warn(`⚠️ Participant ${participantId} has video disabled`);
+                        return null;
+                    }
+
+                    console.log(`📡 Calling stream.attachVideo(${userId}, 2) for participant ${participant.name}`);
 
                     // V2 PATTERN: Zoom SDK creates and provides the video element
                     const videoElement = await this.stream.attachVideo(userId, 2); // 360p quality
 
+                    console.log(`📺 attachVideo result:`, {
+                        videoElement,
+                        type: typeof videoElement,
+                        tagName: videoElement ? videoElement.tagName : 'null',
+                        isVideoElement: videoElement instanceof HTMLVideoElement
+                    });
+
                     if (!videoElement) {
-                        throw new Error('Zoom SDK did not return a video element');
+                        throw new Error(`attachVideo returned null for userId ${userId}`);
+                    }
+
+                    if (!(videoElement instanceof HTMLVideoElement)) {
+                        throw new Error(`attachVideo returned invalid element type: ${typeof videoElement}`);
                     }
 
                     // Configure the Zoom-provided element
@@ -434,13 +459,20 @@
                     // Mute self-view to prevent echo
                     if (participantId === this.currentParticipant.id) {
                         videoElement.muted = true;
+                        console.log(`🔇 Muted self-view for participant ${participantId}`);
                     }
 
                     this.videoElements.set(participantId, videoElement);
-                    console.log(`✅ Video element created for participant ${participantId}`);
+                    console.log(`✅ Video element created successfully for participant ${participantId}`);
                     return videoElement;
                 } catch (error) {
-                    console.error(`❌ Failed to create video element: ${error.message}`);
+                    console.error(`❌ Failed to create video element for participant ${participantId}:`, {
+                        error: error.message,
+                        stack: error.stack,
+                        participantId,
+                        participantType: typeof participantId,
+                        parsedUserId: parseInt(participantId)
+                    });
                     return null;
                 }
             }
