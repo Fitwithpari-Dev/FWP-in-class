@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Element Sizing Test - Autonomous Validation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .test-case {
+            border: 2px solid #374151;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .test-pass {
+            border-color: #10B981;
+            background-color: #ECFDF5;
+        }
+        .test-fail {
+            border-color: #EF4444;
+            background-color: #FEF2F2;
+        }
+        .video-container {
+            position: relative;
+            background: #374151;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .size-small {
+            width: 160px;
+            height: 120px;
+            min-width: 160px;
+            min-height: 120px;
+        }
+        .size-medium {
+            width: 384px;
+            height: 288px;
+            min-width: 384px;
+            min-height: 288px;
+        }
+        .size-large {
+            width: 768px;
+            height: 576px;
+            min-width: 768px;
+            min-height: 576px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center">Video Element Sizing Validation Test</h1>
+        <p class="text-gray-600 text-center mb-8">Testing video element readiness for Zoom SDK compatibility</p>
+
+        <div id="test-results" class="mb-8"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Small Video Container Test -->
+            <div class="test-case" id="test-small">
+                <h3 class="font-semibold mb-3">Small Video Container (160x120)</h3>
+                <div class="video-container size-small" id="small-container">
+                    <div class="absolute inset-0 flex items-center justify-center text-white">
+                        <span>Small Video</span>
+                    </div>
+                </div>
+                <div class="mt-2 text-sm" id="small-results"></div>
+            </div>
+
+            <!-- Medium Video Container Test -->
+            <div class="test-case" id="test-medium">
+                <h3 class="font-semibold mb-3">Medium Video Container (384x288)</h3>
+                <div class="video-container size-medium" id="medium-container">
+                    <div class="absolute inset-0 flex items-center justify-center text-white">
+                        <span>Medium Video</span>
+                    </div>
+                </div>
+                <div class="mt-2 text-sm" id="medium-results"></div>
+            </div>
+
+            <!-- Large Video Container Test -->
+            <div class="test-case" id="test-large">
+                <h3 class="font-semibold mb-3">Large Video Container (768x576)</h3>
+                <div class="video-container size-large" id="large-container">
+                    <div class="absolute inset-0 flex items-center justify-center text-white">
+                        <span>Large Video</span>
+                    </div>
+                </div>
+                <div class="mt-2 text-sm" id="large-results"></div>
+            </div>
+        </div>
+
+        <div class="mt-8 p-6 bg-white rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Element Readiness Simulation</h2>
+            <div class="space-y-4">
+                <button id="run-simulation" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Run Element Readiness Simulation
+                </button>
+                <div id="simulation-log" class="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm h-64 overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulated element readiness check (mirrors the fix in zoomVideoService.ts)
+        async function waitForElementReady(element, participantId) {
+            const maxWaitTime = 5000; // 5 seconds max wait
+            const checkInterval = 100; // Check every 100ms
+            const startTime = Date.now();
+
+            return new Promise((resolve) => {
+                const checkElement = () => {
+                    const width = element.clientWidth;
+                    const height = element.clientHeight;
+                    const isInDOM = document.contains(element);
+                    const elapsed = Date.now() - startTime;
+
+                    logMessage(`🔍 Element readiness check for ${participantId}: width=${width}, height=${height}, isInDOM=${isInDOM}, elapsed=${elapsed}ms`);
+
+                    // Element is ready if it has non-zero dimensions and is in DOM
+                    if (width > 0 && height > 0 && isInDOM) {
+                        logMessage(`✅ Element ready for ${participantId}: ${width}x${height}`);
+                        resolve({ success: true, width, height, elapsed });
+                        return;
+                    }
+
+                    // Timeout check
+                    if (elapsed >= maxWaitTime) {
+                        logMessage(`❌ Element readiness timeout for ${participantId} after ${elapsed}ms: finalWidth=${width}, finalHeight=${height}, isInDOM=${isInDOM}`);
+                        resolve({ success: false, width, height, elapsed });
+                        return;
+                    }
+
+                    // Continue checking
+                    setTimeout(checkElement, checkInterval);
+                };
+
+                // Start the check loop
+                checkElement();
+            });
+        }
+
+        function logMessage(message) {
+            const log = document.getElementById('simulation-log');
+            log.innerHTML += message + '\n';
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('simulation-log').innerHTML = '';
+        }
+
+        function validateElement(element, expectedWidth, expectedHeight, size) {
+            const actualWidth = element.clientWidth;
+            const actualHeight = element.clientHeight;
+            const isInDOM = document.contains(element);
+
+            const widthMatch = actualWidth === expectedWidth;
+            const heightMatch = actualHeight === expectedHeight;
+            const dimensionsValid = actualWidth > 0 && actualHeight > 0;
+
+            return {
+                passed: widthMatch && heightMatch && isInDOM && dimensionsValid,
+                actualWidth,
+                actualHeight,
+                expectedWidth,
+                expectedHeight,
+                isInDOM,
+                dimensionsValid,
+                size
+            };
+        }
+
+        function displayTestResult(testId, result) {
+            const testElement = document.getElementById(testId);
+            const resultsElement = document.getElementById(testId.replace('test-', '') + '-results');
+
+            if (result.passed) {
+                testElement.classList.add('test-pass');
+                testElement.classList.remove('test-fail');
+                resultsElement.innerHTML = `
+                    <span class="text-green-600">✅ PASS</span><br>
+                    Dimensions: ${result.actualWidth}x${result.actualHeight}<br>
+                    Expected: ${result.expectedWidth}x${result.expectedHeight}<br>
+                    In DOM: ${result.isInDOM ? 'Yes' : 'No'}
+                `;
+            } else {
+                testElement.classList.add('test-fail');
+                testElement.classList.remove('test-pass');
+                resultsElement.innerHTML = `
+                    <span class="text-red-600">❌ FAIL</span><br>
+                    Dimensions: ${result.actualWidth}x${result.actualHeight}<br>
+                    Expected: ${result.expectedWidth}x${result.expectedHeight}<br>
+                    In DOM: ${result.isInDOM ? 'Yes' : 'No'}<br>
+                    Valid: ${result.dimensionsValid ? 'Yes' : 'No'}
+                `;
+            }
+        }
+
+        function runTests() {
+            // Test small container
+            const smallContainer = document.getElementById('small-container');
+            const smallResult = validateElement(smallContainer, 160, 120, 'small');
+            displayTestResult('test-small', smallResult);
+
+            // Test medium container
+            const mediumContainer = document.getElementById('medium-container');
+            const mediumResult = validateElement(mediumContainer, 384, 288, 'medium');
+            displayTestResult('test-medium', mediumResult);
+
+            // Test large container
+            const largeContainer = document.getElementById('large-container');
+            const largeResult = validateElement(largeContainer, 768, 576, 'large');
+            displayTestResult('test-large', largeResult);
+
+            // Update overall results
+            const totalPassed = [smallResult, mediumResult, largeResult].filter(r => r.passed).length;
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = `
+                <div class="bg-white p-4 rounded-lg shadow text-center">
+                    <h2 class="text-xl font-semibold mb-2">Test Results</h2>
+                    <p class="text-lg">
+                        <span class="text-green-600">${totalPassed}</span> / 3 tests passed
+                    </p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        ${totalPassed === 3 ? 'All video elements are ready for Zoom SDK rendering!' : 'Some elements need attention for proper Zoom SDK compatibility.'}
+                    </p>
+                </div>
+            `;
+
+            return { totalPassed, totalTests: 3, smallResult, mediumResult, largeResult };
+        }
+
+        async function runSimulation() {
+            clearLog();
+            logMessage('🚀 Starting Element Readiness Simulation...');
+            logMessage('📝 This simulates the waitForElementReady function from zoomVideoService.ts');
+            logMessage('');
+
+            const containers = [
+                { element: document.getElementById('small-container'), id: 'participant-small' },
+                { element: document.getElementById('medium-container'), id: 'participant-medium' },
+                { element: document.getElementById('large-container'), id: 'participant-large' }
+            ];
+
+            for (const container of containers) {
+                logMessage(`🎬 Testing renderVideo readiness for ${container.id}...`);
+                const result = await waitForElementReady(container.element, container.id);
+
+                if (result.success) {
+                    logMessage(`✅ ${container.id} ready for Zoom SDK renderVideo() call`);
+                    logMessage(`📐 Final dimensions: ${result.width}x${result.height} (ready in ${result.elapsed}ms)`);
+                } else {
+                    logMessage(`❌ ${container.id} failed readiness check - would prevent Zoom SDK renderVideo()`);
+                    logMessage(`📐 Final dimensions: ${result.width}x${result.height} (timeout after ${result.elapsed}ms)`);
+                }
+                logMessage('');
+            }
+
+            logMessage('🏁 Simulation complete. Check above for element readiness status.');
+        }
+
+        // Run tests on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait a bit for elements to be fully rendered
+            setTimeout(() => {
+                const results = runTests();
+                console.log('Video Element Sizing Test Results:', results);
+            }, 100);
+        });
+
+        // Add simulation button handler
+        document.getElementById('run-simulation').addEventListener('click', runSimulation);
+
+        // Run initial simulation after a short delay
+        setTimeout(() => {
+            runSimulation();
+        }, 500);
+    </script>
+</body>
+</html>

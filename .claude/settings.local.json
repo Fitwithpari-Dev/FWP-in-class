@@ -90,7 +90,8 @@
       "WebFetch(domain:getstream.io)",
       "Bash(start msedge:*)",
       "Bash(start firefox -private-window \"http://localhost:3008/?session=morning-yoga-2025&service=zoom&name=Student-Maria&role=student\")",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(start test-video-element-sizing.html)"
     ],
     "deny": [],
     "ask": []

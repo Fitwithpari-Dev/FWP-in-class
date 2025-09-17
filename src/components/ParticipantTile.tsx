@@ -192,10 +192,25 @@ export function ParticipantTile({
     }
   };
 
+  const getSizeStyles = () => {
+    // Explicit dimensions for video element sizing compatibility with Zoom SDK
+    switch (size) {
+      case 'small':
+        return { minWidth: '160px', minHeight: '120px' };
+      case 'medium':
+        return { minWidth: '384px', minHeight: '288px' };
+      case 'large':
+        return { minWidth: '768px', minHeight: '576px' };
+    }
+  };
+
   return (
-    <div className={`relative bg-fitness-gray rounded-lg overflow-hidden border-2 ${
-      isSpotlighted ? 'border-fitness-green' : 'border-gray-700'
-    } ${className.includes('!w-') || className.includes('!h-') ? '' : getSizeClasses()} ${className}`}>
+    <div
+      className={`relative bg-fitness-gray rounded-lg overflow-hidden border-2 ${
+        isSpotlighted ? 'border-fitness-green' : 'border-gray-700'
+      } ${className.includes('!w-') || className.includes('!h-') ? '' : getSizeClasses()} ${className}`}
+      style={className.includes('!w-') || className.includes('!h-') ? {} : getSizeStyles()}
+    >
       {/* Unified Video Tile - Works with Both Zoom and Agora */}
       <UnifiedVideoTile
         participant={videoParticipant}

@@ -90,11 +90,17 @@ export const UnifiedVideoTile: React.FC<UnifiedVideoTileProps> = ({
   // Default unified video tile for Zoom or fallback
   return (
     <div className={`relative bg-gray-900 rounded-lg overflow-hidden ${className} unified-video-tile`}>
-      {/* Video container */}
+      {/* Video container with explicit dimensions for Zoom SDK compatibility */}
       <div
         ref={videoRef}
         className="w-full h-full min-h-[200px] bg-gray-800"
-        style={{ minHeight: '200px' }}
+        style={{
+          minHeight: '200px',
+          minWidth: '300px',
+          width: '100%',
+          height: '100%',
+          position: 'relative'
+        }}
       />
 
       {/* Video off overlay */}

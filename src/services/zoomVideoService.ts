@@ -379,20 +379,39 @@ export class ZoomVideoService implements IVideoService {
         throw new Error('Zoom SDK not initialized');
       }
 
-      // Use Zoom's renderVideo method
+      // Wait for element to be properly sized with enhanced validation
+      const elementReady = await this.waitForElementReady(element, participantId);
+      if (!elementReady) {
+        throw new Error(`Element not ready for video rendering after timeout`);
+      }
+
+      const width = element.clientWidth;
+      const height = element.clientHeight;
+
+      console.log(`🎬 ZoomVideoService: Element ready - rendering video for ${participantId}:`, {
+        elementWidth: width,
+        elementHeight: height,
+        hasStream: true
+      });
+
+      // Use Zoom's renderVideo method with validated dimensions
       await this.zoomSDK.renderVideo(
         element,
         participantId,
-        element.clientWidth,
-        element.clientHeight,
+        width,
+        height,
         0, // x
         0, // y
         3  // video quality
       );
 
-      console.log('✅ ZoomVideoService: Video rendered successfully');
+      console.log('✅ ZoomVideoService: Video rendered successfully for', participantId);
     } catch (error) {
-      console.error('❌ ZoomVideoService: Failed to render video:', error);
+      console.error('❌ ZoomVideoService: Failed to render video:', {
+        participantId,
+        error: error?.message || 'Unknown error',
+        errorMessage: error?.message || 'Unknown error'
+      });
       throw new VideoServiceError(
         'Failed to render video',
         this.serviceName,
@@ -400,6 +419,56 @@ export class ZoomVideoService implements IVideoService {
         error
       );
     }
+  }
+
+  /**
+   * Waits for element to be properly sized and ready for video rendering
+   * This fixes the 0x0 dimension issue that causes Zoom SDK "Unknown error"
+   */
+  private async waitForElementReady(element: HTMLElement, participantId: string): Promise<boolean> {
+    const maxWaitTime = 5000; // 5 seconds max wait
+    const checkInterval = 100; // Check every 100ms
+    const startTime = Date.now();
+
+    return new Promise((resolve) => {
+      const checkElement = () => {
+        const width = element.clientWidth;
+        const height = element.clientHeight;
+        const isInDOM = document.contains(element);
+        const elapsed = Date.now() - startTime;
+
+        console.log(`🔍 Element readiness check for ${participantId}:`, {
+          width,
+          height,
+          isInDOM,
+          elapsed: `${elapsed}ms`
+        });
+
+        // Element is ready if it has non-zero dimensions and is in DOM
+        if (width > 0 && height > 0 && isInDOM) {
+          console.log(`✅ Element ready for ${participantId}: ${width}x${height}`);
+          resolve(true);
+          return;
+        }
+
+        // Timeout check
+        if (elapsed >= maxWaitTime) {
+          console.error(`❌ Element readiness timeout for ${participantId} after ${elapsed}ms:`, {
+            finalWidth: width,
+            finalHeight: height,
+            isInDOM
+          });
+          resolve(false);
+          return;
+        }
+
+        // Continue checking
+        setTimeout(checkElement, checkInterval);
+      };
+
+      // Start the check loop
+      checkElement();
+    });
   }
 
   async stopRenderingVideo(participantId: string): Promise<void> {
