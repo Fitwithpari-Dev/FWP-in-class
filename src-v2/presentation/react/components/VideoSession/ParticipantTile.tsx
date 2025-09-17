@@ -31,6 +31,7 @@ export const ParticipantTile: React.FC<ParticipantTileProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isVideoRendering, setIsVideoRendering] = useState(false);
+  const [renderError, setRenderError] = useState<string | null>(null);
 
   // Render participant video
   useEffect(() => {
@@ -41,40 +42,61 @@ export const ParticipantTile: React.FC<ParticipantTileProps> = ({
 
     const renderVideo = async () => {
       try {
+        setRenderError(null);
+
         console.log('[ParticipantTile] Attempting to render video for:', {
           participantId: participant.getId().getValue(),
           participantName: participant.getName(),
           isVideoEnabled: participant.isVideoEnabled(),
           isCurrentParticipant,
-          hasVideoRef: !!videoRef.current
+          hasVideoRef: !!videoRef.current,
+          videoElement: {
+            tagName: videoRef.current?.tagName,
+            width: videoRef.current?.clientWidth,
+            height: videoRef.current?.clientHeight
+          }
         });
 
-        // Special handling for current participant (self-video)
-        if (isCurrentParticipant) {
-          console.log('[ParticipantTile] Skipping video rendering for current participant (self-video)');
-          // For self-video, we typically don't render through the same mechanism
-          // The video service might handle self-video differently
-          setIsVideoRendering(false);
-          return;
+        // For current participant (self-video), we still need to render
+        // The Zoom SDK handles self-video through the same mechanism
+        if (isCurrentParticipant && participant.isVideoEnabled()) {
+          console.log('[ParticipantTile] Rendering self-video for current participant');
         }
 
-        // Render video for remote participants
-        await videoService.renderParticipantVideo(
-          participant.getId(),
-          videoRef.current!
-        );
-        setIsVideoRendering(true);
+        // Only attempt to render if video is enabled or it's the current participant
+        if (participant.isVideoEnabled() || isCurrentParticipant) {
+          // Ensure video element has proper attributes before rendering
+          if (videoRef.current) {
+            videoRef.current.autoplay = true;
+            videoRef.current.playsInline = true;
+            if (isCurrentParticipant) {
+              videoRef.current.muted = true; // Mute self-video to prevent echo
+            }
+          }
 
-        console.log('[ParticipantTile] ✅ Successfully rendered video for:', participant.getName());
+          // Render video for all participants (including self)
+          await videoService.renderParticipantVideo(
+            participant.getId(),
+            videoRef.current!
+          );
+          setIsVideoRendering(true);
+
+          console.log('[ParticipantTile] ✅ Successfully rendered video for:', participant.getName());
+        } else {
+          console.log('[ParticipantTile] Skipping render - video disabled for:', participant.getName());
+          setIsVideoRendering(false);
+        }
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.warn('[ParticipantTile] Failed to render video for participant:', {
           participantName: participant.getName(),
           participantId: participant.getId().getValue(),
-          error,
+          error: errorMessage,
           isVideoEnabled: participant.isVideoEnabled(),
           isCurrentParticipant
         });
         setIsVideoRendering(false);
+        setRenderError(errorMessage);
       }
     };
 
@@ -83,9 +105,11 @@ export const ParticipantTile: React.FC<ParticipantTileProps> = ({
     renderVideo();
 
     return () => {
-      if (videoService && isVideoRendering) {
+      if (videoService) {
         console.log('[ParticipantTile] Cleaning up video rendering for:', participant.getName());
         videoService.stopRenderingVideo(participant.getId()).catch(console.warn);
+        setIsVideoRendering(false);
+        setRenderError(null);
       }
     };
   }, [participant.getId().getValue(), participant.isVideoEnabled(), videoService, isCurrentParticipant]);
@@ -130,7 +154,13 @@ export const ParticipantTile: React.FC<ParticipantTileProps> = ({
               {participant.getName().charAt(0).toUpperCase()}
             </div>
             <div className="video-status">
-              {!participant.isVideoEnabled() ? 'Camera Off' : 'Connecting...'}
+              {renderError ? (
+                <span title={renderError}>Error</span>
+              ) : !participant.isVideoEnabled() ? (
+                'Camera Off'
+              ) : (
+                'Connecting...'
+              )}
             </div>
           </div>
         )}
@@ -236,6 +266,9 @@ export const ParticipantTile: React.FC<ParticipantTileProps> = ({
           height: 120px;
           background: #1a1a1a;
           overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .participant-video {

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoom Video SDK Rendering Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .video-container {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
+        }
+        .video-element {
+            width: 100%;
+            height: 240px;
+            background: #000;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+        .participant-info {
+            padding: 10px;
+            font-size: 14px;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 20px;
+            background: #2d2d2d;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+        .log-entry.error {
+            color: #ff6b6b;
+        }
+        .log-entry.success {
+            color: #51cf66;
+        }
+        .log-entry.info {
+            color: #74c0fc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Zoom Video SDK Rendering Test</h1>
+
+        <div class="controls">
+            <button onclick="initializeSDK()">1. Initialize SDK</button>
+            <button onclick="joinSession()" disabled id="joinBtn">2. Join Session</button>
+            <button onclick="startVideo()" disabled id="startVideoBtn">3. Start Video</button>
+            <button onclick="renderSelfVideo()" disabled id="renderSelfBtn">4. Render Self Video</button>
+            <button onclick="renderRemoteVideo()" disabled id="renderRemoteBtn">5. Render Remote Video</button>
+            <button onclick="stopVideo()" disabled id="stopVideoBtn">Stop Video</button>
+            <button onclick="leaveSession()" disabled id="leaveBtn">Leave Session</button>
+        </div>
+
+        <div class="video-grid">
+            <div class="video-container">
+                <video id="selfVideo" class="video-element" autoplay playsinline muted></video>
+                <div class="participant-info">Self Video (You)</div>
+            </div>
+            <div class="video-container">
+                <video id="remoteVideo" class="video-element" autoplay playsinline></video>
+                <div class="participant-info">Remote Participant</div>
+            </div>
+        </div>
+
+        <div class="status">
+            <h3>Debug Log:</h3>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <!-- Load Zoom Video SDK -->
+    <script src="https://source.zoom.us/videosdk/zoom-video-1.12.5.min.js"></script>
+
+    <script>
+        // Global variables
+        let client = null;
+        let stream = null;
+        let currentUserId = null;
+
+        // Configuration (you'll need to replace these with your actual values)
+        const SDK_KEY = 'YOUR_SDK_KEY';
+        const SDK_SECRET = 'YOUR_SDK_SECRET';
+        const SESSION_NAME = 'test-session-' + Date.now();
+        const USER_NAME = 'Test-User-' + Math.floor(Math.random() * 1000);
+
+        // Logging helper
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+            console.log(`[${type}]`, message);
+        }
+
+        // Initialize SDK
+        async function initializeSDK() {
+            try {
+                log('Creating Zoom Video SDK client...', 'info');
+                client = ZoomVideo.createClient();
+
+                if (!client) {
+                    throw new Error('Failed to create client');
+                }
+
+                log('Initializing client...', 'info');
+                await client.init('en-US', 'Global', {
+                    patchJsMedia: true,
+                    leaveOnPageUnload: true,
+                    stayAwake: true
+                });
+
+                log('Getting media stream...', 'info');
+                stream = client.getMediaStream();
+
+                if (!stream) {
+                    throw new Error('Failed to get media stream');
+                }
+
+                log('SDK initialized successfully!', 'success');
+                document.getElementById('joinBtn').disabled = false;
+
+                // Set up event handlers
+                setupEventHandlers();
+
+            } catch (error) {
+                log(`Initialization failed: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        // Generate JWT token (simplified for testing - in production, do this server-side)
+        function generateTestToken() {
+            // This is a simplified token generation for testing
+            // In production, generate this on your server
+            log('Using test token (replace with actual token generation)', 'info');
+            return 'YOUR_JWT_TOKEN_HERE';
+        }
+
+        // Join session
+        async function joinSession() {
+            try {
+                log(`Joining session: ${SESSION_NAME} as ${USER_NAME}`, 'info');
+
+                const token = generateTestToken();
+
+                await client.join(
+                    SESSION_NAME,
+                    token,
+                    USER_NAME,
+                    '' // No password when using JWT
+                );
+
+                currentUserId = client.getCurrentUserInfo().userId;
+                log(`Joined successfully! User ID: ${currentUserId}`, 'success');
+
+                document.getElementById('joinBtn').disabled = true;
+                document.getElementById('startVideoBtn').disabled = false;
+                document.getElementById('leaveBtn').disabled = false;
+
+                // Check all users
+                const allUsers = client.getAllUser();
+                log(`Users in session: ${allUsers.length}`, 'info');
+                allUsers.forEach(user => {
+                    log(`  - ${user.displayName} (ID: ${user.userId}, Video: ${user.bVideoOn})`, 'info');
+                });
+
+            } catch (error) {
+                log(`Join failed: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        // Start video
+        async function startVideo() {
+            try {
+                log('Starting video stream...', 'info');
+                await stream.startVideo();
+
+                log('Video started successfully!', 'success');
+                document.getElementById('startVideoBtn').disabled = true;
+                document.getElementById('stopVideoBtn').disabled = false;
+                document.getElementById('renderSelfBtn').disabled = false;
+                document.getElementById('renderRemoteBtn').disabled = false;
+
+                // Check video state
+                const allUsers = client.getAllUser();
+                const self = allUsers.find(u => u.userId === currentUserId);
+                log(`Self video state: ${self?.bVideoOn}`, 'info');
+
+            } catch (error) {
+                log(`Start video failed: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        // Render self video
+        async function renderSelfVideo() {
+            try {
+                const videoElement = document.getElementById('selfVideo');
+                log(`Rendering self video (User ID: ${currentUserId})...`, 'info');
+
+                // Method 1: Try attachVideo (for video elements)
+                try {
+                    log('Attempting attachVideo method...', 'info');
+                    await stream.attachVideo(
+                        currentUserId,  // userId
+                        2,              // quality (2 = 360p)
+                        videoElement    // video element
+                    );
+                    log('Self video rendered successfully using attachVideo!', 'success');
+                } catch (attachError) {
+                    log(`attachVideo failed: ${attachError.message}`, 'error');
+
+                    // Method 2: Try renderVideo (for canvas, if attachVideo fails)
+                    log('Attempting renderVideo method as fallback...', 'info');
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 320;
+                    canvas.height = 240;
+                    videoElement.parentElement.replaceChild(canvas, videoElement);
+
+                    await stream.renderVideo(
+                        canvas,         // canvas element
+                        currentUserId,  // userId
+                        320,           // width
+                        240,           // height
+                        0,             // x
+                        0,             // y
+                        2              // quality
+                    );
+                    log('Self video rendered successfully using renderVideo!', 'success');
+                }
+
+            } catch (error) {
+                log(`Render self video failed: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        // Render remote video
+        async function renderRemoteVideo() {
+            try {
+                const allUsers = client.getAllUser();
+                const remoteUser = allUsers.find(u => u.userId !== currentUserId && u.bVideoOn);
+
+                if (!remoteUser) {
+                    log('No remote user with video found', 'error');
+                    return;
+                }
+
+                const videoElement = document.getElementById('remoteVideo');
+                log(`Rendering remote video (User ID: ${remoteUser.userId}, Name: ${remoteUser.displayName})...`, 'info');
+
+                // Try attachVideo
+                await stream.attachVideo(
+                    remoteUser.userId,  // userId
+                    2,                  // quality
+                    videoElement        // video element
+                );
+
+                log('Remote video rendered successfully!', 'success');
+
+            } catch (error) {
+                log(`Render remote video failed: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        // Stop video
+        async function stopVideo() {
+            try {
+                log('Stopping video...', 'info');
+                await stream.stopVideo();
+
+                log('Video stopped successfully!', 'success');
+                document.getElementById('stopVideoBtn').disabled = true;
+                document.getElementById('startVideoBtn').disabled = false;
+
+            } catch (error) {
+                log(`Stop video failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Leave session
+        async function leaveSession() {
+            try {
+                log('Leaving session...', 'info');
+                await client.leave();
+
+                log('Left session successfully!', 'success');
+                document.getElementById('leaveBtn').disabled = true;
+                document.getElementById('joinBtn').disabled = false;
+                document.getElementById('startVideoBtn').disabled = true;
+                document.getElementById('stopVideoBtn').disabled = true;
+                document.getElementById('renderSelfBtn').disabled = true;
+                document.getElementById('renderRemoteBtn').disabled = true;
+
+            } catch (error) {
+                log(`Leave session failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Set up event handlers
+        function setupEventHandlers() {
+            client.on('user-added', (payload) => {
+                log(`User joined: ${JSON.stringify(payload)}`, 'info');
+            });
+
+            client.on('user-removed', (payload) => {
+                log(`User left: ${JSON.stringify(payload)}`, 'info');
+            });
+
+            client.on('user-updated', (payload) => {
+                log(`User updated: ${JSON.stringify(payload)}`, 'info');
+            });
+
+            client.on('video-on', (payload) => {
+                log(`Video turned on: ${JSON.stringify(payload)}`, 'success');
+            });
+
+            client.on('video-off', (payload) => {
+                log(`Video turned off: ${JSON.stringify(payload)}`, 'info');
+            });
+        }
+
+        // Log initial page load
+        log('Page loaded. Click "Initialize SDK" to begin.', 'info');
+    </script>
+</body>
+</html>

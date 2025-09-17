@@ -267,9 +267,24 @@ export class ZoomVideoService implements IVideoService {
 
       // Enable media based on request
       if (request.videoEnabled) {
+        console.log('[ZoomVideoService] Enabling video as requested in join session');
         await this.enableVideo();
+
+        // Update the current participant state to reflect video is enabled
+        if (this.currentParticipant) {
+          // The enableVideo() method already updates the participant, but ensure it's tracked
+          const updatedParticipant = this.participantsMap.get(this.currentParticipant.getId().getValue());
+          if (!updatedParticipant) {
+            // Add current participant to the participants map
+            this.participantsMap.set(
+              this.currentParticipant.getId().getValue(),
+              this.currentParticipant
+            );
+          }
+        }
       }
       if (request.audioEnabled) {
+        console.log('[ZoomVideoService] Enabling audio as requested in join session');
         await this.enableAudio();
       }
 
@@ -367,65 +382,131 @@ export class ZoomVideoService implements IVideoService {
   // Media controls with WebRTC optimizations
   async enableVideo(): Promise<void> {
     if (!this.client) throw new Error('Client not initialized');
+    if (!this.stream) throw new Error('Stream not initialized');
 
-    const stream = this.client.getMediaStream();
-    await stream.startVideo();
+    try {
+      console.log('[ZoomVideoService] Starting video stream...');
 
-    if (this.currentParticipant) {
-      this.currentParticipant = this.currentParticipant.enableVideo();
-      this.videoSubject.next({
-        type: 'video-enabled',
-        participantId: this.currentParticipant.getId(),
-        timestamp: new Date()
-      });
+      // Start video through the stream
+      await this.stream.startVideo();
+
+      console.log('[ZoomVideoService] Video stream started successfully');
+
+      if (this.currentParticipant) {
+        this.currentParticipant = this.currentParticipant.enableVideo();
+
+        // Emit video enabled event
+        this.videoSubject.next({
+          type: 'video-enabled',
+          participantId: this.currentParticipant.getId(),
+          timestamp: new Date()
+        });
+
+        // Also emit participant updated event to trigger UI refresh
+        this.participantSubject.next({
+          type: 'participant-updated',
+          participant: this.currentParticipant,
+          timestamp: new Date()
+        });
+
+        console.log('[ZoomVideoService] Current participant video enabled:', {
+          participantId: this.currentParticipant.getId().getValue(),
+          participantName: this.currentParticipant.getName()
+        });
+      }
+    } catch (error) {
+      console.error('[ZoomVideoService] Failed to enable video:', error);
+      throw error;
     }
   }
 
   async disableVideo(): Promise<void> {
     if (!this.client) throw new Error('Client not initialized');
+    if (!this.stream) throw new Error('Stream not initialized');
 
-    const stream = this.client.getMediaStream();
-    await stream.stopVideo();
+    try {
+      console.log('[ZoomVideoService] Stopping video stream...');
 
-    if (this.currentParticipant) {
-      this.currentParticipant = this.currentParticipant.disableVideo();
-      this.videoSubject.next({
-        type: 'video-disabled',
-        participantId: this.currentParticipant.getId(),
-        timestamp: new Date()
-      });
+      // Stop video through the stream
+      await this.stream.stopVideo();
+
+      console.log('[ZoomVideoService] Video stream stopped successfully');
+
+      if (this.currentParticipant) {
+        this.currentParticipant = this.currentParticipant.disableVideo();
+
+        // Emit video disabled event
+        this.videoSubject.next({
+          type: 'video-disabled',
+          participantId: this.currentParticipant.getId(),
+          timestamp: new Date()
+        });
+
+        // Also emit participant updated event to trigger UI refresh
+        this.participantSubject.next({
+          type: 'participant-updated',
+          participant: this.currentParticipant,
+          timestamp: new Date()
+        });
+
+        console.log('[ZoomVideoService] Current participant video disabled:', {
+          participantId: this.currentParticipant.getId().getValue(),
+          participantName: this.currentParticipant.getName()
+        });
+      }
+    } catch (error) {
+      console.error('[ZoomVideoService] Failed to disable video:', error);
+      throw error;
     }
   }
 
   async enableAudio(): Promise<void> {
     if (!this.client) throw new Error('Client not initialized');
+    if (!this.stream) throw new Error('Stream not initialized');
 
-    const stream = this.client.getMediaStream();
-    await stream.startAudio();
+    try {
+      console.log('[ZoomVideoService] Starting audio stream...');
 
-    if (this.currentParticipant) {
-      this.currentParticipant = this.currentParticipant.enableAudio();
-      this.audioSubject.next({
-        type: 'audio-enabled',
-        participantId: this.currentParticipant.getId(),
-        timestamp: new Date()
-      });
+      await this.stream.startAudio();
+
+      console.log('[ZoomVideoService] Audio stream started successfully');
+
+      if (this.currentParticipant) {
+        this.currentParticipant = this.currentParticipant.enableAudio();
+        this.audioSubject.next({
+          type: 'audio-enabled',
+          participantId: this.currentParticipant.getId(),
+          timestamp: new Date()
+        });
+      }
+    } catch (error) {
+      console.error('[ZoomVideoService] Failed to enable audio:', error);
+      throw error;
     }
   }
 
   async disableAudio(): Promise<void> {
     if (!this.client) throw new Error('Client not initialized');
+    if (!this.stream) throw new Error('Stream not initialized');
 
-    const stream = this.client.getMediaStream();
-    await stream.stopAudio();
+    try {
+      console.log('[ZoomVideoService] Stopping audio stream...');
 
-    if (this.currentParticipant) {
-      this.currentParticipant = this.currentParticipant.disableAudio();
-      this.audioSubject.next({
-        type: 'audio-disabled',
-        participantId: this.currentParticipant.getId(),
-        timestamp: new Date()
-      });
+      await this.stream.stopAudio();
+
+      console.log('[ZoomVideoService] Audio stream stopped successfully');
+
+      if (this.currentParticipant) {
+        this.currentParticipant = this.currentParticipant.disableAudio();
+        this.audioSubject.next({
+          type: 'audio-disabled',
+          participantId: this.currentParticipant.getId(),
+          timestamp: new Date()
+        });
+      }
+    } catch (error) {
+      console.error('[ZoomVideoService] Failed to disable audio:', error);
+      throw error;
     }
   }
 
@@ -586,10 +667,11 @@ export class ZoomVideoService implements IVideoService {
   // Video rendering for UI integration
   async renderParticipantVideo(participantId: ParticipantId, element: HTMLElement): Promise<void> {
     if (!this.client) throw new Error('Client not initialized');
+    if (!this.stream) throw new Error('Stream not initialized');
 
     try {
       const userId = parseInt(participantId.getValue());
-      const stream = this.client.getMediaStream();
+      const stream = this.stream;
 
       console.log('[ZoomVideoService] Attempting to render video:', {
         participantId: participantId.getValue(),
@@ -609,7 +691,11 @@ export class ZoomVideoService implements IVideoService {
         throw new Error(`User ${userId} not found in session`);
       }
 
-      if (!user.bVideoOn) {
+      // Check if this is self-view
+      const currentUserId = this.client.getCurrentUserInfo()?.userId;
+      const isSelfView = userId === currentUserId;
+
+      if (!user.bVideoOn && !isSelfView) {
         console.warn('[ZoomVideoService] User video is disabled:', {
           userId,
           bVideoOn: user.bVideoOn,
@@ -619,37 +705,94 @@ export class ZoomVideoService implements IVideoService {
         return;
       }
 
-      // Render video with proper dimensions and error handling
-      const width = Math.max(element.clientWidth, 320);
-      const height = Math.max(element.clientHeight, 240);
+      // For self-view, we might need to wait for video to be ready
+      if (isSelfView && !user.bVideoOn) {
+        console.log('[ZoomVideoService] Self-view detected, attempting to render even though bVideoOn is false (video might be starting)');
+      }
 
-      console.log('[ZoomVideoService] Calling stream.renderVideo with params:', {
-        element: element.tagName + (element.id ? `#${element.id}` : ''),
-        userId,
-        width,
-        height,
-        quality: 1
-      });
+      // Determine rendering method based on element type
+      if (element.tagName === 'VIDEO') {
+        // Use attachVideo for video elements (modern browsers require this)
+        const videoElement = element as HTMLVideoElement;
 
-      await stream.renderVideo(
-        element,
-        userId,
-        width,
-        height,
-        0, // x offset
-        0, // y offset
-        1  // Video quality (1 = high quality)
-      );
+        // Ensure video element has required attributes
+        videoElement.autoplay = true;
+        videoElement.playsInline = true;
+        if (isSelfView) {
+          videoElement.muted = true; // Mute self-video to prevent echo
+        }
+
+        // Video quality: 0=90p, 1=180p, 2=360p, 3=720p, 4=1080p
+        const videoQuality = 2; // 360p for good balance
+
+        console.log('[ZoomVideoService] Using attachVideo method for VIDEO element:', {
+          userId,
+          videoQuality,
+          isSelfView,
+          elementId: element.id
+        });
+
+        // Use attachVideo for video elements (parameters: userId, quality, videoElement)
+        await stream.attachVideo(
+          userId,        // userId as number
+          videoQuality,  // video quality (comes BEFORE element)
+          videoElement   // video element
+        );
+
+        // Store reference for cleanup
+        this.videoCanvasMap.set(participantId.getValue(), videoElement);
+
+      } else if (element.tagName === 'CANVAS') {
+        // Use renderVideo for canvas elements
+        const canvas = element as HTMLCanvasElement;
+
+        // Set canvas dimensions if not already set
+        if (canvas.width === 0) {
+          canvas.width = Math.max(element.clientWidth, 320);
+        }
+        if (canvas.height === 0) {
+          canvas.height = Math.max(element.clientHeight, 240);
+        }
+
+        const width = canvas.width;
+        const height = canvas.height;
+
+        console.log('[ZoomVideoService] Using renderVideo method for CANVAS element:', {
+          userId,
+          width,
+          height,
+          canvasId: element.id
+        });
+
+        // Use renderVideo for canvas (parameters: canvas, userId, width, height, x, y, quality)
+        await stream.renderVideo(
+          canvas,       // canvas element
+          userId,       // userId as number
+          width,        // width
+          height,       // height
+          0,           // x offset
+          0,           // y offset
+          2            // Video quality (2 = 360p)
+        );
+
+        // Store reference for cleanup
+        this.videoCanvasMap.set(participantId.getValue(), canvas);
+
+      } else {
+        throw new Error(`Unsupported element type for video rendering: ${element.tagName}. Use VIDEO or CANVAS elements.`);
+      }
 
       console.log('[ZoomVideoService] ✅ Successfully rendered video for participant:', {
         participantId: participantId.getValue(),
         userId,
-        userDisplayName: user.displayName
+        userDisplayName: user.displayName,
+        elementType: element.tagName
       });
     } catch (error) {
       console.error('[ZoomVideoService] Failed to render participant video:', {
         participantId: participantId.getValue(),
         error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
         elementDetails: {
           tagName: element.tagName,
           width: element.clientWidth,
@@ -664,17 +807,42 @@ export class ZoomVideoService implements IVideoService {
 
   async stopRenderingVideo(participantId: ParticipantId): Promise<void> {
     if (!this.client) throw new Error('Client not initialized');
+    if (!this.stream) throw new Error('Stream not initialized');
 
     try {
       const userId = parseInt(participantId.getValue());
-      const stream = this.client.getMediaStream();
+      const stream = this.stream;
 
       console.log('[ZoomVideoService] Stopping video rendering for participant:', {
         participantId: participantId.getValue(),
         userId
       });
 
-      await stream.stopRenderVideo(userId);
+      // Get the stored element reference to determine cleanup method
+      const storedElement = this.videoCanvasMap.get(participantId.getValue());
+
+      if (storedElement && storedElement.tagName === 'VIDEO') {
+        // Use detachVideo for video elements
+        console.log('[ZoomVideoService] Using detachVideo for VIDEO element');
+        await stream.detachVideo(userId);
+      } else if (storedElement && storedElement.tagName === 'CANVAS') {
+        // Use stopRenderVideo for canvas elements
+        console.log('[ZoomVideoService] Using stopRenderVideo for CANVAS element');
+        await stream.stopRenderVideo(storedElement, userId);
+      } else {
+        // Fallback: try detachVideo (most common case)
+        console.log('[ZoomVideoService] No stored element found, trying detachVideo');
+        try {
+          await stream.detachVideo(userId);
+        } catch (e) {
+          console.warn('[ZoomVideoService] detachVideo failed, trying stopRenderVideo:', e);
+          // If detachVideo fails, element might be a canvas
+          // But we need the canvas element reference which we don't have
+        }
+      }
+
+      // Clean up stored reference
+      this.videoCanvasMap.delete(participantId.getValue());
 
       console.log('[ZoomVideoService] ✅ Stopped video rendering for participant:', participantId.getValue());
     } catch (error) {
@@ -683,6 +851,9 @@ export class ZoomVideoService implements IVideoService {
         error
       });
       // Don't throw - this is cleanup, continue gracefully
+
+      // Clean up stored reference anyway
+      this.videoCanvasMap.delete(participantId.getValue());
     }
   }
 
