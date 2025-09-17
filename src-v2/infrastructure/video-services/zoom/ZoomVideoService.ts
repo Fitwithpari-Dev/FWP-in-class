@@ -387,10 +387,32 @@ export class ZoomVideoService implements IVideoService {
     try {
       console.log('[ZoomVideoService] Starting video stream...');
 
-      // Start video through the stream
+      // Start video through the stream - must be tied to user interaction
       await this.stream.startVideo();
 
       console.log('[ZoomVideoService] Video stream started successfully');
+
+      // According to Zoom SDK docs: startVideo() then attachVideo() for self-view
+      if (this.currentParticipant) {
+        const userId = parseInt(this.currentParticipant.getId().getValue());
+
+        try {
+          // Let Zoom SDK create and provide the video element
+          const userVideo = await this.stream.attachVideo(userId, 2); // 2 = 360p resolution
+
+          console.log('[ZoomVideoService] Self-video attached successfully:', {
+            userId,
+            videoElement: userVideo,
+            participantName: this.currentParticipant.getName()
+          });
+
+          // Store the SDK-provided video element
+          this.videoCanvasMap.set(this.currentParticipant.getId().getValue(), userVideo);
+
+        } catch (attachError) {
+          console.warn('[ZoomVideoService] Failed to attach self-video (may not be critical):', attachError);
+        }
+      }
 
       if (this.currentParticipant) {
         this.currentParticipant = this.currentParticipant.enableVideo();
@@ -721,6 +743,53 @@ export class ZoomVideoService implements IVideoService {
         if (isSelfView) {
           videoElement.muted = true; // Mute self-video to prevent echo
         }
+
+        // CRITICAL: Fix video element dimensions to prevent Zoom SDK INVALID_PARAMETERS error
+        // The Zoom SDK requires video elements to have non-zero dimensions
+        const computedStyle = window.getComputedStyle(videoElement);
+        const currentWidth = Math.max(
+          videoElement.clientWidth,
+          videoElement.offsetWidth,
+          parseInt(computedStyle.width) || 0
+        );
+        const currentHeight = Math.max(
+          videoElement.clientHeight,
+          videoElement.offsetHeight,
+          parseInt(computedStyle.height) || 0
+        );
+
+        // Force minimum dimensions if element has zero size
+        const minWidth = 300;
+        const minHeight = 200;
+
+        if (currentWidth === 0 || currentHeight === 0) {
+          console.warn('[ZoomVideoService] Video element has zero dimensions, forcing size:', {
+            currentWidth,
+            currentHeight,
+            forcingTo: `${minWidth}x${minHeight}`
+          });
+
+          // Force dimensions via JavaScript style
+          videoElement.style.width = `${minWidth}px`;
+          videoElement.style.height = `${minHeight}px`;
+          videoElement.style.minWidth = `${minWidth}px`;
+          videoElement.style.minHeight = `${minHeight}px`;
+
+          // Force reflow to apply styles
+          videoElement.offsetHeight;
+        }
+
+        // Validate final dimensions before calling attachVideo
+        const finalWidth = Math.max(videoElement.clientWidth, videoElement.offsetWidth, minWidth);
+        const finalHeight = Math.max(videoElement.clientHeight, videoElement.offsetHeight, minHeight);
+
+        console.log('[ZoomVideoService] Video element dimensions validation:', {
+          participantId: participantId.getValue(),
+          originalDimensions: `${currentWidth}x${currentHeight}`,
+          finalDimensions: `${finalWidth}x${finalHeight}`,
+          elementId: element.id,
+          hasValidDimensions: finalWidth > 0 && finalHeight > 0
+        });
 
         // Video quality: 0=90p, 1=180p, 2=360p, 3=720p, 4=1080p
         const videoQuality = 2; // 360p for good balance

@@ -2,8 +2,49 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#007bff" />
+    <meta name="background-color" content="#1a1a1a" />
+
+    <!-- App Icons -->
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="apple-touch-icon" href="/icons/icon-180x180.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
+
+    <!-- Viewport and Mobile Optimization -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="application-name" content="FitWithPari" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="FitWithPari" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- SEO and Social -->
+    <meta name="description" content="Interactive fitness classes with live video streaming for coaches and students" />
+    <meta name="keywords" content="fitness, video calling, live classes, workout, yoga, trainer" />
+    <meta name="author" content="FitWithPari Team" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="FitWithPari - Live Fitness Platform" />
+    <meta property="og:description" content="Join interactive fitness classes with live video streaming" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://classes.tribe.fit" />
+    <meta property="og:image" content="/icons/icon-512x512.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FitWithPari - Live Fitness Platform" />
+    <meta name="twitter:description" content="Interactive fitness classes with live video streaming" />
+    <meta name="twitter:image" content="/icons/icon-512x512.png" />
+
+    <!-- Security Headers for Video Calling -->
+    <meta http-equiv="Permissions-Policy" content="camera=*, microphone=*, display-capture=*, autoplay=*" />
+
     <title>FitWithPari V2 - Clean Architecture</title>
   </head>
   <body>

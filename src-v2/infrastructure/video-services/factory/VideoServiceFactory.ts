@@ -1,6 +1,6 @@
 import { IVideoServiceFactory, VideoServiceInfo, UnsupportedVideoServiceError, VideoServiceConfigurationError } from '../../../core/interfaces/video-service/IVideoServiceFactory';
 import { IVideoService, VideoServiceType, VideoServiceConfig } from '../../../core/interfaces/video-service/IVideoService';
-import { ZoomVideoService } from '../zoom/ZoomVideoService';
+import { ZoomVideoServiceV2 as ZoomVideoService } from '../zoom/ZoomVideoServiceV2';
 import { AgoraVideoService } from '../agora/AgoraVideoService';
 import { WebRTCVideoService } from '../webrtc/WebRTCVideoService';
 

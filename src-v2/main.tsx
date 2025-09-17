@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './App';
+import { pwaService } from './services/pwaService';
 
 /**
  * Main Entry Point for V2 Clean Architecture
@@ -17,6 +18,10 @@ window.addEventListener('error', (event) => {
   console.error('[V2] Unhandled Error:', event.error);
   // In production, send to error tracking service
 });
+
+// Initialize PWA service for better mobile experience
+console.log('🚀 V2: Initializing PWA service for FitWithPari');
+pwaService.setupMessageListener();
 
 // Initialize React application
 const container = document.getElementById('root-v2');
