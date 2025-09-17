@@ -1,18 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitWithPari - Live Fitness Platform</title>
+    <script src="https://source.zoom.us/zoom-video-sdk-js-latest.js"></script>
+    <style>
+        /* Production-optimized CSS */
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;color:#333}
+        .app-container{max-width:1400px;margin:0 auto;padding:20px}
+        .header{text-align:center;color:white;margin-bottom:30px}
+        .header h1{font-size:2.5rem;margin-bottom:10px;text-shadow:0 2px 4px rgba(0,0,0,0.3)}
+        .header p{font-size:1.1rem;opacity:0.9}
+        .session-setup{background:white;border-radius:15px;padding:30px;box-shadow:0 10px 30px rgba(0,0,0,0.2);margin-bottom:30px}
+        .session-setup.hidden{display:none}
+        .form-group{margin-bottom:20px}
+        .form-group label{display:block;margin-bottom:8px;font-weight:600;color:#555}
+        .form-group input,.form-group select{width:100%;padding:12px 16px;border:2px solid #e1e5e9;border-radius:8px;font-size:16px;transition:border-color 0.3s}
+        .form-group input:focus,.form-group select:focus{outline:none;border-color:#667eea}
+        .btn{padding:12px 24px;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.3s;display:inline-flex;align-items:center;gap:8px}
+        .btn:disabled{opacity:0.6;cursor:not-allowed}
+        .btn-primary{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}
+        .btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 15px rgba(102,126,234,0.4)}
+        .btn-success{background:#28a745;color:white}
+        .btn-danger{background:#dc3545;color:white}
+        .btn-warning{background:#ffc107;color:#212529}
+        .session-container{background:white;border-radius:15px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,0.2);display:none}
+        .session-container.active{display:block}
+        .session-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid #f8f9fa}
+        .session-info{flex:1}
+        .session-title{font-size:1.5rem;font-weight:700;color:#333;margin-bottom:5px}
+        .session-meta{color:#666;font-size:0.9rem}
+        .session-controls{display:flex;gap:10px;flex-wrap:wrap}
+        .participant-stats{display:flex;gap:20px;margin-bottom:20px;padding:15px;background:#f8f9fa;border-radius:10px}
+        .stat-item{text-align:center}
+        .stat-value{font-size:1.5rem;font-weight:700;color:#667eea}
+        .stat-label{font-size:0.8rem;color:#666;margin-top:2px}
+        .pagination-controls{display:flex;justify-content:center;align-items:center;gap:15px;margin:20px 0;padding:15px;background:#f8f9fa;border-radius:10px}
+        .video-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:20px}
+        .video-tile{background:#000;border-radius:12px;overflow:hidden;position:relative;aspect-ratio:16/9;box-shadow:0 4px 15px rgba(0,0,0,0.2);transition:transform 0.3s}
+        .video-tile:hover{transform:scale(1.02)}
+        .video-tile video{width:100%;height:100%;object-fit:cover}
+        .video-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:white;text-align:center;background:linear-gradient(135deg,#555 0%,#333 100%)}
+        .video-placeholder .avatar{width:60px;height:60px;border-radius:50%;background:#667eea;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:10px}
+        .participant-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.8));padding:15px;color:white}
+        .participant-name{font-weight:600;margin-bottom:5px}
+        .participant-indicators{display:flex;gap:8px;font-size:0.8rem}
+        .indicator{padding:2px 6px;border-radius:12px;background:rgba(255,255,255,0.2);display:flex;align-items:center;gap:4px}
+        .indicator.coach{background:rgba(102,126,234,0.8)}
+        .indicator.video-on{background:rgba(40,167,69,0.8)}
+        .indicator.audio-on{background:rgba(23,162,184,0.8)}
+        .status-indicator{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:8px}
+        .status-connected{background:#28a745}
+        .status-connecting{background:#ffc107;animation:pulse 1s infinite}
+        .status-disconnected{background:#dc3545}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+        .error-message{background:#f8d7da;color:#721c24;padding:12px;border-radius:8px;margin:10px 0;border:1px solid #f5c6cb}
+        .success-message{background:#d4edda;color:#155724;padding:12px;border-radius:8px;margin:10px 0;border:1px solid #c3e6cb}
+        @media (max-width:768px){
+            .app-container{padding:10px}
+            .header h1{font-size:2rem}
+            .session-setup{padding:20px}
+            .session-controls{justify-content:center}
+            .video-grid{grid-template-columns:1fr;gap:15px}
+            .participant-stats{flex-direction:column;gap:10px}
+            .pagination-controls{flex-wrap:wrap}
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>🏋️‍♀️ FitWithPari</h1>
+            <p>Advanced Video Fitness Platform</p>
+        </div>
 
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Online Fitness Class Platform</title>
-      <link rel="manifest" href="/manifest.json" />
-      <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png" />
-      <meta name="theme-color" content="#10B981" />
-    </head>
+        <div class="session-setup" id="sessionSetup">
+            <h2 style="margin-bottom:20px;color:#333;">Join Fitness Session</h2>
+            <div class="form-group">
+                <label for="sessionName">Session Name</label>
+                <input type="text" id="sessionName" value="morning-fitness" placeholder="Enter session name">
+            </div>
+            <div class="form-group">
+                <label for="participantName">Your Name</label>
+                <input type="text" id="participantName" placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label for="participantRole">Role</label>
+                <select id="participantRole">
+                    <option value="student">Student</option>
+                    <option value="coach">Coach</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary" id="joinBtn">🚀 Join Session</button>
+            </div>
+            <div id="setupMessages"></div>
+        </div>
 
-    <body>
-      <div id="root"></div>
-      <script type="module" src="/src/main.tsx"></script>
-    </body>
-  </html>
-  
+        <div class="session-container" id="sessionContainer">
+            <div class="session-header">
+                <div class="session-info">
+                    <div class="session-title" id="sessionTitle">Loading...</div>
+                    <div class="session-meta">
+                        <span class="status-indicator status-connecting" id="statusIndicator"></span>
+                        <span id="sessionStatus">Connecting...</span>
+                    </div>
+                </div>
+                <div class="session-controls">
+                    <button class="btn btn-warning" id="videoToggle" disabled>📹 Video Off</button>
+                    <button class="btn btn-warning" id="audioToggle" disabled>🎤 Audio Off</button>
+                    <button class="btn btn-danger" id="leaveBtn" disabled>🚪 Leave</button>
+                </div>
+            </div>
+
+            <div class="participant-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalParticipants">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="videoStreams">0</div>
+                    <div class="stat-label">Videos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="currentPage">1</div>
+                    <div class="stat-label">Page</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="maxVideos">25</div>
+                    <div class="stat-label">Max Videos</div>
+                </div>
+            </div>
+
+            <div class="pagination-controls">
+                <button class="btn btn-warning" id="prevPage" disabled>← Previous</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button class="btn btn-warning" id="nextPage" disabled>Next →</button>
+            </div>
+
+            <div class="video-grid" id="videoGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        // FitWithPari - Clean Production Implementation
+        class FitWithPariV3 {
+            constructor() {
+                this.client = null;
+                this.stream = null;
+                this.participants = new Map();
+                this.videoElements = new Map();
+                this.visibleParticipants = new Set();
+                this.currentVideoPage = 0;
+                this.maxVideos = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 9 : 25;
+                this.sessionName = null;
+                this.userRole = null;
+                this.currentParticipant = null;
+                this.initializeUI();
+                document.getElementById('maxVideos').textContent = this.maxVideos;
+                console.log('🚀 FitWithPari V3 initialized - Clean implementation');
+            }
+
+            initializeUI() {
+                document.getElementById('joinBtn').addEventListener('click', () => this.joinSession());
+                document.getElementById('videoToggle').addEventListener('click', () => this.toggleVideo());
+                document.getElementById('audioToggle').addEventListener('click', () => this.toggleAudio());
+                document.getElementById('leaveBtn').addEventListener('click', () => this.leaveSession());
+                document.getElementById('prevPage').addEventListener('click', () => this.previousPage());
+                document.getElementById('nextPage').addEventListener('click', () => this.nextPage());
+            }
+
+            async joinSession() {
+                try {
+                    this.updateStatus('connecting', 'Initializing Zoom SDK...');
+                    this.sessionName = document.getElementById('sessionName').value;
+                    const participantName = document.getElementById('participantName').value;
+                    this.userRole = document.getElementById('participantRole').value;
+
+                    if (!this.sessionName || !participantName) {
+                        throw new Error('Please fill in all fields');
+                    }
+
+                    await this.initializeZoomSDK();
+                    const token = await this.generateToken();
+                    await this.joinZoomSession(token, participantName);
+                    this.showSessionContainer();
+                    this.updateStatus('connected', 'Connected successfully');
+                    console.log('✅ Successfully joined session:', this.sessionName);
+
+                } catch (error) {
+                    console.error('❌ Join session failed:', error);
+                    this.showError('Failed to join session: ' + error.message);
+                    this.updateStatus('disconnected', 'Connection failed');
+                }
+            }
+
+            async initializeZoomSDK() {
+                console.log('🔧 Initializing Zoom SDK...');
+
+                if (typeof ZoomVideo === 'undefined') {
+                    throw new Error('Zoom SDK not loaded. Please check your internet connection.');
+                }
+
+                this.client = ZoomVideo.createClient();
+                if (!this.client) {
+                    throw new Error('Failed to create Zoom SDK client');
+                }
+
+                await this.client.init('en-US', 'Global', {
+                    patchJsMedia: true,
+                    leaveOnPageUnload: true,
+                    stayAwake: true,
+                    enforceMultipleVideos: true
+                });
+
+                this.stream = this.client.getMediaStream();
+                if (!this.stream) {
+                    throw new Error('Failed to get media stream');
+                }
+
+                this.setupEventHandlers();
+                console.log('✅ Zoom SDK initialized successfully');
+            }
+
+            async generateToken() {
+                console.log('🔑 Generating authentication token...');
+
+                const tokenEndpoint = 'https://oorxo2zdkjrmmbzdfhaktk5ipa0phjlp.lambda-url.ap-south-1.on.aws';
+
+                try {
+                    const response = await fetch(tokenEndpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sessionName: this.sessionName,
+                            role: this.userRole === 'coach' ? 'host' : 'participant',
+                            userIdentity: document.getElementById('participantName').value,
+                            sessionKey: 'fitness-session'
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Authentication service error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('✅ Token generated successfully');
+                    return data.token;
+                } catch (error) {
+                    console.error('❌ Token generation failed:', error);
+                    throw new Error('Authentication failed. Please check your connection and try again.');
+                }
+            }
+
+            async joinZoomSession(token, participantName) {
+                console.log('🚪 Joining Zoom session:', this.sessionName);
+
+                await this.client.join(this.sessionName, token, participantName, '');
+
+                const userInfo = this.client.getCurrentUserInfo();
+                this.currentParticipant = {
+                    id: userInfo.userId.toString(),
+                    name: participantName,
+                    role: this.userRole,
+                    videoEnabled: false,
+                    audioEnabled: false,
+                    isCurrentUser: true
+                };
+
+                this.participants.set(this.currentParticipant.id, this.currentParticipant);
+                this.updateParticipantStats();
+                console.log(`✅ Joined as ${participantName} (${this.userRole})`);
+            }
+
+            setupEventHandlers() {
+                this.client.on('user-added', (payload) => {
+                    console.log('👋 Participant joined:', payload);
+                    this.handleUserAdded(payload);
+                });
+
+                this.client.on('user-removed', (payload) => {
+                    console.log('👋 Participant left:', payload);
+                    this.handleUserRemoved(payload);
+                });
+
+                this.client.on('video-on', (payload) => {
+                    console.log('📹 Video enabled:', payload);
+                    this.handleVideoStateChange(payload, true);
+                });
+
+                this.client.on('video-off', (payload) => {
+                    console.log('📹 Video disabled:', payload);
+                    this.handleVideoStateChange(payload, false);
+                });
+
+                this.client.on('audio-on', (payload) => {
+                    console.log('🎤 Audio enabled:', payload);
+                    this.handleAudioStateChange(payload, true);
+                });
+
+                this.client.on('audio-off', (payload) => {
+                    console.log('🎤 Audio disabled:', payload);
+                    this.handleAudioStateChange(payload, false);
+                });
+
+                console.log('📡 Event handlers registered');
+            }
+
+            handleUserAdded(payload) {
+                const users = Array.isArray(payload) ? payload : [payload];
+                for (const user of users) {
+                    if (user && user.userId) {
+                        const participant = {
+                            id: user.userId.toString(),
+                            name: user.displayName || user.display_name || `User ${user.userId}`,
+                            role: 'student',
+                            videoEnabled: false,
+                            audioEnabled: false,
+                            isCurrentUser: false
+                        };
+                        this.participants.set(participant.id, participant);
+                        console.log(`✅ Added participant: ${participant.name}`);
+                    }
+                }
+                this.updateParticipantStats();
+                this.updateVideoPagination();
+            }
+
+            handleUserRemoved(payload) {
+                const users = Array.isArray(payload) ? payload : [payload];
+                for (const user of users) {
+                    if (user && user.userId) {
+                        const userId = user.userId.toString();
+                        const participant = this.participants.get(userId);
+                        if (participant) {
+                            this.participants.delete(userId);
+                            this.cleanupVideoElement(userId);
+                            console.log(`👋 Removed participant: ${participant.name}`);
+                        }
+                    }
+                }
+                this.updateParticipantStats();
+                this.updateVideoPagination();
+            }
+
+            handleVideoStateChange(payload, enabled) {
+                const users = Array.isArray(payload) ? payload : [payload];
+                for (const user of users) {
+                    if (user && user.userId) {
+                        const userId = user.userId.toString();
+                        const participant = this.participants.get(userId);
+                        if (participant) {
+                            participant.videoEnabled = enabled;
+                            this.participants.set(userId, participant);
+                            if (participant.isCurrentUser) {
+                                this.updateVideoToggleButton(enabled);
+                            }
+                        }
+                    }
+                }
+                this.updateParticipantStats();
+                this.updateVideoPagination();
+            }
+
+            handleAudioStateChange(payload, enabled) {
+                const users = Array.isArray(payload) ? payload : [payload];
+                for (const user of users) {
+                    if (user && user.userId) {
+                        const userId = user.userId.toString();
+                        const participant = this.participants.get(userId);
+                        if (participant) {
+                            participant.audioEnabled = enabled;
+                            this.participants.set(userId, participant);
+                            if (participant.isCurrentUser) {
+                                this.updateAudioToggleButton(enabled);
+                            }
+                        }
+                    }
+                }
+                this.updateParticipantStats();
+            }
+
+            async toggleVideo() {
+                try {
+                    if (this.currentParticipant.videoEnabled) {
+                        await this.stream.stopVideo();
+                        console.log('📹 Video disabled');
+                    } else {
+                        await this.stream.startVideo();
+                        console.log('📹 Video enabled');
+                    }
+                } catch (error) {
+                    console.error('❌ Video toggle failed:', error);
+                }
+            }
+
+            async toggleAudio() {
+                try {
+                    if (this.currentParticipant.audioEnabled) {
+                        await this.stream.stopAudio();
+                        console.log('🎤 Audio disabled');
+                    } else {
+                        await this.stream.startAudio();
+                        console.log('🎤 Audio enabled');
+                    }
+                } catch (error) {
+                    console.error('❌ Audio toggle failed:', error);
+                }
+            }
+
+            async createVideoElement(participantId) {
+                console.log(`🎥 Creating video element for participant ${participantId}`);
+
+                try {
+                    const userId = parseInt(participantId);
+
+                    // V2 PATTERN: Zoom SDK creates and provides the video element
+                    const videoElement = await this.stream.attachVideo(userId, 2); // 360p quality
+
+                    if (!videoElement) {
+                        throw new Error('Zoom SDK did not return a video element');
+                    }
+
+                    // Configure the Zoom-provided element
+                    videoElement.autoplay = true;
+                    videoElement.playsInline = true;
+                    videoElement.style.width = '100%';
+                    videoElement.style.height = '100%';
+                    videoElement.style.objectFit = 'cover';
+
+                    // Mute self-view to prevent echo
+                    if (participantId === this.currentParticipant.id) {
+                        videoElement.muted = true;
+                    }
+
+                    this.videoElements.set(participantId, videoElement);
+                    console.log(`✅ Video element created for participant ${participantId}`);
+                    return videoElement;
+                } catch (error) {
+                    console.error(`❌ Failed to create video element: ${error.message}`);
+                    return null;
+                }
+            }
+
+            cleanupVideoElement(participantId) {
+                const videoElement = this.videoElements.get(participantId);
+                if (videoElement) {
+                    try {
+                        this.stream.detachVideo(parseInt(participantId));
+                        this.videoElements.delete(participantId);
+                        this.visibleParticipants.delete(participantId);
+                        console.log(`🧹 Cleaned up video for participant ${participantId}`);
+                    } catch (error) {
+                        console.warn('Cleanup warning:', error);
+                    }
+                }
+            }
+
+            async updateVideoPagination() {
+                const videoGrid = document.getElementById('videoGrid');
+                const participantIds = Array.from(this.participants.keys());
+                const startIndex = this.currentVideoPage * this.maxVideos;
+                const endIndex = startIndex + this.maxVideos;
+                const visibleIds = participantIds.slice(startIndex, endIndex);
+
+                videoGrid.innerHTML = '';
+                this.visibleParticipants.clear();
+
+                for (const participantId of visibleIds) {
+                    const participant = this.participants.get(participantId);
+                    const tile = await this.createVideoTile(participant);
+                    videoGrid.appendChild(tile);
+                }
+
+                const totalPages = Math.ceil(participantIds.length / this.maxVideos);
+                document.getElementById('pageInfo').textContent = `Page ${this.currentVideoPage + 1} of ${totalPages}`;
+                document.getElementById('currentPage').textContent = this.currentVideoPage + 1;
+                document.getElementById('prevPage').disabled = this.currentVideoPage === 0;
+                document.getElementById('nextPage').disabled = this.currentVideoPage >= totalPages - 1;
+
+                console.log(`📄 Pagination updated: showing ${visibleIds.length} of ${participantIds.length} participants`);
+            }
+
+            async createVideoTile(participant) {
+                const tile = document.createElement('div');
+                tile.className = 'video-tile';
+                tile.setAttribute('data-participant-id', participant.id);
+
+                if (participant.videoEnabled) {
+                    const videoElement = await this.createVideoElement(participant.id);
+                    if (videoElement) {
+                        tile.appendChild(videoElement);
+                        this.visibleParticipants.add(participant.id);
+                    } else {
+                        tile.appendChild(this.createVideoPlaceholder(participant));
+                    }
+                } else {
+                    tile.appendChild(this.createVideoPlaceholder(participant));
+                }
+
+                const overlay = this.createParticipantOverlay(participant);
+                tile.appendChild(overlay);
+                return tile;
+            }
+
+            createVideoPlaceholder(participant) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'video-placeholder';
+
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                avatar.textContent = participant.name.charAt(0).toUpperCase();
+
+                const name = document.createElement('div');
+                name.textContent = participant.name;
+
+                const status = document.createElement('div');
+                status.style.fontSize = '0.8rem';
+                status.style.opacity = '0.7';
+                status.textContent = participant.videoEnabled ? 'Video Loading...' : 'Video Off';
+
+                placeholder.appendChild(avatar);
+                placeholder.appendChild(name);
+                placeholder.appendChild(status);
+                return placeholder;
+            }
+
+            createParticipantOverlay(participant) {
+                const overlay = document.createElement('div');
+                overlay.className = 'participant-overlay';
+
+                const name = document.createElement('div');
+                name.className = 'participant-name';
+                name.textContent = participant.name;
+
+                const indicators = document.createElement('div');
+                indicators.className = 'participant-indicators';
+
+                if (participant.role === 'coach') {
+                    const coachIndicator = document.createElement('span');
+                    coachIndicator.className = 'indicator coach';
+                    coachIndicator.textContent = '👨‍🏫 Coach';
+                    indicators.appendChild(coachIndicator);
+                }
+
+                if (participant.videoEnabled) {
+                    const videoIndicator = document.createElement('span');
+                    videoIndicator.className = 'indicator video-on';
+                    videoIndicator.textContent = '📹';
+                    indicators.appendChild(videoIndicator);
+                }
+
+                if (participant.audioEnabled) {
+                    const audioIndicator = document.createElement('span');
+                    audioIndicator.className = 'indicator audio-on';
+                    audioIndicator.textContent = '🎤';
+                    indicators.appendChild(audioIndicator);
+                }
+
+                overlay.appendChild(name);
+                overlay.appendChild(indicators);
+                return overlay;
+            }
+
+            async previousPage() {
+                if (this.currentVideoPage > 0) {
+                    this.currentVideoPage--;
+                    await this.updateVideoPagination();
+                }
+            }
+
+            async nextPage() {
+                const totalPages = Math.ceil(this.participants.size / this.maxVideos);
+                if (this.currentVideoPage < totalPages - 1) {
+                    this.currentVideoPage++;
+                    await this.updateVideoPagination();
+                }
+            }
+
+            async leaveSession() {
+                try {
+                    this.updateStatus('connecting', 'Leaving session...');
+                    console.log('👋 Leaving session...');
+
+                    // Clean up all video elements
+                    for (const participantId of this.videoElements.keys()) {
+                        this.cleanupVideoElement(participantId);
+                    }
+
+                    // Leave Zoom session
+                    if (this.client) {
+                        await this.client.leave();
+                    }
+
+                    // Reset state
+                    this.participants.clear();
+                    this.currentParticipant = null;
+                    this.currentVideoPage = 0;
+
+                    this.showSetupForm();
+                    console.log('✅ Successfully left session');
+
+                } catch (error) {
+                    console.error('❌ Error leaving session:', error);
+                    this.showSetupForm(); // Force reset anyway
+                }
+            }
+
+            updateParticipantStats() {
+                const totalParticipants = this.participants.size;
+                const videoStreams = Array.from(this.participants.values()).filter(p => p.videoEnabled).length;
+                document.getElementById('totalParticipants').textContent = totalParticipants;
+                document.getElementById('videoStreams').textContent = videoStreams;
+            }
+
+            updateVideoToggleButton(enabled) {
+                const btn = document.getElementById('videoToggle');
+                btn.textContent = enabled ? '📹 Video On' : '📹 Video Off';
+                btn.className = enabled ? 'btn btn-success' : 'btn btn-warning';
+            }
+
+            updateAudioToggleButton(enabled) {
+                const btn = document.getElementById('audioToggle');
+                btn.textContent = enabled ? '🎤 Audio On' : '🎤 Audio Off';
+                btn.className = enabled ? 'btn btn-success' : 'btn btn-warning';
+            }
+
+            updateStatus(status, message) {
+                const indicator = document.getElementById('statusIndicator');
+                const statusText = document.getElementById('sessionStatus');
+                indicator.className = `status-indicator status-${status}`;
+                statusText.textContent = message;
+
+                if (status === 'connected') {
+                    document.getElementById('sessionTitle').textContent = this.sessionName;
+                    document.getElementById('videoToggle').disabled = false;
+                    document.getElementById('audioToggle').disabled = false;
+                    document.getElementById('leaveBtn').disabled = false;
+                }
+            }
+
+            showSessionContainer() {
+                document.getElementById('sessionSetup').classList.add('hidden');
+                document.getElementById('sessionContainer').classList.add('active');
+            }
+
+            showSetupForm() {
+                document.getElementById('sessionSetup').classList.remove('hidden');
+                document.getElementById('sessionContainer').classList.remove('active');
+                document.getElementById('videoToggle').disabled = true;
+                document.getElementById('audioToggle').disabled = true;
+                document.getElementById('leaveBtn').disabled = true;
+                this.updateStatus('disconnected', 'Disconnected');
+            }
+
+            showError(message) {
+                const container = document.getElementById('setupMessages');
+                container.innerHTML = `<div class="error-message">${message}</div>`;
+                setTimeout(() => container.innerHTML = '', 5000);
+            }
+
+            showSuccess(message) {
+                const container = document.getElementById('setupMessages');
+                container.innerHTML = `<div class="success-message">${message}</div>`;
+                setTimeout(() => container.innerHTML = '', 3000);
+            }
+        }
+
+        // Initialize the application
+        window.fitWithPariV3 = new FitWithPariV3();
+    </script>
+</body>
+</html>
