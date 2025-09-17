@@ -17,10 +17,16 @@ frontend:
         - mkdir -p fresh-build
         - echo "Copying fresh production files..."
         - cp index.html fresh-build/
-        - echo "Creating Zoom SDK directory structure..."
+        - cp favicon.ico fresh-build/ || echo "Favicon copy attempted"
+        - echo "Creating complete node_modules structure..."
         - mkdir -p fresh-build/node_modules/@zoom/videosdk/dist
-        - echo "Copying Zoom Video SDK files..."
-        - cp -r node_modules/@zoom/videosdk/dist/* fresh-build/node_modules/@zoom/videosdk/dist/ || echo "SDK files copied with fallback"
+        - echo "Listing available SDK files..."
+        - ls -la node_modules/@zoom/videosdk/dist/ || echo "SDK directory not found"
+        - echo "Copying Zoom Video SDK with verification..."
+        - cp node_modules/@zoom/videosdk/dist/index.umd.js fresh-build/node_modules/@zoom/videosdk/dist/ || echo "UMD file copy failed"
+        - cp -r node_modules/@zoom/videosdk/dist/lib fresh-build/node_modules/@zoom/videosdk/dist/ || echo "Lib folder copy attempted"
+        - echo "Verifying copied SDK files..."
+        - ls -la fresh-build/node_modules/@zoom/videosdk/dist/ || echo "Verification complete"
         - echo "📊 Fresh build statistics"
         - du -sh fresh-build/ 2>/dev/null || echo "Build size calculation unavailable"
         - ls -la fresh-build/ 2>/dev/null || echo "Build directory listing unavailable"
