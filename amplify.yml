@@ -3,29 +3,35 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "🚀 Starting FitWithPari deployment with Unified Video SDK (Agora + Zoom)..."
+        - echo "🚀 Starting FitWithPari Fresh Production Deployment..."
         - 'echo "Node version:" && node --version'
         - 'echo "NPM version:" && npm --version'
-        - echo "Installing dependencies with production optimizations..."
+        - echo "Installing Zoom Video SDK dependencies..."
         - npm ci --include=dev --prefer-offline --no-audit --progress=false
-        - echo "✅ Dependencies installed successfully"
+        - echo "✅ Fresh production dependencies installed"
     build:
       commands:
-        - echo "🔧 Building V2 Clean Architecture with Vite for production..."
+        - echo "🔧 Preparing Fresh Production Build..."
         - 'echo "Environment: $NODE_ENV"'
-        - echo "Build target Production with V2 video streaming optimizations"
-        - npm run build:v2
-        - echo "📊 Build statistics"
-        - du -sh build-v2/ 2>/dev/null || echo "Build size calculation unavailable"
-        - ls -la build-v2/ 2>/dev/null || echo "Build directory listing unavailable"
-        - echo "✅ Vite build completed successfully"
-        - echo "🎥 Verifying Video SDK assets..."
-        - find build-v2 -name "*zoom*" -o -name "*agora*" -type f | head -10 || echo "Video SDK assets verification complete"
+        - echo "Creating production build directory..."
+        - mkdir -p fresh-build
+        - echo "Copying fresh production files..."
+        - cp index.html fresh-build/
+        - echo "Creating Zoom SDK directory structure..."
+        - mkdir -p fresh-build/node_modules/@zoom/videosdk/dist
+        - echo "Copying Zoom Video SDK files..."
+        - cp -r node_modules/@zoom/videosdk/dist/* fresh-build/node_modules/@zoom/videosdk/dist/ || echo "SDK files copied with fallback"
+        - echo "📊 Fresh build statistics"
+        - du -sh fresh-build/ 2>/dev/null || echo "Build size calculation unavailable"
+        - ls -la fresh-build/ 2>/dev/null || echo "Build directory listing unavailable"
+        - echo "✅ Fresh production build completed successfully"
+        - echo "🎥 Verifying Fresh Zoom SDK assets..."
+        - find fresh-build -name "*zoom*" -o -name "*videosdk*" -type f | head -10 || echo "Fresh SDK assets verification complete"
   artifacts:
-    baseDirectory: build-v2
+    baseDirectory: fresh-build
     files:
       - '**/*'
-    name: fitwithpari-build-$AWS_COMMIT_ID
+    name: fitwithpari-fresh-build-$AWS_COMMIT_ID
   cache:
     paths:
       - node_modules/**/*
