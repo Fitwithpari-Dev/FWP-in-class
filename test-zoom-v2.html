@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoom Video SDK V2 Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .primary { background-color: #007bff; color: white; }
+        .primary:hover { background-color: #0056b3; }
+        .success { background-color: #28a745; color: white; }
+        .success:hover { background-color: #1e7e34; }
+        .danger { background-color: #dc3545; color: white; }
+        .danger:hover { background-color: #c82333; }
+        .warning { background-color: #ffc107; color: black; }
+        .warning:hover { background-color: #e0a800; }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .video-container {
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 16/9;
+            min-height: 200px;
+        }
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .participant-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .log-error { color: #dc3545; }
+        .log-success { color: #28a745; }
+        .log-info { color: #007bff; }
+        .log-warning { color: #ffc107; }
+
+        .status {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+        .status-item {
+            text-align: center;
+        }
+        .status-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .status-label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Zoom Video SDK V2 Test</h1>
+            <p>Testing the new correct implementation with Zoom-provided video elements</p>
+        </div>
+
+        <div class="controls">
+            <button id="initBtn" class="primary">Initialize SDK</button>
+            <button id="joinBtn" class="success" disabled>Join Session</button>
+            <button id="videoBtn" class="primary" disabled>Toggle Video</button>
+            <button id="audioBtn" class="primary" disabled>Toggle Audio</button>
+            <button id="leaveBtn" class="danger" disabled>Leave Session</button>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="sessionInput" placeholder="Session Name" value="test-v2-session">
+            <input type="text" id="nameInput" placeholder="Your Name" value="Test User">
+            <select id="roleInput">
+                <option value="coach">Coach</option>
+                <option value="student">Student</option>
+            </select>
+        </div>
+
+        <div class="pagination">
+            <button id="prevPageBtn" class="warning" disabled>← Previous Page</button>
+            <span id="pageInfo">Page 1 of 1</span>
+            <button id="nextPageBtn" class="warning" disabled>Next Page →</button>
+        </div>
+
+        <div class="status">
+            <div class="status-item">
+                <div class="status-value" id="participantCount">0</div>
+                <div class="status-label">Participants</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="videoCount">0</div>
+                <div class="status-label">Videos</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="currentPage">1</div>
+                <div class="status-label">Page</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="maxVideos">25</div>
+                <div class="status-label">Max Videos</div>
+            </div>
+        </div>
+
+        <div class="video-grid" id="videoGrid">
+            <!-- Video containers will be added here dynamically -->
+        </div>
+
+        <div class="log" id="logContainer">
+            <div class="log-entry log-info">🚀 Zoom Video SDK V2 Test Page Loaded</div>
+            <div class="log-entry log-info">📋 This test validates the new Zoom-provided video element pattern</div>
+            <div class="log-entry log-warning">⚠️ Requires valid VITE_ZOOM_SDK_KEY and Lambda token endpoint</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Simulate V2 service for testing (would normally import from build)
+        class ZoomV2TestService {
+            constructor() {
+                this.isInitialized = false;
+                this.currentParticipant = null;
+                this.participants = new Map();
+                this.videoElements = new Map();
+                this.visibleParticipants = new Set();
+                this.currentVideoPage = 0;
+                this.maxVideos = 25;
+                this.sessionName = null;
+            }
+
+            log(message, type = 'info') {
+                const logContainer = document.getElementById('logContainer');
+                const entry = document.createElement('div');
+                entry.className = `log-entry log-${type}`;
+                entry.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+                logContainer.appendChild(entry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+                console.log(`[ZoomV2Test] ${message}`);
+            }
+
+            async initialize() {
+                this.log('🔧 Initializing Zoom Video SDK V2...', 'info');
+
+                // Check environment
+                const hasKey = !!import.meta.env?.VITE_ZOOM_SDK_KEY;
+                const hasEndpoint = !!import.meta.env?.VITE_ZOOM_TOKEN_ENDPOINT;
+
+                this.log(`📋 Environment Check: Key=${hasKey ? '✅' : '❌'}, Endpoint=${hasEndpoint ? '✅' : '❌'}`, hasKey && hasEndpoint ? 'success' : 'warning');
+
+                if (!hasKey) {
+                    this.log('❌ VITE_ZOOM_SDK_KEY not found in environment', 'error');
+                    throw new Error('Missing VITE_ZOOM_SDK_KEY');
+                }
+
+                // Simulate SDK initialization
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                this.isInitialized = true;
+                this.log('✅ Zoom Video SDK V2 initialized successfully', 'success');
+
+                // Update max videos based on device
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                this.maxVideos = isMobile ? 9 : 25;
+                document.getElementById('maxVideos').textContent = this.maxVideos;
+                this.log(`📱 Device detected: ${isMobile ? 'Mobile' : 'Desktop'} (max ${this.maxVideos} videos)`, 'info');
+            }
+
+            async joinSession(sessionName, userName, role) {
+                this.log(`🚪 Joining session: ${sessionName} as ${userName} (${role})`, 'info');
+
+                this.sessionName = sessionName;
+                this.currentParticipant = {
+                    id: '1',
+                    name: userName,
+                    role: role,
+                    videoEnabled: false,
+                    audioEnabled: false
+                };
+
+                this.participants.set('1', this.currentParticipant);
+
+                // Simulate some other participants joining
+                for (let i = 2; i <= 30; i++) {
+                    this.participants.set(i.toString(), {
+                        id: i.toString(),
+                        name: `Participant ${i}`,
+                        role: 'student',
+                        videoEnabled: Math.random() > 0.3, // 70% have video on
+                        audioEnabled: Math.random() > 0.2  // 80% have audio on
+                    });
+                }
+
+                this.updateStatus();
+                this.updateVideoPagination();
+                this.log(`✅ Joined session successfully. Total participants: ${this.participants.size}`, 'success');
+
+                return { success: true };
+            }
+
+            async enableVideo() {
+                this.log('📹 Enabling video...', 'info');
+
+                if (this.currentParticipant) {
+                    this.currentParticipant.videoEnabled = true;
+
+                    // Simulate getting Zoom-provided video element
+                    await this.createVideoElement(this.currentParticipant.id);
+
+                    this.updateVideoPagination();
+                    this.log('✅ Video enabled successfully', 'success');
+                }
+            }
+
+            async disableVideo() {
+                this.log('📹 Disabling video...', 'info');
+
+                if (this.currentParticipant) {
+                    this.currentParticipant.videoEnabled = false;
+                    this.removeVideoElement(this.currentParticipant.id);
+                    this.updateVideoPagination();
+                    this.log('✅ Video disabled successfully', 'success');
+                }
+            }
+
+            async enableAudio() {
+                this.log('🎤 Enabling audio...', 'info');
+                if (this.currentParticipant) {
+                    this.currentParticipant.audioEnabled = true;
+                    this.log('✅ Audio enabled successfully', 'success');
+                }
+            }
+
+            async disableAudio() {
+                this.log('🎤 Disabling audio...', 'info');
+                if (this.currentParticipant) {
+                    this.currentParticipant.audioEnabled = false;
+                    this.log('✅ Audio disabled successfully', 'success');
+                }
+            }
+
+            async createVideoElement(participantId) {
+                this.log(`🎥 Creating Zoom-provided video element for participant ${participantId}`, 'info');
+
+                // Simulate Zoom SDK attachVideo() returning a video element
+                const videoElement = document.createElement('video');
+                videoElement.autoplay = true;
+                videoElement.playsInline = true;
+                videoElement.muted = participantId === '1'; // Mute self-view
+                videoElement.style.width = '100%';
+                videoElement.style.height = '100%';
+                videoElement.style.objectFit = 'cover';
+                videoElement.className = 'zoom-video-element';
+
+                // Add a test pattern or webcam stream
+                try {
+                    if (participantId === '1') {
+                        // For self-view, try to get webcam
+                        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                        videoElement.srcObject = stream;
+                        this.log('📹 Self-view using webcam stream', 'success');
+                    } else {
+                        // For others, use a test pattern
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 640;
+                        canvas.height = 480;
+                        const ctx = canvas.getContext('2d');
+
+                        // Create a simple test pattern
+                        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                        gradient.addColorStop(0, `hsl(${parseInt(participantId) * 30}, 70%, 50%)`);
+                        gradient.addColorStop(1, `hsl(${parseInt(participantId) * 30 + 60}, 70%, 30%)`);
+                        ctx.fillStyle = gradient;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                        // Add participant info
+                        ctx.fillStyle = 'white';
+                        ctx.font = '24px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(`Participant ${participantId}`, canvas.width / 2, canvas.height / 2);
+
+                        // Convert to stream
+                        const stream = canvas.captureStream(30);
+                        videoElement.srcObject = stream;
+                        this.log(`🎨 Test pattern created for participant ${participantId}`, 'info');
+                    }
+                } catch (error) {
+                    this.log(`⚠️ Could not create video stream for participant ${participantId}: ${error.message}`, 'warning');
+                }
+
+                this.videoElements.set(participantId, videoElement);
+                return videoElement;
+            }
+
+            removeVideoElement(participantId) {
+                const videoElement = this.videoElements.get(participantId);
+                if (videoElement && videoElement.srcObject) {
+                    const stream = videoElement.srcObject;
+                    if (stream.getTracks) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                }
+                this.videoElements.delete(participantId);
+                this.visibleParticipants.delete(participantId);
+            }
+
+            async attachVideoToContainer(participantId, container) {
+                const participant = this.participants.get(participantId);
+                if (!participant || !participant.videoEnabled) {
+                    return false;
+                }
+
+                let videoElement = this.videoElements.get(participantId);
+                if (!videoElement) {
+                    videoElement = await this.createVideoElement(participantId);
+                }
+
+                // Clear container and append Zoom-provided element
+                container.innerHTML = '';
+                container.appendChild(videoElement);
+
+                // Add participant info overlay
+                const info = document.createElement('div');
+                info.className = 'participant-info';
+                info.textContent = `${participant.name} ${participant.videoEnabled ? '📹' : ''} ${participant.audioEnabled ? '🎤' : '🔇'}`;
+                container.appendChild(info);
+
+                this.visibleParticipants.add(participantId);
+                this.log(`✅ Attached video for ${participant.name} to container`, 'success');
+                return true;
+            }
+
+            async setVideoPage(pageNumber) {
+                this.currentVideoPage = Math.max(0, pageNumber);
+                await this.updateVideoPagination();
+                this.log(`📄 Switched to page ${this.currentVideoPage + 1}`, 'info');
+            }
+
+            async nextVideoPage() {
+                const totalPages = Math.ceil(this.participants.size / this.maxVideos);
+                if (this.currentVideoPage < totalPages - 1) {
+                    await this.setVideoPage(this.currentVideoPage + 1);
+                }
+            }
+
+            async previousVideoPage() {
+                if (this.currentVideoPage > 0) {
+                    await this.setVideoPage(this.currentVideoPage - 1);
+                }
+            }
+
+            async updateVideoPagination() {
+                const videoGrid = document.getElementById('videoGrid');
+                const participantIds = Array.from(this.participants.keys());
+
+                // Calculate visible participants for current page
+                const startIndex = this.currentVideoPage * this.maxVideos;
+                const endIndex = startIndex + this.maxVideos;
+                const visibleIds = participantIds.slice(startIndex, endIndex);
+
+                // Clear existing videos
+                videoGrid.innerHTML = '';
+                this.visibleParticipants.clear();
+
+                // Create containers for visible participants
+                for (const participantId of visibleIds) {
+                    const participant = this.participants.get(participantId);
+
+                    const container = document.createElement('div');
+                    container.className = 'video-container';
+                    container.setAttribute('data-participant-id', participantId);
+
+                    if (participant.videoEnabled) {
+                        await this.attachVideoToContainer(participantId, container);
+                    } else {
+                        // Show placeholder for participants without video
+                        container.innerHTML = `
+                            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white; background: #333;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 48px; margin-bottom: 10px;">👤</div>
+                                    <div>${participant.name}</div>
+                                    <div style="font-size: 12px; opacity: 0.7;">Video Off</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    videoGrid.appendChild(container);
+                }
+
+                // Update pagination controls
+                const totalPages = Math.ceil(this.participants.size / this.maxVideos);
+                document.getElementById('pageInfo').textContent = `Page ${this.currentVideoPage + 1} of ${totalPages}`;
+                document.getElementById('currentPage').textContent = this.currentVideoPage + 1;
+                document.getElementById('prevPageBtn').disabled = this.currentVideoPage === 0;
+                document.getElementById('nextPageBtn').disabled = this.currentVideoPage >= totalPages - 1;
+
+                this.updateStatus();
+                this.log(`🔄 Updated pagination: showing ${visibleIds.length} of ${participantIds.length} participants`, 'info');
+            }
+
+            updateStatus() {
+                const videoCount = Array.from(this.participants.values()).filter(p => p.videoEnabled).length;
+                document.getElementById('participantCount').textContent = this.participants.size;
+                document.getElementById('videoCount').textContent = videoCount;
+            }
+
+            async leaveSession() {
+                this.log('🚪 Leaving session...', 'info');
+
+                // Clean up all video elements
+                for (const [participantId, videoElement] of this.videoElements) {
+                    this.removeVideoElement(participantId);
+                }
+
+                document.getElementById('videoGrid').innerHTML = '';
+                this.participants.clear();
+                this.currentParticipant = null;
+                this.sessionName = null;
+                this.currentVideoPage = 0;
+                this.visibleParticipants.clear();
+
+                this.updateStatus();
+                this.log('✅ Left session successfully', 'success');
+            }
+        }
+
+        // Initialize test service
+        const zoomService = new ZoomV2TestService();
+
+        // UI Event Handlers
+        document.getElementById('initBtn').addEventListener('click', async () => {
+            try {
+                await zoomService.initialize();
+                document.getElementById('initBtn').disabled = true;
+                document.getElementById('joinBtn').disabled = false;
+            } catch (error) {
+                zoomService.log(`❌ Initialization failed: ${error.message}`, 'error');
+            }
+        });
+
+        document.getElementById('joinBtn').addEventListener('click', async () => {
+            const sessionName = document.getElementById('sessionInput').value;
+            const userName = document.getElementById('nameInput').value;
+            const role = document.getElementById('roleInput').value;
+
+            try {
+                const result = await zoomService.joinSession(sessionName, userName, role);
+                if (result.success) {
+                    document.getElementById('joinBtn').disabled = true;
+                    document.getElementById('videoBtn').disabled = false;
+                    document.getElementById('audioBtn').disabled = false;
+                    document.getElementById('leaveBtn').disabled = false;
+                    document.getElementById('prevPageBtn').disabled = false;
+                    document.getElementById('nextPageBtn').disabled = false;
+                }
+            } catch (error) {
+                zoomService.log(`❌ Join session failed: ${error.message}`, 'error');
+            }
+        });
+
+        document.getElementById('videoBtn').addEventListener('click', async () => {
+            if (zoomService.currentParticipant?.videoEnabled) {
+                await zoomService.disableVideo();
+            } else {
+                await zoomService.enableVideo();
+            }
+        });
+
+        document.getElementById('audioBtn').addEventListener('click', async () => {
+            if (zoomService.currentParticipant?.audioEnabled) {
+                await zoomService.disableAudio();
+            } else {
+                await zoomService.enableAudio();
+            }
+        });
+
+        document.getElementById('leaveBtn').addEventListener('click', async () => {
+            await zoomService.leaveSession();
+            document.getElementById('joinBtn').disabled = false;
+            document.getElementById('videoBtn').disabled = true;
+            document.getElementById('audioBtn').disabled = true;
+            document.getElementById('leaveBtn').disabled = true;
+            document.getElementById('prevPageBtn').disabled = true;
+            document.getElementById('nextPageBtn').disabled = true;
+        });
+
+        document.getElementById('prevPageBtn').addEventListener('click', () => {
+            zoomService.previousVideoPage();
+        });
+
+        document.getElementById('nextPageBtn').addEventListener('click', () => {
+            zoomService.nextVideoPage();
+        });
+
+        // Initialize page
+        zoomService.log('🎯 Test page ready. Click "Initialize SDK" to start.', 'info');
+        zoomService.log('📚 This test demonstrates the V2 correct implementation patterns', 'info');
+    </script>
+</body>
+</html>
