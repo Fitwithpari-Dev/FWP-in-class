@@ -9,8 +9,9 @@ export class ParticipantId {
     }
   }
 
-  static create(value: string): ParticipantId {
-    return new ParticipantId(value);
+  static create(value: string | number): ParticipantId {
+    const stringValue = typeof value === 'number' ? value.toString() : value;
+    return new ParticipantId(stringValue);
   }
 
   static generate(prefix: string = 'participant'): ParticipantId {
@@ -32,9 +33,13 @@ export class ParticipantId {
   }
 
   private isValid(value: string): boolean {
-    return typeof value === 'string' &&
-           value.length > 0 &&
-           value.length <= 100 &&
-           /^[a-zA-Z0-9_-]+$/.test(value);
+    // Accept string or number values from video services
+    const stringValue = typeof value === 'number' ? value.toString() : value;
+
+    return typeof stringValue === 'string' &&
+           stringValue.length > 0 &&
+           stringValue.length <= 100 &&
+           // Allow alphanumeric, underscores, hyphens, and pure numeric IDs from video services
+           /^[a-zA-Z0-9_.-]+$/.test(stringValue);
   }
 }

@@ -49,7 +49,16 @@ export const ParticipantTile: React.FC<ParticipantTileProps> = ({
           hasVideoRef: !!videoRef.current
         });
 
-        // Always attempt to render - let the video service handle the video state
+        // Special handling for current participant (self-video)
+        if (isCurrentParticipant) {
+          console.log('[ParticipantTile] Skipping video rendering for current participant (self-video)');
+          // For self-video, we typically don't render through the same mechanism
+          // The video service might handle self-video differently
+          setIsVideoRendering(false);
+          return;
+        }
+
+        // Render video for remote participants
         await videoService.renderParticipantVideo(
           participant.getId(),
           videoRef.current!
@@ -62,7 +71,8 @@ export const ParticipantTile: React.FC<ParticipantTileProps> = ({
           participantName: participant.getName(),
           participantId: participant.getId().getValue(),
           error,
-          isVideoEnabled: participant.isVideoEnabled()
+          isVideoEnabled: participant.isVideoEnabled(),
+          isCurrentParticipant
         });
         setIsVideoRendering(false);
       }

@@ -10,22 +10,47 @@ export const App: React.FC = () => {
   // Parse URL parameters for session configuration
   const getUrlParams = () => {
     const params = new URLSearchParams(window.location.search);
+
+    // Get all possible parameter names
+    const session = params.get('session') || params.get('sessionId');
+    const name = params.get('name') || params.get('participantName') || params.get('username');
+    const role = params.get('role') || params.get('participantRole');
+    const service = params.get('service') || params.get('videoService');
+
+    console.log('[App] Raw URL parameters:', {
+      url: window.location.href,
+      search: window.location.search,
+      allParams: Object.fromEntries(params.entries()),
+      parsed: { session, name, role, service }
+    });
+
     return {
-      session: params.get('session'),
-      name: params.get('name'),
-      role: params.get('role') as 'coach' | 'student' | null,
-      service: params.get('service') as VideoServiceType | null
+      session,
+      name,
+      role: role as 'coach' | 'student' | null,
+      service: service as VideoServiceType | null
     };
   };
 
   const urlParams = getUrlParams();
 
-  // Demo state - enhanced to read from URL parameters
+  // Generate realistic participant name fallback
+  const generateFallbackName = (role: 'coach' | 'student') => {
+    const studentNames = ['Alex', 'Jordan', 'Sam', 'Riley', 'Taylor', 'Morgan', 'Casey', 'Avery'];
+    const coachNames = ['Sarah', 'Mike', 'Emma', 'David', 'Lisa', 'John', 'Maya', 'Chris'];
+    const names = role === 'coach' ? coachNames : studentNames;
+    const randomName = names[Math.floor(Math.random() * names.length)];
+    const rolePrefix = role === 'coach' ? 'Coach' : 'Student';
+    return `${rolePrefix}-${randomName}`;
+  };
+
+  // Demo state - enhanced to read from URL parameters with better fallbacks
   const [isInSession, setIsInSession] = useState(!!urlParams.session);
+  const defaultRole = (urlParams.role || 'student') as 'coach' | 'student';
   const [sessionConfig, setSessionConfig] = useState({
     sessionId: urlParams.session || 'demo-session-' + Date.now(),
-    participantName: urlParams.name || 'Test User',
-    participantRole: (urlParams.role || 'student') as 'coach' | 'student',
+    participantName: urlParams.name || generateFallbackName(defaultRole),
+    participantRole: defaultRole,
     videoServiceType: (urlParams.service || 'zoom') as VideoServiceType
   });
 

@@ -250,9 +250,17 @@ export class ZoomVideoService implements IVideoService {
 
       console.log('[ZoomVideoService] Successfully joined session');
 
-      // Create participant entity
+      // Create participant entity - handle Zoom's numeric userId safely
+      const userInfo = this.client.getCurrentUserInfo();
+      console.log('[ZoomVideoService] Creating participant with userId:', {
+        userId: userInfo.userId,
+        userIdType: typeof userInfo.userId,
+        participantName: request.participantName,
+        participantRole: request.participantRole
+      });
+
       this.currentParticipant = Participant.create(
-        ParticipantId.create(this.client.getCurrentUserInfo().userId.toString()),
+        ParticipantId.create(userInfo.userId), // Pass numeric userId directly - ParticipantId.create now handles numbers
         request.participantName,
         request.participantRole
       );
@@ -579,23 +587,103 @@ export class ZoomVideoService implements IVideoService {
   async renderParticipantVideo(participantId: ParticipantId, element: HTMLElement): Promise<void> {
     if (!this.client) throw new Error('Client not initialized');
 
-    const stream = this.client.getMediaStream();
-    await stream.renderVideo(
-      element,
-      parseInt(participantId.getValue()),
-      element.clientWidth,
-      element.clientHeight,
-      0,
-      0,
-      1 // Video quality
-    );
+    try {
+      const userId = parseInt(participantId.getValue());
+      const stream = this.client.getMediaStream();
+
+      console.log('[ZoomVideoService] Attempting to render video:', {
+        participantId: participantId.getValue(),
+        userId,
+        elementWidth: element.clientWidth,
+        elementHeight: element.clientHeight,
+        hasStream: !!stream,
+        elementTag: element.tagName
+      });
+
+      // Check if the participant has video enabled
+      const allUsers = this.client.getAllUser();
+      const user = allUsers.find((u: any) => u.userId === userId);
+
+      if (!user) {
+        console.warn('[ZoomVideoService] User not found for video rendering:', userId);
+        throw new Error(`User ${userId} not found in session`);
+      }
+
+      if (!user.bVideoOn) {
+        console.warn('[ZoomVideoService] User video is disabled:', {
+          userId,
+          bVideoOn: user.bVideoOn,
+          displayName: user.displayName
+        });
+        // Don't throw error - just log warning, UI will handle this
+        return;
+      }
+
+      // Render video with proper dimensions and error handling
+      const width = Math.max(element.clientWidth, 320);
+      const height = Math.max(element.clientHeight, 240);
+
+      console.log('[ZoomVideoService] Calling stream.renderVideo with params:', {
+        element: element.tagName + (element.id ? `#${element.id}` : ''),
+        userId,
+        width,
+        height,
+        quality: 1
+      });
+
+      await stream.renderVideo(
+        element,
+        userId,
+        width,
+        height,
+        0, // x offset
+        0, // y offset
+        1  // Video quality (1 = high quality)
+      );
+
+      console.log('[ZoomVideoService] ✅ Successfully rendered video for participant:', {
+        participantId: participantId.getValue(),
+        userId,
+        userDisplayName: user.displayName
+      });
+    } catch (error) {
+      console.error('[ZoomVideoService] Failed to render participant video:', {
+        participantId: participantId.getValue(),
+        error,
+        elementDetails: {
+          tagName: element.tagName,
+          width: element.clientWidth,
+          height: element.clientHeight,
+          id: element.id,
+          className: element.className
+        }
+      });
+      throw error;
+    }
   }
 
   async stopRenderingVideo(participantId: ParticipantId): Promise<void> {
     if (!this.client) throw new Error('Client not initialized');
 
-    const stream = this.client.getMediaStream();
-    await stream.stopRenderVideo(parseInt(participantId.getValue()));
+    try {
+      const userId = parseInt(participantId.getValue());
+      const stream = this.client.getMediaStream();
+
+      console.log('[ZoomVideoService] Stopping video rendering for participant:', {
+        participantId: participantId.getValue(),
+        userId
+      });
+
+      await stream.stopRenderVideo(userId);
+
+      console.log('[ZoomVideoService] ✅ Stopped video rendering for participant:', participantId.getValue());
+    } catch (error) {
+      console.error('[ZoomVideoService] Failed to stop video rendering:', {
+        participantId: participantId.getValue(),
+        error
+      });
+      // Don't throw - this is cleanup, continue gracefully
+    }
   }
 
   // Recording features
