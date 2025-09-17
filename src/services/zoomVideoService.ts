@@ -385,25 +385,61 @@ export class ZoomVideoService implements IVideoService {
         throw new Error(`Element not ready for video rendering after timeout`);
       }
 
-      const width = element.clientWidth;
-      const height = element.clientHeight;
+      // PRODUCTION FIX: Get dimensions from multiple sources and use the best available
+      const clientWidth = element.clientWidth;
+      const clientHeight = element.clientHeight;
+      const offsetWidth = element.offsetWidth;
+      const offsetHeight = element.offsetHeight;
+      const computedStyle = window.getComputedStyle(element);
+      const computedWidth = parseInt(computedStyle.width) || 0;
+      const computedHeight = parseInt(computedStyle.height) || 0;
 
-      console.log(`🎬 ZoomVideoService: Element ready - rendering video for ${participantId}:`, {
+      // Use the largest valid dimension from any source
+      const width = Math.max(clientWidth, offsetWidth, computedWidth) || 300;
+      const height = Math.max(clientHeight, offsetHeight, computedHeight) || 200;
+
+      console.log(`🎬 ZoomVideoService: PRODUCTION Element ready - rendering video for ${participantId}:`, {
         elementWidth: width,
         elementHeight: height,
-        hasStream: true
+        clientDimensions: `${clientWidth}x${clientHeight}`,
+        offsetDimensions: `${offsetWidth}x${offsetHeight}`,
+        computedDimensions: `${computedWidth}x${computedHeight}`,
+        hasStream: true,
+        finalDimensions: `${width}x${height}`
       });
 
-      // Use Zoom's renderVideo method with validated dimensions
-      await this.zoomSDK.renderVideo(
-        element,
-        participantId,
-        width,
-        height,
-        0, // x
-        0, // y
-        3  // video quality
-      );
+      // CRITICAL: Ensure we never pass 0 dimensions to Zoom SDK
+      if (width <= 0 || height <= 0) {
+        const fallbackWidth = 300;
+        const fallbackHeight = 200;
+        console.error(`🆘 CRITICAL: Zero dimensions detected, using fallback ${fallbackWidth}x${fallbackHeight}`);
+
+        // Force the element to have valid dimensions
+        element.style.width = `${fallbackWidth}px`;
+        element.style.height = `${fallbackHeight}px`;
+
+        // Use fallback dimensions for Zoom SDK
+        await this.zoomSDK.renderVideo(
+          element,
+          participantId,
+          fallbackWidth,
+          fallbackHeight,
+          0, // x
+          0, // y
+          3  // video quality
+        );
+      } else {
+        // Use validated dimensions
+        await this.zoomSDK.renderVideo(
+          element,
+          participantId,
+          width,
+          height,
+          0, // x
+          0, // y
+          3  // video quality
+        );
+      }
 
       console.log('✅ ZoomVideoService: Video rendered successfully for', participantId);
     } catch (error) {
@@ -422,53 +458,163 @@ export class ZoomVideoService implements IVideoService {
   }
 
   /**
-   * Waits for element to be properly sized and ready for video rendering
+   * PRODUCTION FIX: Waits for element and FORCES dimensions via JavaScript
    * This fixes the 0x0 dimension issue that causes Zoom SDK "Unknown error"
    */
   private async waitForElementReady(element: HTMLElement, participantId: string): Promise<boolean> {
-    const maxWaitTime = 5000; // 5 seconds max wait
-    const checkInterval = 100; // Check every 100ms
+    const maxWaitTime = 10000; // Increased to 10 seconds for production
+    const checkInterval = 50; // More frequent checks (50ms)
     const startTime = Date.now();
 
     return new Promise((resolve) => {
       const checkElement = () => {
-        const width = element.clientWidth;
-        const height = element.clientHeight;
-        const isInDOM = document.contains(element);
         const elapsed = Date.now() - startTime;
 
-        console.log(`🔍 Element readiness check for ${participantId}:`, {
-          width,
-          height,
+        // CRITICAL: Force element dimensions via JavaScript FIRST
+        this.forceElementDimensions(element);
+
+        // Then check both clientWidth and computed styles
+        const clientWidth = element.clientWidth;
+        const clientHeight = element.clientHeight;
+        const computedStyle = window.getComputedStyle(element);
+        const computedWidth = parseInt(computedStyle.width) || 0;
+        const computedHeight = parseInt(computedStyle.height) || 0;
+        const isInDOM = document.contains(element);
+
+        // Enhanced debugging for production
+        console.log(`🔍 PRODUCTION Element readiness check for ${participantId}:`, {
+          clientWidth,
+          clientHeight,
+          computedWidth,
+          computedHeight,
           isInDOM,
-          elapsed: `${elapsed}ms`
+          elapsed: `${elapsed}ms`,
+          hasParent: !!element.parentElement,
+          offsetWidth: element.offsetWidth,
+          offsetHeight: element.offsetHeight,
+          scrollWidth: element.scrollWidth,
+          scrollHeight: element.scrollHeight,
+          boundingRect: element.getBoundingClientRect()
         });
 
-        // Element is ready if it has non-zero dimensions and is in DOM
-        if (width > 0 && height > 0 && isInDOM) {
-          console.log(`✅ Element ready for ${participantId}: ${width}x${height}`);
+        // Enhanced readiness check - accept ANY valid dimension source
+        const hasValidWidth = clientWidth > 0 || computedWidth > 0 || element.offsetWidth > 0;
+        const hasValidHeight = clientHeight > 0 || computedHeight > 0 || element.offsetHeight > 0;
+
+        if (hasValidWidth && hasValidHeight && isInDOM) {
+          console.log(`✅ PRODUCTION Element ready for ${participantId}: client(${clientWidth}x${clientHeight}) computed(${computedWidth}x${computedHeight}) offset(${element.offsetWidth}x${element.offsetHeight})`);
           resolve(true);
           return;
         }
 
-        // Timeout check
+        // EMERGENCY FALLBACK: After 3 seconds, force dimensions and proceed
+        if (elapsed >= 3000) {
+          console.warn(`⚠️ EMERGENCY FALLBACK: Forcing dimensions for ${participantId} after ${elapsed}ms`);
+          this.emergencyForceDimensions(element);
+
+          // Re-check after forcing
+          const finalWidth = element.clientWidth || element.offsetWidth || 300;
+          const finalHeight = element.clientHeight || element.offsetHeight || 200;
+
+          if (finalWidth > 0 && finalHeight > 0) {
+            console.log(`🆘 EMERGENCY SUCCESS: Forced dimensions ${finalWidth}x${finalHeight} for ${participantId}`);
+            resolve(true);
+            return;
+          }
+        }
+
+        // Final timeout check
         if (elapsed >= maxWaitTime) {
-          console.error(`❌ Element readiness timeout for ${participantId} after ${elapsed}ms:`, {
-            finalWidth: width,
-            finalHeight: height,
-            isInDOM
+          console.error(`❌ PRODUCTION Element readiness FAILED for ${participantId} after ${elapsed}ms:`, {
+            finalClientWidth: clientWidth,
+            finalClientHeight: clientHeight,
+            finalComputedWidth: computedWidth,
+            finalComputedHeight: computedHeight,
+            isInDOM,
+            elementHTML: element.outerHTML.substring(0, 200)
           });
           resolve(false);
           return;
         }
 
-        // Continue checking
-        setTimeout(checkElement, checkInterval);
+        // Continue checking with exponential backoff for production stability
+        const nextInterval = Math.min(checkInterval * 1.1, 200);
+        setTimeout(checkElement, nextInterval);
       };
 
-      // Start the check loop
+      // Start immediately
       checkElement();
     });
+  }
+
+  /**
+   * PRODUCTION FIX: Forces element dimensions via direct JavaScript manipulation
+   */
+  private forceElementDimensions(element: HTMLElement): void {
+    try {
+      // Force explicit pixel dimensions via JavaScript
+      if (!element.style.width || element.style.width === '0px') {
+        element.style.width = '300px';
+      }
+      if (!element.style.height || element.style.height === '0px') {
+        element.style.height = '200px';
+      }
+
+      // Ensure display is not none
+      if (element.style.display === 'none') {
+        element.style.display = 'block';
+      }
+
+      // Force layout recalculation
+      element.offsetHeight; // Force browser to recalculate layout
+
+    } catch (error) {
+      console.warn('Error forcing element dimensions:', error);
+    }
+  }
+
+  /**
+   * EMERGENCY FALLBACK: Nuclear option to force video element creation
+   */
+  private emergencyForceDimensions(element: HTMLElement): void {
+    try {
+      console.log('🆘 EMERGENCY: Applying nuclear dimension fix');
+
+      // Set all possible dimension properties
+      element.style.cssText = `
+        width: 300px !important;
+        height: 200px !important;
+        min-width: 300px !important;
+        min-height: 200px !important;
+        max-width: none !important;
+        max-height: none !important;
+        display: block !important;
+        position: relative !important;
+        box-sizing: border-box !important;
+      `;
+
+      // Create inner container if needed
+      if (!element.querySelector('.emergency-video-container')) {
+        const innerContainer = document.createElement('div');
+        innerContainer.className = 'emergency-video-container';
+        innerContainer.style.cssText = `
+          width: 100% !important;
+          height: 100% !important;
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+        `;
+        element.appendChild(innerContainer);
+      }
+
+      // Force multiple layout recalculations
+      element.offsetHeight;
+      element.offsetWidth;
+      element.getBoundingClientRect();
+
+    } catch (error) {
+      console.error('Emergency dimension forcing failed:', error);
+    }
   }
 
   async stopRenderingVideo(participantId: string): Promise<void> {

@@ -39,18 +39,50 @@ export const UnifiedVideoTile: React.FC<UnifiedVideoTileProps> = ({
       try {
         setHasError(false);
 
-        console.log(`🎬 UnifiedVideoTile: Rendering video for ${participant.name} using ${videoService.serviceName}`);
+        console.log(`🎬 UnifiedVideoTile: PRODUCTION rendering video for ${participant.name} using ${videoService.serviceName}`);
+
+        // PRODUCTION FIX: Ensure DOM element is fully ready before video rendering
+        const element = videoRef.current!;
+
+        // Force immediate dimension validation
+        console.log(`🔍 Pre-render element state for ${participant.name}:`, {
+          clientWidth: element.clientWidth,
+          clientHeight: element.clientHeight,
+          offsetWidth: element.offsetWidth,
+          offsetHeight: element.offsetHeight,
+          computedStyle: window.getComputedStyle(element).width,
+          isInDocument: document.contains(element),
+          elementHTML: element.outerHTML.substring(0, 150)
+        });
+
+        // EMERGENCY: If dimensions are still 0, force them immediately
+        if (element.clientWidth === 0 || element.clientHeight === 0) {
+          console.warn(`⚠️ EMERGENCY: Forcing dimensions for ${participant.name} before video render`);
+          element.style.width = '300px';
+          element.style.height = '200px';
+          element.style.display = 'block';
+
+          // Force layout recalculation
+          element.offsetHeight;
+
+          console.log(`🔧 After emergency fix:`, {
+            clientWidth: element.clientWidth,
+            clientHeight: element.clientHeight,
+            offsetWidth: element.offsetWidth,
+            offsetHeight: element.offsetHeight
+          });
+        }
 
         // Render video using the service's renderVideo method
-        await videoService.renderVideo(participant.id, videoRef.current!);
+        await videoService.renderVideo(participant.id, element);
 
         if (mounted) {
           setIsVideoRendering(true);
-          console.log(`✅ UnifiedVideoTile: Video rendered successfully for ${participant.name}`);
+          console.log(`✅ UnifiedVideoTile: PRODUCTION video rendered successfully for ${participant.name}`);
         }
 
       } catch (error) {
-        console.error(`❌ UnifiedVideoTile: Failed to render video for ${participant.name}:`, error);
+        console.error(`❌ UnifiedVideoTile: PRODUCTION video render failed for ${participant.name}:`, error);
 
         if (mounted) {
           setHasError(true);
@@ -90,17 +122,23 @@ export const UnifiedVideoTile: React.FC<UnifiedVideoTileProps> = ({
   // Default unified video tile for Zoom or fallback
   return (
     <div className={`relative bg-gray-900 rounded-lg overflow-hidden ${className} unified-video-tile`}>
-      {/* Video container with explicit dimensions for Zoom SDK compatibility */}
+      {/* PRODUCTION FIX: Video container with GUARANTEED dimensions for Zoom SDK */}
       <div
         ref={videoRef}
-        className="w-full h-full min-h-[200px] bg-gray-800"
+        className="w-full h-full min-h-[200px] bg-gray-800 production-video-container"
         style={{
+          // CRITICAL: Force explicit pixel dimensions via inline styles (highest CSS priority)
           minHeight: '200px',
           minWidth: '300px',
           width: '100%',
           height: '100%',
-          position: 'relative'
-        }}
+          position: 'relative',
+          // PRODUCTION EMERGENCY: Set explicit fallback dimensions
+          '--video-width': '300px',
+          '--video-height': '200px'
+        } as React.CSSProperties}
+        data-video-container="zoom-sdk"
+        data-participant-id={participant.id}
       />
 
       {/* Video off overlay */}
