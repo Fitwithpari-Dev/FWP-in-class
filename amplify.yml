@@ -11,18 +11,18 @@ frontend:
         - echo "✅ Dependencies installed successfully"
     build:
       commands:
-        - echo "🔧 Building React + TypeScript app with Vite for production..."
+        - echo "🔧 Building V2 Clean Architecture with Vite for production..."
         - 'echo "Environment: $NODE_ENV"'
-        - echo "Build target Production with video streaming optimizations"
-        - npm run build
+        - echo "Build target Production with V2 video streaming optimizations"
+        - npm run build:v2
         - echo "📊 Build statistics"
-        - du -sh build/ 2>/dev/null || echo "Build size calculation unavailable"
-        - ls -la build/ 2>/dev/null || echo "Build directory listing unavailable"
+        - du -sh build-v2/ 2>/dev/null || echo "Build size calculation unavailable"
+        - ls -la build-v2/ 2>/dev/null || echo "Build directory listing unavailable"
         - echo "✅ Vite build completed successfully"
         - echo "🎥 Verifying Video SDK assets..."
-        - find build -name "*zoom*" -o -name "*agora*" -type f | head -10 || echo "Video SDK assets verification complete"
+        - find build-v2 -name "*zoom*" -o -name "*agora*" -type f | head -10 || echo "Video SDK assets verification complete"
   artifacts:
-    baseDirectory: build
+    baseDirectory: build-v2
     files:
       - '**/*'
     name: fitwithpari-build-$AWS_COMMIT_ID
