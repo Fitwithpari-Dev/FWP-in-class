@@ -133,7 +133,15 @@ class AutonomousDebugger {
 
     saveToDebugServer(logEntry) {
         // Send to our dedicated debug server
-        fetch('http://localhost:3999/debug-log', {
+        // Note: Debug endpoint disabled in production - logs stored locally
+        const debugEndpoint = process.env.NODE_ENV === 'development' ? 'http://localhost:3999/debug-log' : null;
+
+        if (!debugEndpoint) {
+            console.log('Debug endpoint disabled - storing logs locally only');
+            return;
+        }
+
+        fetch(debugEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -33,13 +33,11 @@ export class ParticipantId {
   }
 
   private isValid(value: string): boolean {
-    // Accept string or number values from video services
-    const stringValue = typeof value === 'number' ? value.toString() : value;
-
-    return typeof stringValue === 'string' &&
-           stringValue.length > 0 &&
-           stringValue.length <= 100 &&
+    // Value is already converted to string in create() method
+    return typeof value === 'string' &&
+           value.length > 0 &&
+           value.length <= 100 &&
            // Allow alphanumeric, underscores, hyphens, and pure numeric IDs from video services
-           /^[a-zA-Z0-9_.-]+$/.test(stringValue);
+           /^[a-zA-Z0-9_.-]+$/.test(value);
   }
 }

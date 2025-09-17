@@ -89,7 +89,8 @@
       "Bash(start msedge --inprivate http://localhost:5000)",
       "WebFetch(domain:getstream.io)",
       "Bash(start msedge:*)",
-      "Bash(start firefox -private-window \"http://localhost:3008/?session=morning-yoga-2025&service=zoom&name=Student-Maria&role=student\")"
+      "Bash(start firefox -private-window \"http://localhost:3008/?session=morning-yoga-2025&service=zoom&name=Student-Maria&role=student\")",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "ask": []
