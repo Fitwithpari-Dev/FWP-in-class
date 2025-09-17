@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitWithPari - Live Fitness Classes</title>
+    <title>Official Zoom Video SDK Implementation - FitWithPari</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -27,13 +27,6 @@
             text-align: center;
             margin-bottom: 30px;
             font-size: 2.5em;
-        }
-
-        .subtitle {
-            text-align: center;
-            margin-bottom: 40px;
-            font-size: 1.2em;
-            opacity: 0.9;
         }
 
         .form-section {
@@ -156,23 +149,17 @@
             background: rgba(0, 0, 0, 0.2);
             border-radius: 8px;
         }
-
-        .brand {
-            font-size: 3em;
-            margin-right: 10px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1><span class="brand">🏋️</span>FitWithPari</h1>
-        <div class="subtitle">Live Fitness Classes with Real-Time Video</div>
+        <h1>🏋️ Official Zoom SDK Implementation</h1>
 
         <div class="form-section">
-            <h3>Join Fitness Session</h3>
+            <h3>Session Configuration</h3>
             <div class="form-group">
                 <label for="sessionName">Session Name</label>
-                <input type="text" id="sessionName" value="morning-fitness-class" placeholder="Enter session name">
+                <input type="text" id="sessionName" value="official-fitness-session" placeholder="Enter session name">
             </div>
 
             <div class="form-group">
@@ -188,17 +175,17 @@
                 </select>
             </div>
 
-            <button id="joinBtn" onclick="joinSession()">🚀 Join Live Session</button>
+            <button id="joinBtn" onclick="joinSession()">Join Official Session</button>
         </div>
 
         <div id="status" class="status">
-            Ready to join live fitness session with Zoom Video SDK...
+            Ready to join session using official Zoom Video SDK patterns...
         </div>
 
         <div class="controls" style="display: none;" id="sessionControls">
-            <button onclick="toggleVideo()">📹 Toggle Video</button>
-            <button onclick="toggleAudio()">🎤 Toggle Audio</button>
-            <button onclick="leaveSession()">🚪 Leave Session</button>
+            <button onclick="toggleVideo()">Toggle Video</button>
+            <button onclick="toggleAudio()">Toggle Audio</button>
+            <button onclick="leaveSession()">Leave Session</button>
         </div>
 
         <div class="video-section" style="display: none;" id="videoSection">
@@ -220,9 +207,10 @@
         </div>
     </div>
 
-    <!-- Zoom Video SDK - Production Version -->
+    <!-- Zoom Video SDK - Using locally installed package -->
     <script src="./node_modules/@zoom/videosdk/dist/index.umd.js"></script>
     <script>
+
         let client = null;
         let stream = null;
         let isJoined = false;
@@ -241,12 +229,11 @@
             const role = parseInt(document.getElementById('userRole').value);
             const userName = document.getElementById('participantName').value;
 
-            updateStatus('🔐 Generating production JWT token...', 'info');
+            updateStatus('🔐 Generating JWT token from fresh Lambda...', 'info');
 
             try {
                 const response = await fetch('https://oorxo2zdkjrmmbzdfhaktk5ipa0phjlp.lambda-url.ap-south-1.on.aws', {
                     method: 'POST',
-                    mode: 'cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -254,7 +241,7 @@
                         sessionName: sessionName,
                         role: role === 1 ? 'host' : 'participant',
                         userIdentity: userName,
-                        sessionKey: 'production-fitness-key'
+                        sessionKey: 'fresh-fitness-key'
                     })
                 });
 
@@ -263,10 +250,10 @@
                 }
 
                 const data = await response.json();
-                console.log('✅ Production token response:', data);
+                console.log('✅ Fresh Lambda token response:', data);
 
                 if (data.signature) {
-                    updateStatus('✅ Production JWT token generated successfully!', 'success');
+                    updateStatus('✅ Real JWT token generated successfully!', 'success');
                     return data.signature;
                 } else {
                     throw new Error('No signature in response');
@@ -282,31 +269,33 @@
             joinBtn.disabled = true;
 
             try {
-                updateStatus('🚀 Initializing Zoom Video SDK...', 'info');
+                updateStatus('🚀 Initializing Zoom Video SDK client...', 'info');
 
-                // Create and initialize client
+                // Step 1: Create client (Official Pattern)
                 client = window.WebVideoSDK.default.createClient();
-                await client.init('en-US', 'Global');
-                updateStatus('✅ Zoom SDK initialized successfully!', 'success');
 
-                // Set up event listeners
+                // Step 2: Initialize client (Official Pattern)
+                await client.init('en-US', 'Global');
+                updateStatus('✅ Client initialized successfully!', 'success');
+
+                // Step 3: Set up event listeners (Official Pattern)
                 setupEventListeners();
 
-                // Generate production token
+                // Step 4: Generate token
                 const token = await generateToken();
 
-                // Join session
+                // Step 5: Join session (Official Pattern)
                 const sessionName = document.getElementById('sessionName').value;
                 const userName = document.getElementById('participantName').value;
 
-                updateStatus('🔗 Joining live fitness session...', 'info');
+                updateStatus('🔗 Joining session...', 'info');
                 await client.join(sessionName, token, userName);
 
-                // Get media stream
+                // Step 6: Get media stream (Official Pattern)
                 stream = client.getMediaStream();
                 isJoined = true;
 
-                updateStatus('🎉 Successfully joined live fitness session!', 'success');
+                updateStatus('🎉 Successfully joined session!', 'success');
 
                 // Show controls and video section
                 document.getElementById('sessionControls').style.display = 'block';
@@ -327,10 +316,11 @@
         }
 
         function setupEventListeners() {
+            // Connection state changes
             client.on('connection-change', (payload) => {
                 console.log('🔗 Connection change:', payload);
                 if (payload.state === 'Connected') {
-                    updateStatus('✅ Connected to live session!', 'success');
+                    updateStatus('✅ Connected to session!', 'success');
                 } else if (payload.state === 'Reconnecting') {
                     updateStatus('🔄 Reconnecting...', 'info');
                 } else if (payload.state === 'Closed') {
@@ -339,11 +329,12 @@
                 }
             });
 
+            // User added/removed
             client.on('user-added', (payload) => {
                 console.log('👥 User added:', payload);
                 updateParticipantsList();
                 payload.forEach(user => {
-                    updateStatus(`👋 ${user.displayName} joined the session`, 'success');
+                    updateStatus(`👋 ${user.displayName} joined`, 'success');
                 });
             });
 
@@ -351,20 +342,23 @@
                 console.log('👋 User removed:', payload);
                 updateParticipantsList();
                 payload.forEach(user => {
-                    updateStatus(`👋 ${user.displayName} left the session`, 'info');
+                    updateStatus(`👋 ${user.displayName} left`, 'info');
                     removeParticipantVideo(user.userId);
                 });
             });
 
+            // Video state changes (Official Pattern)
             client.on('peer-video-state-change', (payload) => {
                 console.log('📹 Peer video state change:', payload);
                 handlePeerVideoStateChange(payload);
             });
 
+            // Audio state changes
             client.on('peer-audio-state-change', (payload) => {
                 console.log('🔊 Peer audio state change:', payload);
             });
 
+            // Active speaker
             client.on('active-speaker', (payload) => {
                 console.log('🗣️ Active speaker:', payload);
             });
@@ -378,10 +372,12 @@
                 if (action === 'Start') {
                     updateStatus(`📹 ${userId} started video`, 'success');
 
+                    // Create video tile
                     const videoTile = document.createElement('div');
                     videoTile.className = 'video-tile';
                     videoTile.id = `video-tile-${userId}`;
 
+                    // Create canvas for video rendering (Official Pattern)
                     const canvas = document.createElement('canvas');
                     canvas.width = 320;
                     canvas.height = 240;
@@ -389,6 +385,7 @@
 
                     videoTile.appendChild(canvas);
 
+                    // Add participant name
                     const nameDiv = document.createElement('div');
                     nameDiv.className = 'participant-name';
                     const userInfo = client.getAllUser().find(u => u.userId === userId);
@@ -397,16 +394,15 @@
 
                     participantsGrid.appendChild(videoTile);
 
+                    // Start rendering video (Official Pattern)
                     await stream.renderVideo(canvas, userId, 320, 240, 0, 0, 2);
 
                 } else if (action === 'Stop') {
                     updateStatus(`📹 ${userId} stopped video`, 'info');
                     removeParticipantVideo(userId);
 
-                    const canvas = document.getElementById(`canvas-${userId}`);
-                    if (canvas) {
-                        await stream.stopRenderVideo(canvas, userId);
-                    }
+                    // Stop rendering video (Official Pattern)
+                    await stream.stopRenderVideo(canvas, userId);
                 }
             } catch (error) {
                 console.error('❌ Video handling error:', error);
@@ -432,6 +428,7 @@
                     await stream.startVideo();
                     updateStatus('📹 Video started', 'success');
 
+                    // Render self video (Official Pattern)
                     const selfCanvas = document.getElementById('my-self-view-canvas');
                     const currentUser = client.getCurrentUserInfo();
                     await stream.renderVideo(selfCanvas, currentUser.userId, 320, 240, 0, 0, 2);
@@ -493,8 +490,11 @@
             const currentUser = client.getCurrentUserInfo();
 
             let html = `<strong>Total Participants: ${users.length + 1}</strong><br><br>`;
+
+            // Add current user
             html += `<div>🎯 ${currentUser.displayName} (You) - ID: ${currentUser.userId}</div>`;
 
+            // Add other users
             users.forEach(user => {
                 html += `<div>👤 ${user.displayName} - ID: ${user.userId}</div>`;
             });
@@ -514,13 +514,23 @@
             document.getElementById('participantsGrid').innerHTML = '';
             document.getElementById('participantsInfo').innerHTML = '';
 
+            // Clear self video canvas
             const selfCanvas = document.getElementById('my-self-view-canvas');
             const ctx = selfCanvas.getContext('2d');
             ctx.clearRect(0, 0, selfCanvas.width, selfCanvas.height);
         }
 
-        // Initialize
-        updateStatus('🏋️ FitWithPari ready for live fitness sessions!', 'success');
+        // Global functions for console testing
+        window.toggleVideo = toggleVideo;
+        window.toggleAudio = toggleAudio;
+        window.leaveSession = leaveSession;
+        window.joinSession = joinSession;
+
+        // Initialize and debug what's available
+        console.log('window.WebVideoSDK:', window.WebVideoSDK);
+        console.log('window.ZoomVideo:', window.ZoomVideo);
+        console.log('All window properties with "Video" or "Zoom":', Object.keys(window).filter(key => key.includes('Video') || key.includes('Zoom')));
+        updateStatus('📋 Official Zoom Video SDK implementation ready', 'success');
 
     </script>
 </body>

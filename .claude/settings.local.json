@@ -92,7 +92,11 @@
       "Bash(start firefox -private-window \"http://localhost:3008/?session=morning-yoga-2025&service=zoom&name=Student-Maria&role=student\")",
       "Bash(npm run:*)",
       "Bash(start test-video-element-sizing.html)",
-      "WebFetch(domain:classes.tribe.fit)"
+      "WebFetch(domain:classes.tribe.fit)",
+      "Bash(dir node_modules@zoomvideosdkdist)",
+      "Bash(dir:*)",
+      "Bash(set ZOOM_SDK_KEY=Hfg9TGvcT5LutNnUGETcmoswIXNeCxHJsVm6)",
+      "Bash(set ZOOM_SDK_SECRET=GYcKilkH05kkorqhqUFwrh1a4GEofW2s0SC4)"
     ],
     "deny": [],
     "ask": []
